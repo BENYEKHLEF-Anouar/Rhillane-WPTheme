@@ -40,3 +40,11 @@ Secrets requis (GitHub → *Settings > Secrets and variables > Actions*) :
 `STAGING_FTP_SERVER`, `STAGING_FTP_USERNAME`, `STAGING_FTP_PASSWORD`.
 
 > Ce workflow cible **uniquement** le staging — la production n'est pas touchée.
+
+## Auteurs
+
+- **Anouar BENYEKHLEF** — [Développeur Full Stack](https://anouar-benyekhlef-portfolio.vercel.app/)
+- **Ayoub JALYTA** — [Développeur Full Stack](https://ayoub-jlita.vercel.app/)
+- **Jallal KADDORI**
+
+Thème parent **Vault** développé par [UiCore](https://uicore.co).
