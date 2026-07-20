@@ -1,0 +1,81 @@
+name: Deploy Vault Child Theme to Staging
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+
+      # Stamp the deploy number onto the theme version (deployed copy only —
+      # the repo keeps the clean semantic version). Appearance → Themes will
+      # show e.g. "1.0.0.53" so you can tell which deploy is live on staging.
+      - name: Stamp build number on theme version
+        run: |
+          sed -i "s/^Version: \([0-9.]*\)/Version: \1.${{ github.run_number }}/" style.css
+
+      # Self-heal: Hostinger sometimes refuses a GitHub runner IP, so we retry
+      # the proven action up to 3 times, each attempt landing on a fresh IP.
+      - name: Deploy theme via FTP (attempt 1)
+        id: deploy1
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.STAGING_FTP_SERVER }}
+          username: ${{ secrets.STAGING_FTP_USERNAME }}
+          password: ${{ secrets.STAGING_FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          timeout: 600000
+          local-dir: ./
+          server-dir: /staging/wp-content/themes/vault-child/
+
+      - name: Wait before retry 2
+        if: steps.deploy1.outcome == 'failure'
+        run: sleep 30
+
+      - name: Deploy theme via FTP (attempt 2)
+        id: deploy2
+        if: steps.deploy1.outcome == 'failure'
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.STAGING_FTP_SERVER }}
+          username: ${{ secrets.STAGING_FTP_USERNAME }}
+          password: ${{ secrets.STAGING_FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          timeout: 600000
+          local-dir: ./
+          server-dir: /staging/wp-content/themes/vault-child/
+
+      - name: Wait before retry 3
+        if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure'
+        run: sleep 45
+
+      - name: Deploy theme via FTP (attempt 3)
+        id: deploy3
+        if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure'
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.STAGING_FTP_SERVER }}
+          username: ${{ secrets.STAGING_FTP_USERNAME }}
+          password: ${{ secrets.STAGING_FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          timeout: 600000
+          local-dir: ./
+          server-dir: /staging/wp-content/themes/vault-child/
+
+      - name: Fail job if all attempts failed
+        if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure' && steps.deploy3.outcome == 'failure'
+        run: |
+          echo "::error::All 3 FTP deploy attempts failed."
+          exit 1

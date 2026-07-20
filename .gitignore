@@ -1,0 +1,13 @@
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Dependencies / build (uncomment if you add a build step)
+# node_modules/
+# vendor/
+
+# Logs & local env
+*.log
+.env
