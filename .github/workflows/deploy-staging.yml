@@ -35,6 +35,14 @@ jobs:
           timeout: 600000
           local-dir: ./
           server-dir: /staging/wp-content/themes/vault-child/
+          # Keep the theme folder clean: only real theme files get uploaded.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/node_modules/**
+            README.md
+            .gitignore
 
       - name: Wait before retry 2
         if: steps.deploy1.outcome == 'failure'
@@ -54,6 +62,14 @@ jobs:
           timeout: 600000
           local-dir: ./
           server-dir: /staging/wp-content/themes/vault-child/
+          # Keep the theme folder clean: only real theme files get uploaded.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/node_modules/**
+            README.md
+            .gitignore
 
       - name: Wait before retry 3
         if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure'
@@ -73,6 +89,14 @@ jobs:
           timeout: 600000
           local-dir: ./
           server-dir: /staging/wp-content/themes/vault-child/
+          # Keep the theme folder clean: only real theme files get uploaded.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/node_modules/**
+            README.md
+            .gitignore
 
       - name: Fail job if all attempts failed
         if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure' && steps.deploy3.outcome == 'failure'
