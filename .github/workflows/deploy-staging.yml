@@ -41,6 +41,9 @@ jobs:
             **/.git*/**
             **/.github/**
             **/node_modules/**
+            **/new-design-ayoub/**
+            src/**
+            test.txt
             README.md
             .gitignore
 
@@ -68,6 +71,9 @@ jobs:
             **/.git*/**
             **/.github/**
             **/node_modules/**
+            **/new-design-ayoub/**
+            src/**
+            test.txt
             README.md
             .gitignore
 
@@ -95,6 +101,9 @@ jobs:
             **/.git*/**
             **/.github/**
             **/node_modules/**
+            **/new-design-ayoub/**
+            src/**
+            test.txt
             README.md
             .gitignore
 
