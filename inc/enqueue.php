@@ -19,6 +19,10 @@ function rmd_enqueue_assets() {
 	}
 	wp_enqueue_style('vault-child', RMD_URI . '/style.css', array(), rmd_asset_ver('style.css'));
 
+	// Poppins — the case-study design font. TODO: self-host woff2 in
+	// assets/fonts/ later (GDPR-friendlier for the FR audience) and drop this.
+	wp_enqueue_style('rmd-poppins', 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap', array(), null);
+
 	// Compiled Tailwind + our CSS (committed to git — no server build step).
 	if (file_exists(RMD_DIR . '/assets/css/main.css')) {
 		wp_enqueue_style('rmd-main', RMD_URI . '/assets/css/main.css', array('vault-child'), rmd_asset_ver('assets/css/main.css'));
