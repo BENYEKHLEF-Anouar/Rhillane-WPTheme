@@ -20,9 +20,8 @@ function rmd_register_post_types() {
 		'menu_icon'     => 'dashicons-analytics',
 		'menu_position' => 21,
 		'show_in_rest'  => true,
-		// ⚠ Confirm the public slug before the first publish (French site →
-		// maybe "realisations" / "etudes-de-cas"). Changing it later = 301s.
-		'rewrite'       => array('slug' => 'case-study', 'with_front' => false),
+		// Confirmed 21/07: French slug. Flush permalinks after deploy.
+		'rewrite'       => array('slug' => 'etudes-de-cas', 'with_front' => false),
 		// No 'editor': all content comes from the sections field.
 		'supports'      => array('title', 'excerpt', 'thumbnail', 'page-attributes'),
 	));

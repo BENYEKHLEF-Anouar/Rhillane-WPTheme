@@ -59,3 +59,63 @@ function rmd_image($image, $args = array()) {
 		'fetchpriority' => $args['eager'] ? 'high' : 'auto',
 	));
 }
+
+/**
+ * Open a standard section wrapper reading the shared "section settings"
+ * sub-fields (background / anchor / padding_top) of the current row.
+ * Every layout with the settings trio calls this + rmd_section_close().
+ */
+function rmd_section_open($extra_class = '') {
+	$background = rmd_get_sub_field('background') ?: 'white';
+	$anchor     = rmd_get_sub_field('anchor');
+	$flush      = 'flush' === rmd_get_sub_field('padding_top');
+
+	$classes = trim('rmd-sec ' . ('light' === $background ? 'bg-nuk ' : '') . $extra_class);
+	$id      = $anchor ? ' id="' . esc_attr(sanitize_title($anchor)) . '"' : '';
+	$pad     = $flush ? 'pt-0 pb-16 md:pb-24' : 'py-16 md:py-24';
+
+	echo '<section class="' . esc_attr($classes) . '"' . $id . '>';
+	echo '<div class="mx-auto max-w-content px-6 ' . $pad . '">';
+}
+
+function rmd_section_close() {
+	echo '</div></section>';
+}
+
+/**
+ * Small inline-HTML allowlist for headings/copy fields: editors may use
+ * <b>, <strong>, <br> and <span class="…"> (for .thin / .grad-attention
+ * accents) — nothing else survives.
+ */
+function rmd_inline_html($text) {
+	return wp_kses((string) $text, array(
+		'b'      => array(),
+		'strong' => array(),
+		'br'     => array(),
+		'span'   => array('class' => true),
+	));
+}
+
+/**
+ * Sanitize a pasted inline SVG icon (stroke icons from the design).
+ * Anything outside this allowlist (script, foreignObject, handlers) is stripped.
+ */
+function rmd_svg($svg) {
+	$common = array(
+		'fill'            => true,
+		'stroke'          => true,
+		'stroke-width'    => true,
+		'stroke-linecap'  => true,
+		'stroke-linejoin' => true,
+	);
+	return wp_kses((string) $svg, array(
+		'svg'      => $common + array('viewbox' => true, 'width' => true, 'height' => true, 'xmlns' => true, 'aria-hidden' => true, 'role' => true, 'class' => true),
+		'path'     => $common + array('d' => true),
+		'line'     => $common + array('x1' => true, 'y1' => true, 'x2' => true, 'y2' => true),
+		'circle'   => $common + array('cx' => true, 'cy' => true, 'r' => true),
+		'polyline' => $common + array('points' => true),
+		'polygon'  => $common + array('points' => true),
+		'rect'     => $common + array('x' => true, 'y' => true, 'width' => true, 'height' => true, 'rx' => true, 'ry' => true),
+		'g'        => $common,
+	));
+}

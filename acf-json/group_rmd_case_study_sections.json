@@ -1,0 +1,2503 @@
+{
+    "key": "group_rmd_case_study_sections",
+    "title": "Case Study — Sections",
+    "fields": [
+        {
+            "key": "field_rmd_cs_sections",
+            "label": "Sections",
+            "name": "sections",
+            "type": "flexible_content",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "layouts": {
+                "layout_rmd_cs_hero": {
+                    "key": "layout_rmd_cs_hero",
+                    "name": "hero",
+                    "label": "Hero",
+                    "display": "block",
+                    "min": "",
+                    "max": "",
+                    "sub_fields": [
+                        {
+                            "key": "field_rmd_cs_hero_eyebrow",
+                            "label": "Eyebrow",
+                            "name": "eyebrow",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "Étude de cas client · SEO",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_hero_kicker",
+                            "label": "Nom du client (rouge)",
+                            "name": "kicker",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_hero_heading",
+                            "label": "Titre — début",
+                            "name": "heading",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_hero_heading_accent",
+                            "label": "Titre — partie dégradée",
+                            "name": "heading_accent",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_hero_heading_after",
+                            "label": "Titre — fin",
+                            "name": "heading_after",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": ".",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_hero_subheading",
+                            "label": "Sous-titre",
+                            "name": "subheading",
+                            "type": "textarea",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "rows": 3,
+                            "new_lines": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_hero_tags",
+                            "label": "Tags (chips)",
+                            "name": "tags",
+                            "type": "repeater",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "layout": "table",
+                            "min": 0,
+                            "max": 0,
+                            "collapsed": "field_rmd_cs_hero_tags_icon",
+                            "button_label": "Ajouter un tag",
+                            "sub_fields": [
+                                {
+                                    "key": "field_rmd_cs_hero_tags_icon",
+                                    "label": "Icône (SVG)",
+                                    "name": "icon",
+                                    "type": "textarea",
+                                    "instructions": "Coller le code SVG inline (icône trait).",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "rows": 2,
+                                    "new_lines": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_hero_tags_label",
+                                    "label": "Libellé",
+                                    "name": "label",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                }
+                            ]
+                        },
+                        {
+                            "key": "field_rmd_cs_hero_badge",
+                            "label": "Badge rouge",
+                            "name": "badge",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": "Stratégie SEO · 2024 → 2026"
+                        },
+                        {
+                            "key": "field_rmd_cs_hero_show_contact",
+                            "label": "Afficher la ligne contact",
+                            "name": "show_contact",
+                            "type": "true_false",
+                            "instructions": "Email / téléphone / site depuis Réglages du site.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "ui": 1,
+                            "default_value": 1,
+                            "message": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_hero_stats",
+                            "label": "Carte stats (bloc navy)",
+                            "name": "stats",
+                            "type": "repeater",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "layout": "block",
+                            "min": 0,
+                            "max": 4,
+                            "collapsed": "field_rmd_cs_hero_stats_value",
+                            "button_label": "Ajouter une stat",
+                            "sub_fields": [
+                                {
+                                    "key": "field_rmd_cs_hero_stats_value",
+                                    "label": "Valeur",
+                                    "name": "value",
+                                    "type": "text",
+                                    "instructions": "HTML léger autorisé : <span class=\"unit\">→</span>.",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_hero_stats_label",
+                                    "label": "Libellé",
+                                    "name": "label",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "layout_rmd_cs_stats_band": {
+                    "key": "layout_rmd_cs_stats_band",
+                    "name": "stats_band",
+                    "label": "Bandeau de stats (navy)",
+                    "display": "block",
+                    "min": "",
+                    "max": "",
+                    "sub_fields": [
+                        {
+                            "key": "field_rmd_cs_stats_band_style",
+                            "label": "Style",
+                            "name": "style",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "strip": "Bandeau pleine largeur (KPI)",
+                                "card": "Carte arrondie (statduo)"
+                            },
+                            "default_value": "strip",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        },
+                        {
+                            "key": "field_rmd_cs_stats_band_eyebrow",
+                            "label": "Eyebrow",
+                            "name": "eyebrow",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_stats_band_heading",
+                            "label": "Titre (H2)",
+                            "name": "heading",
+                            "type": "text",
+                            "instructions": "HTML léger autorisé : <span class=\"thin\">…</span>, <b>.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_stats_band_subheading",
+                            "label": "Sous-titre",
+                            "name": "subheading",
+                            "type": "textarea",
+                            "instructions": "HTML léger autorisé : <b>, <span class=\"…\">.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "rows": 3,
+                            "new_lines": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_stats_band_items",
+                            "label": "Stats",
+                            "name": "items",
+                            "type": "repeater",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "layout": "block",
+                            "min": 1,
+                            "max": 6,
+                            "collapsed": "field_rmd_cs_stats_band_items_tag",
+                            "button_label": "Ajouter une stat",
+                            "sub_fields": [
+                                {
+                                    "key": "field_rmd_cs_stats_band_items_tag",
+                                    "label": "Mini-tag vert",
+                                    "name": "tag",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": "AUTORITÉ"
+                                },
+                                {
+                                    "key": "field_rmd_cs_stats_band_items_value",
+                                    "label": "Valeur",
+                                    "name": "value",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_stats_band_items_value_note",
+                                    "label": "Note verte à côté",
+                                    "name": "value_note",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": "▲ vs 25"
+                                },
+                                {
+                                    "key": "field_rmd_cs_stats_band_items_label",
+                                    "label": "Libellé / delta",
+                                    "name": "label",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_stats_band_items_highlight",
+                                    "label": "Valeur en vert",
+                                    "name": "highlight",
+                                    "type": "true_false",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "ui": 1,
+                                    "default_value": 0,
+                                    "message": ""
+                                }
+                            ]
+                        },
+                        {
+                            "key": "field_rmd_cs_stats_band_background",
+                            "label": "Fond",
+                            "name": "background",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "white": "Blanc",
+                                "light": "Gris clair"
+                            },
+                            "default_value": "white",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        },
+                        {
+                            "key": "field_rmd_cs_stats_band_anchor",
+                            "label": "Ancre (id)",
+                            "name": "anchor",
+                            "type": "text",
+                            "instructions": "Ex. resultats, methode, contact — pour les liens #ancre.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_stats_band_padding_top",
+                            "label": "Espacement haut",
+                            "name": "padding_top",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "default": "Normal",
+                                "flush": "Collé à la section précédente"
+                            },
+                            "default_value": "default",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        }
+                    ]
+                },
+                "layout_rmd_cs_stat_cards": {
+                    "key": "layout_rmd_cs_stat_cards",
+                    "name": "stat_cards",
+                    "label": "Cartes chiffres",
+                    "display": "block",
+                    "min": "",
+                    "max": "",
+                    "sub_fields": [
+                        {
+                            "key": "field_rmd_cs_stat_cards_eyebrow",
+                            "label": "Eyebrow",
+                            "name": "eyebrow",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_stat_cards_heading",
+                            "label": "Titre (H2)",
+                            "name": "heading",
+                            "type": "text",
+                            "instructions": "HTML léger autorisé : <span class=\"thin\">…</span>, <b>.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_stat_cards_subheading",
+                            "label": "Sous-titre",
+                            "name": "subheading",
+                            "type": "textarea",
+                            "instructions": "HTML léger autorisé : <b>, <span class=\"…\">.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "rows": 3,
+                            "new_lines": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_stat_cards_accent",
+                            "label": "Couleur des chiffres",
+                            "name": "accent",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "negative": "Rouge (contexte/problème)",
+                                "positive": "Vert (résultat)"
+                            },
+                            "default_value": "negative",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        },
+                        {
+                            "key": "field_rmd_cs_stat_cards_cards",
+                            "label": "Cartes",
+                            "name": "cards",
+                            "type": "repeater",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "layout": "block",
+                            "min": 1,
+                            "max": 4,
+                            "collapsed": "field_rmd_cs_stat_cards_cards_icon",
+                            "button_label": "Ajouter une carte",
+                            "sub_fields": [
+                                {
+                                    "key": "field_rmd_cs_stat_cards_cards_icon",
+                                    "label": "Icône (SVG)",
+                                    "name": "icon",
+                                    "type": "textarea",
+                                    "instructions": "Coller le code SVG inline (icône trait).",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "rows": 2,
+                                    "new_lines": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_stat_cards_cards_value",
+                                    "label": "Chiffre",
+                                    "name": "value",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_stat_cards_cards_label",
+                                    "label": "Kicker (majuscules)",
+                                    "name": "label",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_stat_cards_cards_body",
+                                    "label": "Texte",
+                                    "name": "body",
+                                    "type": "textarea",
+                                    "instructions": "HTML léger autorisé : <b>.",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "rows": 3,
+                                    "new_lines": ""
+                                }
+                            ]
+                        },
+                        {
+                            "key": "field_rmd_cs_stat_cards_background",
+                            "label": "Fond",
+                            "name": "background",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "white": "Blanc",
+                                "light": "Gris clair"
+                            },
+                            "default_value": "light",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        },
+                        {
+                            "key": "field_rmd_cs_stat_cards_anchor",
+                            "label": "Ancre (id)",
+                            "name": "anchor",
+                            "type": "text",
+                            "instructions": "Ex. resultats, methode, contact — pour les liens #ancre.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_stat_cards_padding_top",
+                            "label": "Espacement haut",
+                            "name": "padding_top",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "default": "Normal",
+                                "flush": "Collé à la section précédente"
+                            },
+                            "default_value": "default",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        }
+                    ]
+                },
+                "layout_rmd_cs_feature_cards": {
+                    "key": "layout_rmd_cs_feature_cards",
+                    "name": "feature_cards",
+                    "label": "Insight (cartes + tuiles + preuve)",
+                    "display": "block",
+                    "min": "",
+                    "max": "",
+                    "sub_fields": [
+                        {
+                            "key": "field_rmd_cs_feature_cards_eyebrow",
+                            "label": "Eyebrow",
+                            "name": "eyebrow",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_feature_cards_heading",
+                            "label": "Titre (H2)",
+                            "name": "heading",
+                            "type": "text",
+                            "instructions": "HTML léger autorisé : <span class=\"thin\">…</span>, <b>.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_feature_cards_subheading",
+                            "label": "Sous-titre",
+                            "name": "subheading",
+                            "type": "textarea",
+                            "instructions": "HTML léger autorisé : <b>, <span class=\"…\">.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "rows": 3,
+                            "new_lines": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_feature_cards_cards_kicker",
+                            "label": "Kicker des cartes",
+                            "name": "cards_kicker",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "Notre approche",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_feature_cards_cards",
+                            "label": "Cartes approche",
+                            "name": "cards",
+                            "type": "repeater",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "layout": "block",
+                            "min": 0,
+                            "max": 4,
+                            "collapsed": "field_rmd_cs_feature_cards_cards_icon",
+                            "button_label": "Ajouter une carte",
+                            "sub_fields": [
+                                {
+                                    "key": "field_rmd_cs_feature_cards_cards_icon",
+                                    "label": "Icône (SVG)",
+                                    "name": "icon",
+                                    "type": "textarea",
+                                    "instructions": "Coller le code SVG inline (icône trait).",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "rows": 2,
+                                    "new_lines": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_feature_cards_cards_heading",
+                                    "label": "Titre",
+                                    "name": "heading",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_feature_cards_cards_body",
+                                    "label": "Texte",
+                                    "name": "body",
+                                    "type": "textarea",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "rows": 3,
+                                    "new_lines": ""
+                                }
+                            ]
+                        },
+                        {
+                            "key": "field_rmd_cs_feature_cards_tiles_kicker",
+                            "label": "Kicker des tuiles",
+                            "name": "tiles_kicker",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": "Ce que ça a donné, chiffres à l'appui"
+                        },
+                        {
+                            "key": "field_rmd_cs_feature_cards_tiles",
+                            "label": "Tuiles stats",
+                            "name": "tiles",
+                            "type": "repeater",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "layout": "block",
+                            "min": 0,
+                            "max": 8,
+                            "collapsed": "field_rmd_cs_feature_cards_tiles_value",
+                            "button_label": "Ajouter une tuile",
+                            "sub_fields": [
+                                {
+                                    "key": "field_rmd_cs_feature_cards_tiles_value",
+                                    "label": "Valeur (verte)",
+                                    "name": "value",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_feature_cards_tiles_label",
+                                    "label": "Libellé (2 lignes ok)",
+                                    "name": "label",
+                                    "type": "textarea",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "rows": 2,
+                                    "new_lines": ""
+                                }
+                            ]
+                        },
+                        {
+                            "key": "field_rmd_cs_feature_cards_highlight",
+                            "label": "Bandeau preuve (vert)",
+                            "name": "highlight",
+                            "type": "textarea",
+                            "instructions": "HTML léger autorisé : <b>.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "rows": 2,
+                            "new_lines": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_feature_cards_background",
+                            "label": "Fond",
+                            "name": "background",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "white": "Blanc",
+                                "light": "Gris clair"
+                            },
+                            "default_value": "white",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        },
+                        {
+                            "key": "field_rmd_cs_feature_cards_anchor",
+                            "label": "Ancre (id)",
+                            "name": "anchor",
+                            "type": "text",
+                            "instructions": "Ex. resultats, methode, contact — pour les liens #ancre.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_feature_cards_padding_top",
+                            "label": "Espacement haut",
+                            "name": "padding_top",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "default": "Normal",
+                                "flush": "Collé à la section précédente"
+                            },
+                            "default_value": "default",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        }
+                    ]
+                },
+                "layout_rmd_cs_numbered_steps": {
+                    "key": "layout_rmd_cs_numbered_steps",
+                    "name": "numbered_steps",
+                    "label": "Méthode (étapes numérotées)",
+                    "display": "block",
+                    "min": "",
+                    "max": "",
+                    "sub_fields": [
+                        {
+                            "key": "field_rmd_cs_numbered_steps_eyebrow",
+                            "label": "Eyebrow",
+                            "name": "eyebrow",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_numbered_steps_heading",
+                            "label": "Titre (H2)",
+                            "name": "heading",
+                            "type": "text",
+                            "instructions": "HTML léger autorisé : <span class=\"thin\">…</span>, <b>.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_numbered_steps_subheading",
+                            "label": "Sous-titre",
+                            "name": "subheading",
+                            "type": "textarea",
+                            "instructions": "HTML léger autorisé : <b>, <span class=\"…\">.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "rows": 3,
+                            "new_lines": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_numbered_steps_steps",
+                            "label": "Étapes",
+                            "name": "steps",
+                            "type": "repeater",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "layout": "block",
+                            "min": 1,
+                            "max": 8,
+                            "collapsed": "field_rmd_cs_numbered_steps_steps_heading",
+                            "button_label": "Ajouter une étape",
+                            "sub_fields": [
+                                {
+                                    "key": "field_rmd_cs_numbered_steps_steps_heading",
+                                    "label": "Titre",
+                                    "name": "heading",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_numbered_steps_steps_items",
+                                    "label": "Puces — une par ligne",
+                                    "name": "items",
+                                    "type": "textarea",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "rows": 5,
+                                    "new_lines": ""
+                                }
+                            ]
+                        },
+                        {
+                            "key": "field_rmd_cs_numbered_steps_background",
+                            "label": "Fond",
+                            "name": "background",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "white": "Blanc",
+                                "light": "Gris clair"
+                            },
+                            "default_value": "light",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        },
+                        {
+                            "key": "field_rmd_cs_numbered_steps_anchor",
+                            "label": "Ancre (id)",
+                            "name": "anchor",
+                            "type": "text",
+                            "instructions": "Ex. resultats, methode, contact — pour les liens #ancre.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_numbered_steps_padding_top",
+                            "label": "Espacement haut",
+                            "name": "padding_top",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "default": "Normal",
+                                "flush": "Collé à la section précédente"
+                            },
+                            "default_value": "default",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        }
+                    ]
+                },
+                "layout_rmd_cs_screenshot_gallery": {
+                    "key": "layout_rmd_cs_screenshot_gallery",
+                    "name": "screenshot_gallery",
+                    "label": "Galerie de captures",
+                    "display": "block",
+                    "min": "",
+                    "max": "",
+                    "sub_fields": [
+                        {
+                            "key": "field_rmd_cs_screenshot_gallery_eyebrow",
+                            "label": "Eyebrow",
+                            "name": "eyebrow",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_screenshot_gallery_heading",
+                            "label": "Titre (H2)",
+                            "name": "heading",
+                            "type": "text",
+                            "instructions": "HTML léger autorisé : <span class=\"thin\">…</span>, <b>.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_screenshot_gallery_subheading",
+                            "label": "Sous-titre",
+                            "name": "subheading",
+                            "type": "textarea",
+                            "instructions": "HTML léger autorisé : <b>, <span class=\"…\">.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "rows": 3,
+                            "new_lines": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_screenshot_gallery_columns",
+                            "label": "Colonnes",
+                            "name": "columns",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "1": "1 colonne",
+                                "2": "2 colonnes"
+                            },
+                            "default_value": "1",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        },
+                        {
+                            "key": "field_rmd_cs_screenshot_gallery_items",
+                            "label": "Captures",
+                            "name": "items",
+                            "type": "repeater",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "layout": "block",
+                            "min": 1,
+                            "max": 0,
+                            "collapsed": "field_rmd_cs_screenshot_gallery_items_image",
+                            "button_label": "Ajouter une capture",
+                            "sub_fields": [
+                                {
+                                    "key": "field_rmd_cs_screenshot_gallery_items_image",
+                                    "label": "Capture",
+                                    "name": "image",
+                                    "type": "image",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "return_format": "array",
+                                    "preview_size": "medium",
+                                    "library": "all"
+                                },
+                                {
+                                    "key": "field_rmd_cs_screenshot_gallery_items_style",
+                                    "label": "Cadre",
+                                    "name": "style",
+                                    "type": "select",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "choices": {
+                                        "plain": "Simple",
+                                        "browser": "Navigateur (points + libellé)"
+                                    },
+                                    "default_value": "plain",
+                                    "return_format": "value",
+                                    "multiple": 0,
+                                    "allow_null": 0,
+                                    "ui": 0
+                                },
+                                {
+                                    "key": "field_rmd_cs_screenshot_gallery_items_label",
+                                    "label": "Libellé (mot-clé)",
+                                    "name": "label",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": [
+                                        [
+                                            {
+                                                "field": "field_rmd_cs_screenshot_gallery_items_style",
+                                                "operator": "==",
+                                                "value": "browser"
+                                            }
+                                        ]
+                                    ],
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_screenshot_gallery_items_badge",
+                                    "label": "Badge position (#1)",
+                                    "name": "badge",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": [
+                                        [
+                                            {
+                                                "field": "field_rmd_cs_screenshot_gallery_items_style",
+                                                "operator": "==",
+                                                "value": "browser"
+                                            }
+                                        ]
+                                    ],
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_screenshot_gallery_items_scrollable",
+                                    "label": "Défilement interne",
+                                    "name": "scrollable",
+                                    "type": "true_false",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "ui": 1,
+                                    "default_value": 0,
+                                    "message": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_screenshot_gallery_items_scroll_height",
+                                    "label": "Hauteur (px)",
+                                    "name": "scroll_height",
+                                    "type": "number",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": [
+                                        [
+                                            {
+                                                "field": "field_rmd_cs_screenshot_gallery_items_scrollable",
+                                                "operator": "==",
+                                                "value": "1"
+                                            }
+                                        ]
+                                    ],
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": 380,
+                                    "min": "",
+                                    "max": "",
+                                    "step": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_screenshot_gallery_items_zoomable",
+                                    "label": "Zoom (lightbox)",
+                                    "name": "zoomable",
+                                    "type": "true_false",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "ui": 1,
+                                    "default_value": 1,
+                                    "message": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_screenshot_gallery_items_caption",
+                                    "label": "Légende",
+                                    "name": "caption",
+                                    "type": "text",
+                                    "instructions": "HTML léger autorisé : <b>.",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_screenshot_gallery_items_source",
+                                    "label": "Source (pill verte)",
+                                    "name": "source",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": "SEMRUSH"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "field_rmd_cs_screenshot_gallery_background",
+                            "label": "Fond",
+                            "name": "background",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "white": "Blanc",
+                                "light": "Gris clair"
+                            },
+                            "default_value": "white",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        },
+                        {
+                            "key": "field_rmd_cs_screenshot_gallery_anchor",
+                            "label": "Ancre (id)",
+                            "name": "anchor",
+                            "type": "text",
+                            "instructions": "Ex. resultats, methode, contact — pour les liens #ancre.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_screenshot_gallery_padding_top",
+                            "label": "Espacement haut",
+                            "name": "padding_top",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "default": "Normal",
+                                "flush": "Collé à la section précédente"
+                            },
+                            "default_value": "default",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        }
+                    ]
+                },
+                "layout_rmd_cs_table_split": {
+                    "key": "layout_rmd_cs_table_split",
+                    "name": "table_split",
+                    "label": "Tableau + colonne compagnon",
+                    "display": "block",
+                    "min": "",
+                    "max": "",
+                    "sub_fields": [
+                        {
+                            "key": "field_rmd_cs_table_split_eyebrow",
+                            "label": "Eyebrow",
+                            "name": "eyebrow",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_table_split_heading",
+                            "label": "Titre (H2)",
+                            "name": "heading",
+                            "type": "text",
+                            "instructions": "HTML léger autorisé : <span class=\"thin\">…</span>, <b>.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_table_split_subheading",
+                            "label": "Sous-titre",
+                            "name": "subheading",
+                            "type": "textarea",
+                            "instructions": "HTML léger autorisé : <b>, <span class=\"…\">.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "rows": 3,
+                            "new_lines": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_table_split_table_columns",
+                            "label": "Colonnes du tableau",
+                            "name": "table_columns",
+                            "type": "repeater",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "layout": "table",
+                            "min": 0,
+                            "max": 0,
+                            "collapsed": "field_rmd_cs_table_split_table_columns_label",
+                            "button_label": "Ajouter une colonne",
+                            "sub_fields": [
+                                {
+                                    "key": "field_rmd_cs_table_split_table_columns_label",
+                                    "label": "En-tête",
+                                    "name": "label",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_table_split_table_columns_highlight",
+                                    "label": "Colonne verte",
+                                    "name": "highlight",
+                                    "type": "true_false",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "ui": 1,
+                                    "default_value": 0,
+                                    "message": ""
+                                }
+                            ]
+                        },
+                        {
+                            "key": "field_rmd_cs_table_split_table_rows",
+                            "label": "Lignes du tableau",
+                            "name": "table_rows",
+                            "type": "repeater",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "layout": "block",
+                            "min": 0,
+                            "max": 0,
+                            "collapsed": "field_rmd_cs_table_split_table_rows_cells",
+                            "button_label": "Ajouter une ligne",
+                            "sub_fields": [
+                                {
+                                    "key": "field_rmd_cs_table_split_table_rows_cells",
+                                    "label": "Cellules",
+                                    "name": "cells",
+                                    "type": "repeater",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "layout": "table",
+                                    "min": 0,
+                                    "max": 0,
+                                    "collapsed": "field_rmd_cs_table_split_table_rows_cells_content",
+                                    "button_label": "Ajouter une cellule",
+                                    "sub_fields": [
+                                        {
+                                            "key": "field_rmd_cs_table_split_table_rows_cells_content",
+                                            "label": "Contenu",
+                                            "name": "content",
+                                            "type": "text",
+                                            "instructions": "",
+                                            "required": 0,
+                                            "conditional_logic": 0,
+                                            "wrapper": {
+                                                "width": "",
+                                                "class": "",
+                                                "id": ""
+                                            },
+                                            "default_value": "",
+                                            "placeholder": ""
+                                        },
+                                        {
+                                            "key": "field_rmd_cs_table_split_table_rows_cells_is_win",
+                                            "label": "Vert/gras",
+                                            "name": "is_win",
+                                            "type": "true_false",
+                                            "instructions": "",
+                                            "required": 0,
+                                            "conditional_logic": 0,
+                                            "wrapper": {
+                                                "width": "",
+                                                "class": "",
+                                                "id": ""
+                                            },
+                                            "ui": 1,
+                                            "default_value": 0,
+                                            "message": ""
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "key": "field_rmd_cs_table_split_side_stats",
+                            "label": "Stats latérales (navy)",
+                            "name": "side_stats",
+                            "type": "repeater",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "layout": "block",
+                            "min": 0,
+                            "max": 3,
+                            "collapsed": "field_rmd_cs_table_split_side_stats_tag",
+                            "button_label": "Ajouter une stat",
+                            "sub_fields": [
+                                {
+                                    "key": "field_rmd_cs_table_split_side_stats_tag",
+                                    "label": "Mini-tag",
+                                    "name": "tag",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_table_split_side_stats_value",
+                                    "label": "Valeur",
+                                    "name": "value",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_table_split_side_stats_label",
+                                    "label": "Delta / libellé",
+                                    "name": "label",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                }
+                            ]
+                        },
+                        {
+                            "key": "field_rmd_cs_table_split_comment",
+                            "label": "Commentaire (encadré)",
+                            "name": "comment",
+                            "type": "textarea",
+                            "instructions": "HTML léger autorisé : <b>.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "rows": 4,
+                            "new_lines": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_table_split_media_position",
+                            "label": "Capture à gauche ?",
+                            "name": "media_position",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "none": "Pas de capture",
+                                "left": "Capture à gauche"
+                            },
+                            "default_value": "none",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        },
+                        {
+                            "key": "field_rmd_cs_table_split_media_image",
+                            "label": "Capture",
+                            "name": "media_image",
+                            "type": "image",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": [
+                                [
+                                    {
+                                        "field": "field_rmd_cs_table_split_media_position",
+                                        "operator": "==",
+                                        "value": "left"
+                                    }
+                                ]
+                            ],
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "return_format": "array",
+                            "preview_size": "medium",
+                            "library": "all"
+                        },
+                        {
+                            "key": "field_rmd_cs_table_split_media_caption",
+                            "label": "Légende de la capture",
+                            "name": "media_caption",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": [
+                                [
+                                    {
+                                        "field": "field_rmd_cs_table_split_media_position",
+                                        "operator": "==",
+                                        "value": "left"
+                                    }
+                                ]
+                            ],
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_table_split_media_source",
+                            "label": "Source (pill verte)",
+                            "name": "media_source",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": [
+                                [
+                                    {
+                                        "field": "field_rmd_cs_table_split_media_position",
+                                        "operator": "==",
+                                        "value": "left"
+                                    }
+                                ]
+                            ],
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_table_split_background",
+                            "label": "Fond",
+                            "name": "background",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "white": "Blanc",
+                                "light": "Gris clair"
+                            },
+                            "default_value": "light",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        },
+                        {
+                            "key": "field_rmd_cs_table_split_anchor",
+                            "label": "Ancre (id)",
+                            "name": "anchor",
+                            "type": "text",
+                            "instructions": "Ex. resultats, methode, contact — pour les liens #ancre.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_table_split_padding_top",
+                            "label": "Espacement haut",
+                            "name": "padding_top",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "default": "Normal",
+                                "flush": "Collé à la section précédente"
+                            },
+                            "default_value": "default",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        }
+                    ]
+                },
+                "layout_rmd_cs_line_chart": {
+                    "key": "layout_rmd_cs_line_chart",
+                    "name": "line_chart",
+                    "label": "Courbe (SVG)",
+                    "display": "block",
+                    "min": "",
+                    "max": "",
+                    "sub_fields": [
+                        {
+                            "key": "field_rmd_cs_line_chart_eyebrow",
+                            "label": "Eyebrow",
+                            "name": "eyebrow",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_line_chart_heading",
+                            "label": "Titre (H2)",
+                            "name": "heading",
+                            "type": "text",
+                            "instructions": "HTML léger autorisé : <span class=\"thin\">…</span>, <b>.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_line_chart_subheading",
+                            "label": "Sous-titre",
+                            "name": "subheading",
+                            "type": "textarea",
+                            "instructions": "HTML léger autorisé : <b>, <span class=\"…\">.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "rows": 3,
+                            "new_lines": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_line_chart_chart_title",
+                            "label": "Titre de la courbe",
+                            "name": "chart_title",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": "Domain Rating, juin 2024 → juin 2026"
+                        },
+                        {
+                            "key": "field_rmd_cs_line_chart_chart_note",
+                            "label": "Note (source)",
+                            "name": "chart_note",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": "(Ahrefs)"
+                        },
+                        {
+                            "key": "field_rmd_cs_line_chart_value_prefix",
+                            "label": "Préfixe des valeurs",
+                            "name": "value_prefix",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "DR",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_line_chart_points",
+                            "label": "Points de données",
+                            "name": "points",
+                            "type": "repeater",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "layout": "table",
+                            "min": 2,
+                            "max": 0,
+                            "collapsed": "field_rmd_cs_line_chart_points_label",
+                            "button_label": "Ajouter un point",
+                            "sub_fields": [
+                                {
+                                    "key": "field_rmd_cs_line_chart_points_label",
+                                    "label": "Libellé (mois)",
+                                    "name": "label",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_line_chart_points_value",
+                                    "label": "Valeur",
+                                    "name": "value",
+                                    "type": "number",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "min": "",
+                                    "max": "",
+                                    "step": ""
+                                }
+                            ]
+                        },
+                        {
+                            "key": "field_rmd_cs_line_chart_background",
+                            "label": "Fond",
+                            "name": "background",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "white": "Blanc",
+                                "light": "Gris clair"
+                            },
+                            "default_value": "white",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        },
+                        {
+                            "key": "field_rmd_cs_line_chart_anchor",
+                            "label": "Ancre (id)",
+                            "name": "anchor",
+                            "type": "text",
+                            "instructions": "Ex. resultats, methode, contact — pour les liens #ancre.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_line_chart_padding_top",
+                            "label": "Espacement haut",
+                            "name": "padding_top",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "default": "Normal",
+                                "flush": "Collé à la section précédente"
+                            },
+                            "default_value": "default",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        }
+                    ]
+                },
+                "layout_rmd_cs_recap_band": {
+                    "key": "layout_rmd_cs_recap_band",
+                    "name": "recap_band",
+                    "label": "Bandeau récap (dégradé)",
+                    "display": "block",
+                    "min": "",
+                    "max": "",
+                    "sub_fields": [
+                        {
+                            "key": "field_rmd_cs_recap_band_heading",
+                            "label": "Titre",
+                            "name": "heading",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_recap_band_pills",
+                            "label": "Pills",
+                            "name": "pills",
+                            "type": "repeater",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "layout": "table",
+                            "min": 0,
+                            "max": 8,
+                            "collapsed": "field_rmd_cs_recap_band_pills_text",
+                            "button_label": "Ajouter une pill",
+                            "sub_fields": [
+                                {
+                                    "key": "field_rmd_cs_recap_band_pills_text",
+                                    "label": "Texte",
+                                    "name": "text",
+                                    "type": "text",
+                                    "instructions": "HTML léger autorisé : <b>.",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "layout_rmd_cs_cta": {
+                    "key": "layout_rmd_cs_cta",
+                    "name": "cta",
+                    "label": "CTA final",
+                    "display": "block",
+                    "min": "",
+                    "max": "",
+                    "sub_fields": [
+                        {
+                            "key": "field_rmd_cs_cta_eyebrow",
+                            "label": "Eyebrow",
+                            "name": "eyebrow",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "Votre tour",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_cta_heading",
+                            "label": "Titre — début",
+                            "name": "heading",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_cta_heading_accent",
+                            "label": "Titre — partie dégradée",
+                            "name": "heading_accent",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_cta_heading_after",
+                            "label": "Titre — fin",
+                            "name": "heading_after",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": ".",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_cta_subheading",
+                            "label": "Sous-titre",
+                            "name": "subheading",
+                            "type": "textarea",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "rows": 2,
+                            "new_lines": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_cta_button_label",
+                            "label": "Texte du bouton",
+                            "name": "button_label",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "Discuter de mon projet",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_cta_button_url",
+                            "label": "Lien du bouton",
+                            "name": "button_url",
+                            "type": "text",
+                            "instructions": "URL ou mailto: — champ texte volontairement (le type url refuse mailto).",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "mailto:contact@rhillane.com",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_cta_contact_line",
+                            "label": "Ligne contact",
+                            "name": "contact_line",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": "contact@rhillane.com · +212 663-091166"
+                        },
+                        {
+                            "key": "field_rmd_cs_cta_background",
+                            "label": "Fond",
+                            "name": "background",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "white": "Blanc",
+                                "light": "Gris clair"
+                            },
+                            "default_value": "light",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        },
+                        {
+                            "key": "field_rmd_cs_cta_anchor",
+                            "label": "Ancre (id)",
+                            "name": "anchor",
+                            "type": "text",
+                            "instructions": "Ex. resultats, methode, contact — pour les liens #ancre.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "placeholder": ""
+                        },
+                        {
+                            "key": "field_rmd_cs_cta_padding_top",
+                            "label": "Espacement haut",
+                            "name": "padding_top",
+                            "type": "select",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {
+                                "default": "Normal",
+                                "flush": "Collé à la section précédente"
+                            },
+                            "default_value": "default",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 0,
+                            "ui": 0
+                        }
+                    ]
+                }
+            },
+            "button_label": "Ajouter une section",
+            "min": "",
+            "max": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "case_study"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": [],
+    "active": true,
+    "description": "Sections des études de cas — généré par src/gen-acf.php — modifier le générateur, pas ce fichier. Clés field_rmd_cs_*.",
+    "show_in_rest": 0,
+    "modified": 1784634892
+}
