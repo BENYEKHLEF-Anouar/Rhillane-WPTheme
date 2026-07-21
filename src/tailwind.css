@@ -1,0 +1,3 @@
+/* Tailwind SOURCE — never deployed. Compile locally and commit the output:
+   npx @tailwindcss/cli -i src/tailwind.css -o assets/css/main.css --minify */
+@import "tailwindcss";

@@ -41,7 +41,11 @@ jobs:
             **/.git*/**
             **/.github/**
             **/node_modules/**
+            **/new-design-ayoub/**
+            src/**
+            test.txt
             README.md
+            CLAUDE.md
             .gitignore
 
       - name: Wait before retry 2
@@ -68,7 +72,11 @@ jobs:
             **/.git*/**
             **/.github/**
             **/node_modules/**
+            **/new-design-ayoub/**
+            src/**
+            test.txt
             README.md
+            CLAUDE.md
             .gitignore
 
       - name: Wait before retry 3
@@ -95,7 +103,11 @@ jobs:
             **/.git*/**
             **/.github/**
             **/node_modules/**
+            **/new-design-ayoub/**
+            src/**
+            test.txt
             README.md
+            CLAUDE.md
             .gitignore
 
       - name: Fail job if all attempts failed

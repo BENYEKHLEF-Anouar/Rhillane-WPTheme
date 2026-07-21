@@ -4,8 +4,8 @@ Thumbs.db
 *.swp
 *~
 
-# Dependencies / build (uncomment if you add a build step)
-# node_modules/
+# Dependencies / build
+node_modules/
 # vendor/
 
 # Logs & local env
