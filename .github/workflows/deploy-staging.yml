@@ -46,6 +46,7 @@ jobs:
             test.txt
             README.md
             CLAUDE.md
+            FLEXIBLE-CONTENT-THEME-SPEC.md
             .gitignore
 
       - name: Wait before retry 2
@@ -77,6 +78,7 @@ jobs:
             test.txt
             README.md
             CLAUDE.md
+            FLEXIBLE-CONTENT-THEME-SPEC.md
             .gitignore
 
       - name: Wait before retry 3
@@ -108,6 +110,7 @@ jobs:
             test.txt
             README.md
             CLAUDE.md
+            FLEXIBLE-CONTENT-THEME-SPEC.md
             .gitignore
 
       - name: Fail job if all attempts failed
