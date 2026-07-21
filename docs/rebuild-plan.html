@@ -1,0 +1,706 @@
+<title>RMD Rebuild Plan — Rhillane</title>
+<style>
+  /* ============================================================
+     TOKENS — one palette, one scale, applied everywhere.
+     ============================================================ */
+  :root {
+    --bg:         #FAFAF9;
+    --surface:    #FFFFFF;
+    --surface-2:  #F3F4F2;
+    --ink:        #1B1F21;
+    --ink-2:      #4A5257;
+    --muted:      #7B8489;
+    --line:       #E5E7E3;
+    --line-2:     #D3D7D1;
+    --accent:     #0E7466;
+    --accent-t:   #0A5A4F;
+    --accent-bg:  #EAF3F1;
+    --amber:      #A05E14;
+    --amber-bg:   #F8EFE1;
+    --ok:         #2F7D53;
+    --code-bg:    #14191C;
+    --code-ink:   #D8E0E2;
+    --code-mut:   #6C7A80;
+    --code-grn:   #66C6B1;
+    --code-org:   #CE9B60;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#111517; --surface:#181D20; --surface-2:#1F2529;
+      --ink:#E8ECED; --ink-2:#AEB8BC; --muted:#7E8A90;
+      --line:#272E32; --line-2:#374146;
+      --accent:#3CBCA6; --accent-t:#63D2BE; --accent-bg:#15302B;
+      --amber:#D9973F; --amber-bg:#2A2317; --ok:#54B384;
+      --code-bg:#0C1113; --code-ink:#D8E0E2;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg:#FAFAF9; --surface:#FFFFFF; --surface-2:#F3F4F2;
+    --ink:#1B1F21; --ink-2:#4A5257; --muted:#7B8489;
+    --line:#E5E7E3; --line-2:#D3D7D1;
+    --accent:#0E7466; --accent-t:#0A5A4F; --accent-bg:#EAF3F1;
+    --amber:#A05E14; --amber-bg:#F8EFE1; --ok:#2F7D53;
+    --code-bg:#14191C; --code-ink:#D8E0E2;
+  }
+  :root[data-theme="dark"] {
+    --bg:#111517; --surface:#181D20; --surface-2:#1F2529;
+    --ink:#E8ECED; --ink-2:#AEB8BC; --muted:#7E8A90;
+    --line:#272E32; --line-2:#374146;
+    --accent:#3CBCA6; --accent-t:#63D2BE; --accent-bg:#15302B;
+    --amber:#D9973F; --amber-bg:#2A2317; --ok:#54B384;
+    --code-bg:#0C1113; --code-ink:#D8E0E2;
+  }
+
+  /* ============================================================ BASE */
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-size: 16px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 840px; margin: 0 auto; padding: 0 28px; }
+  a { color: var(--accent-t); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  p { margin: 0 0 14px; max-width: 70ch; color: var(--ink-2); }
+  p strong, li strong { color: var(--ink); font-weight: 630; }
+  code { font-family: var(--mono); }
+  p code, li code, td code, dd code {
+    font-size: .84em; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 4px; padding: 1px 5px; color: var(--accent-t); white-space: nowrap;
+  }
+
+  /* ============================================================ TOP BAR */
+  .bar {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .bar-in { max-width: 840px; margin: 0 auto; padding: 10px 28px;
+    display: flex; align-items: center; gap: 6px; }
+  .bar .logo { font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: .06em; margin-right: auto; color: var(--ink); }
+  .bar a.nav { font-size: 13px; color: var(--muted); padding: 5px 10px; border-radius: 6px; }
+  .bar a.nav:hover { color: var(--ink); background: var(--surface-2); text-decoration: none; }
+  .bar button {
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+    width: 30px; height: 30px; border-radius: 7px; cursor: pointer; font-size: 13px;
+    margin-left: 8px;
+  }
+  @media (max-width: 640px) { .bar a.nav { display: none; } }
+
+  /* ============================================================ HERO */
+  .hero { padding: 52px 0 36px; }
+  .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
+  h1 { font-size: clamp(1.8rem, 4.5vw, 2.5rem); line-height: 1.12; letter-spacing: -.02em;
+    font-weight: 740; margin: 0 0 14px; text-wrap: balance; }
+  .hero .sub { font-size: 1.08rem; max-width: 62ch; }
+
+  /* fact strip */
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    background: var(--surface); margin: 26px 0 0; }
+  .facts > div { padding: 12px 16px; border-right: 1px solid var(--line); }
+  .facts > div:last-child { border-right: none; }
+  @media (max-width: 640px) { .facts > div { border-right: none; border-bottom: 1px solid var(--line); } .facts > div:last-child { border-bottom: none; } }
+  .facts .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+  .facts .v { font-size: .92rem; font-weight: 600; color: var(--ink); }
+
+  /* deadline strip */
+  .deadline {
+    margin: 14px 0 0; border: 1px solid color-mix(in srgb, var(--amber) 35%, var(--line));
+    background: var(--amber-bg); border-radius: 10px; padding: 14px 18px;
+    display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap;
+  }
+  .deadline .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--amber); font-weight: 700; }
+  .deadline .v { font-weight: 680; color: var(--ink); }
+  .deadline .d { color: var(--ink-2); font-size: .93rem; }
+
+  /* locked decisions */
+  .locked { margin: 14px 0 0; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); padding: 14px 18px; }
+  .locked .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
+  .locked ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; }
+  .locked li { font-size: .93rem; color: var(--ink-2); padding-left: 18px; position: relative; }
+  .locked li::before { content: "✓"; position: absolute; left: 0; color: var(--ok); font-weight: 700; }
+  .locked li.open::before { content: "?"; color: var(--amber); }
+
+  /* ============================================================ PARTS */
+  .part { padding: 44px 0 8px; }
+  .part-head { display: flex; align-items: baseline; gap: 14px;
+    border-bottom: 2px solid var(--ink); padding-bottom: 10px; margin-bottom: 6px; }
+  .part-head .no { font-family: var(--mono); font-size: 13px; font-weight: 700;
+    color: var(--accent); letter-spacing: .04em; }
+  .part-head h2 { font-size: 1.45rem; font-weight: 700; letter-spacing: -.015em; margin: 0; }
+  .part-head .when { margin-left: auto; font-family: var(--mono); font-size: 11.5px;
+    color: var(--muted); white-space: nowrap; }
+  .part-intro { padding-top: 12px; font-size: 1rem; }
+
+  section.block { padding: 20px 0 10px; scroll-margin-top: 64px; }
+  h3 { font-size: 1.08rem; font-weight: 680; letter-spacing: -.01em; margin: 0 0 12px; }
+  h3 .h-no { font-family: var(--mono); font-size: .82em; color: var(--accent); margin-right: 8px; font-weight: 700; }
+
+  /* ============================================================ TABLES */
+  .tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px;
+    margin: 4px 0 18px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: .92rem; min-width: 480px; }
+  th { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); font-weight: 600; text-align: left; padding: 10px 14px;
+    border-bottom: 1px solid var(--line); background: var(--surface-2); }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-2); }
+  tr:last-child td { border-bottom: none; }
+  td b { color: var(--ink); font-weight: 630; }
+  .mono-id { font-family: var(--mono); font-weight: 700; font-size: .86em; color: var(--accent); white-space: nowrap; }
+
+  .tag { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; border-radius: 5px; padding: 2px 7px; white-space: nowrap; }
+  .tag.ok    { color: var(--ok);    background: color-mix(in srgb, var(--ok) 13%, transparent); }
+  .tag.warn  { color: var(--amber); background: color-mix(in srgb, var(--amber) 15%, transparent); }
+  .tag.crit  { color: #C0402F;      background: rgba(192,64,47,.12); }
+  :root[data-theme="dark"] .tag.crit { color: #E88070; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tag.crit { color: #E88070; } }
+
+  /* ============================================================ CODE */
+  .code { background: var(--code-bg); border-radius: 10px; margin: 4px 0 18px; overflow: hidden; }
+  .code .t { font-family: var(--mono); font-size: 11px; color: var(--code-mut);
+    padding: 8px 14px; border-bottom: 1px solid rgba(255,255,255,.07); }
+  .code pre { margin: 0; padding: 14px 16px; overflow-x: auto; }
+  .code code { font-size: 12.5px; line-height: 1.65; color: var(--code-ink); white-space: pre;
+    background: none; border: none; padding: 0; }
+  .code .c { color: var(--code-mut); }
+  .code .g { color: var(--code-grn); }
+  .code .o { color: var(--code-org); }
+
+  /* ============================================================ NOTE (single callout style) */
+  .note { border-left: 3px solid var(--accent); background: var(--accent-bg);
+    border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 4px 0 18px; }
+  .note p { margin: 0; max-width: none; font-size: .94rem; }
+  .note.warn { border-left-color: var(--amber); background: var(--amber-bg); }
+
+  /* ============================================================ STEPS (numbered, for true sequences) */
+  ol.steps { margin: 4px 0 18px; padding: 0; list-style: none; counter-reset: st; }
+  ol.steps li { counter-increment: st; position: relative; padding: 0 0 14px 40px; }
+  ol.steps li::before {
+    content: counter(st); position: absolute; left: 0; top: 1px;
+    width: 24px; height: 24px; border-radius: 50%; font-size: 12px; font-weight: 700;
+    font-family: var(--mono); display: grid; place-items: center;
+    color: #fff; background: var(--accent);
+  }
+  ol.steps li:not(:last-child)::after { content: ""; position: absolute; left: 11.5px; top: 28px;
+    bottom: 2px; width: 1.5px; background: var(--line-2); }
+  ol.steps li b { color: var(--ink); }
+  ol.steps li { color: var(--ink-2); }
+
+  /* ============================================================ PLAIN LISTS */
+  ul.dash { margin: 4px 0 18px; padding: 0; list-style: none; }
+  ul.dash li { padding: 4px 0 4px 20px; position: relative; color: var(--ink-2); }
+  ul.dash li::before { content: "—"; position: absolute; left: 0; color: var(--accent); }
+
+  /* two-col checklist */
+  .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; margin: 4px 0 18px; }
+  @media (max-width: 620px) { .checks { grid-template-columns: 1fr; } }
+  .checks div { position: relative; padding: 3px 0 3px 24px; font-size: .93rem; color: var(--ink-2); }
+  .checks div::before { content: "☐"; position: absolute; left: 0; color: var(--accent); font-size: 1rem; }
+
+  /* ============================================================ SCHEDULE */
+  .sched { border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    background: var(--surface); margin: 4px 0 18px; }
+  .sched .row { display: grid; grid-template-columns: 130px 1fr; border-bottom: 1px solid var(--line); }
+  .sched .row:last-child { border-bottom: none; }
+  .sched .when { padding: 14px 16px; background: var(--surface-2); border-right: 1px solid var(--line); }
+  .sched .when .d { font-family: var(--mono); font-size: 11.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .06em; color: var(--accent); }
+  .sched .when .g { font-size: .8rem; color: var(--muted); margin-top: 2px; line-height: 1.35; }
+  .sched .what { padding: 12px 18px; }
+  .sched .what ul { margin: 0; padding: 0; list-style: none; }
+  .sched .what li { padding: 3px 0 3px 16px; position: relative; font-size: .92rem; color: var(--ink-2); }
+  .sched .what li::before { content: "·"; position: absolute; left: 2px; font-weight: 900; color: var(--accent); }
+  @media (max-width: 560px) { .sched .row { grid-template-columns: 1fr; } .sched .when { border-right: none; border-bottom: 1px solid var(--line); padding: 10px 16px; } }
+  .dod { margin: 0 0 18px; padding: 12px 16px; border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+    background: var(--accent-bg); border-radius: 8px; font-size: .94rem; color: var(--ink-2); }
+  .dod b { color: var(--accent-t); }
+
+  /* ============================================================ WAVES (roadmap) */
+  .wave { border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+    margin: 0 0 12px; overflow: hidden; }
+  .wave .wh { display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+    border-bottom: 1px solid var(--line); background: var(--surface-2); flex-wrap: wrap; }
+  .wave .wh .wn { font-family: var(--mono); font-size: 12px; font-weight: 700;
+    color: #fff; background: var(--accent); border-radius: 6px; padding: 3px 8px; }
+  .wave.w0 .wh .wn { background: var(--amber); }
+  .wave .wh .wt { font-weight: 680; color: var(--ink); }
+  .wave .wh .wd { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .wave .wb { padding: 12px 16px; }
+  .wave .wb p { font-size: .93rem; margin-bottom: 8px; max-width: none; }
+  .wave .wb p:last-child { margin-bottom: 0; }
+  .wave .wb ul.dash { margin-bottom: 8px; }
+  .wave .wb ul.dash li { font-size: .92rem; padding-top: 2px; padding-bottom: 2px; }
+  .gate { font-size: .87rem; color: var(--muted); border-top: 1px dashed var(--line-2);
+    margin-top: 10px; padding-top: 9px; }
+  .gate b { color: var(--ink-2); font-weight: 640; }
+
+  /* services grid inside W2 */
+  .svcs { display: flex; flex-wrap: wrap; gap: 7px; margin: 2px 0 10px; }
+  .svcs span { font-size: .87rem; border: 1px solid var(--line); background: var(--bg);
+    border-radius: 6px; padding: 4px 11px; color: var(--ink-2); }
+
+  /* AB choice */
+  .ab { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 2px 0 10px; }
+  @media (max-width: 620px) { .ab { grid-template-columns: 1fr; } }
+  .ab > div { border: 1px solid var(--line); border-radius: 8px; padding: 11px 14px; background: var(--bg); }
+  .ab > div.rec { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+  .ab .abt { font-family: var(--mono); font-size: 11.5px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .ab p { font-size: .89rem; margin: 0; max-width: none; }
+
+  /* ============================================================ GANTT */
+  .gantt { border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+    overflow-x: auto; margin: 4px 0 10px; }
+  .gantt-in { min-width: 680px; display: grid;
+    grid-template-columns: 148px repeat(14, 1fr); align-items: center; }
+  .gantt .gw { grid-row: 1; font-family: var(--mono); font-size: 10px; letter-spacing: .05em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 9px 6px;
+    border-bottom: 1px solid var(--line); border-left: 1px solid var(--line);
+    grid-column: span 2; text-align: left; white-space: nowrap; background: var(--surface-2); }
+  .gantt .gw0 { grid-row: 1; grid-column: 1; border-bottom: 1px solid var(--line);
+    background: var(--surface-2); padding: 9px 12px; font-family: var(--mono); font-size: 10px;
+    letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .gantt .gl { padding: 9px 12px; font-size: .84rem; font-weight: 620; color: var(--ink);
+    border-bottom: 1px solid var(--line); grid-column: 1; white-space: nowrap; }
+  .gantt .gc { border-bottom: 1px solid var(--line); border-left: 1px dashed var(--line);
+    height: 100%; min-height: 36px; }
+  .gantt .gbar { height: 18px; border-radius: 5px; background: var(--accent); margin: 0 3px;
+    align-self: center; z-index: 1; border-bottom: none; box-shadow: inset 0 1px 0 rgba(255,255,255,.25); }
+  .gantt .gbar.amber { background: var(--amber); }
+  .gantt .gbar.slate { background: #56636B; }
+  .gantt-note { font-size: .82rem; color: var(--muted); margin: 0 0 18px; }
+
+  .dl-row td:first-child { white-space: nowrap; }
+  .dl-date { font-family: var(--mono); font-size: .86em; font-weight: 700; color: var(--amber); white-space: nowrap; }
+
+  footer { padding: 40px 0 56px; }
+  footer .rule { border-top: 1px solid var(--line); padding-top: 18px;
+    font-size: .86rem; color: var(--muted); }
+  footer code { font-size: .85em; }
+</style>
+
+<div class="bar">
+  <div class="bar-in">
+    <span class="logo">RMD · REBUILD</span>
+    <a class="nav" href="#p1">I · Foundation</a>
+    <a class="nav" href="#p2">II · Method</a>
+    <a class="nav" href="#p3">III · Roadmap</a>
+    <a class="nav" href="#p4">IV · Rules</a>
+    <button id="themeBtn" aria-label="Toggle theme">◐</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ================= HERO ================= -->
+  <header class="hero">
+    <p class="kicker">Migration runbook · rhillane.com</p>
+    <h1>Rhillane rebuild: Elementor → ACF / Custom Post Types</h1>
+    <p class="sub">Move rhillane.com off page-by-page Elementor onto the code-owned <strong>vault-child</strong> theme — Custom Post Types + ACF Flexible Content — <strong>without losing SEO</strong>. Built on staging, page-for-page, then cut over to production wave by wave.</p>
+
+    <div class="facts">
+      <div><div class="k">Environment</div><div class="v">WordPress multisite</div></div>
+      <div><div class="k">Parent theme</div><div class="v">UiCore Vault</div></div>
+      <div><div class="k">Child theme</div><div class="v">vault-child</div></div>
+      <div><div class="k">Deploy</div><div class="v">push → FTP staging</div></div>
+      <div><div class="k">SEO</div><div class="v">Rank Math</div></div>
+    </div>
+
+    <div class="deadline">
+      <span class="k">The one deadline</span>
+      <span class="v">Wed 2026-07-22, 17:00</span>
+      <span class="d">Phase 1 (W0) ships on <strong>staging.rhillane.com</strong> — system + Case Studies live. All later phases are sequenced by sign-off, not by calendar (<a href="#timeline">Part III</a>).</span>
+    </div>
+
+    <div class="locked">
+      <div class="k">Decisions — 20/07 meeting</div>
+      <ul>
+        <li><b>Rank Math</b> is the SEO plugin; all meta parity targets its fields.</li>
+        <li>Theme is <b>network-activated</b>: CPTs + field groups register once network-wide; content &amp; Rank Math meta stay per-site, so crawls run per subsite.</li>
+        <li><b>rhillane.com is the main site</b> of the multisite — the primary target for all waves.</li>
+        <li><b>Six services confirmed</b> — see Part III, W2.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ================= PART I ================= -->
+  <div class="part" id="p1">
+    <div class="part-head">
+      <span class="no">PART I</span>
+      <h2>Foundation — System + Case Studies</h2>
+      <span class="when">now → Wed 17:00</span>
+    </div>
+    <p class="part-intro">One deliverable, two halves that prove each other: the <strong>system</strong> (scaffold, ACF wiring, section library) and the <strong>first real content</strong> (Case Studies). Case Studies is greenfield — no Elementor page to preserve — so it's the safe place to exercise the whole pipeline end-to-end before any SEO-sensitive migration.</p>
+
+    <section class="block" id="prereqs">
+      <h3><span class="h-no">1.1</span>Prerequisites — clear these first</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>ID</th><th>Check</th><th>Why</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="mono-id">P1</td><td><b>ACF Pro active</b> on the multisite</td><td>Flexible Content is Pro-only — no Pro, no plan</td><td><span class="tag crit">Blocker</span></td></tr>
+          <tr><td class="mono-id">P2</td><td><b><code>acf-json/</code> writable</b> in vault-child</td><td>Field groups live in git, not the DB</td><td><span class="tag crit">Blocker</span></td></tr>
+          <tr><td class="mono-id">P3</td><td>Staging is a <b>true clone</b> of prod</td><td>Parity testing is meaningless otherwise</td><td><span class="tag warn">Verify</span></td></tr>
+          <tr><td class="mono-id">P4</td><td>Baseline <b>Screaming Frog crawl</b> of prod saved</td><td>The “before” snapshot for every diff</td><td><span class="tag warn">Verify</span></td></tr>
+          <tr><td class="mono-id">P5</td><td><b>PHP ≥ 8.1</b> on staging</td><td>Typed code / ACF</td><td><span class="tag warn">Verify</span></td></tr>
+          <tr><td class="mono-id">P6</td><td>Rank Math network mode + meta storage confirmed</td><td>Where title/meta get copied to</td><td><span class="tag ok">Decided</span></td></tr>
+        </tbody>
+      </table></div>
+      <div class="note warn"><p>If <strong>P1</strong> or <strong>P2</strong> fails — stop and fix before anything else. The entire approach depends on them.</p></div>
+    </section>
+
+    <section class="block" id="arch">
+      <h3><span class="h-no">1.2</span>Architecture — the scaffold and the engine</h3>
+      <div class="code">
+        <div class="t">vault-child/ — target structure</div>
+<pre><code>vault-child/
+├── functions.php                <span class="c"># bootstraps /inc</span>
+├── style.css                    <span class="c"># design tokens (CSS custom properties)</span>
+├── acf-json/                    <span class="c"># field groups as code — the git win</span>
+├── inc/
+│   ├── setup.php                <span class="c"># supports, image sizes</span>
+│   ├── acf.php                  <span class="c"># Local JSON save/load paths</span>
+│   ├── helpers.php              <span class="c"># rmd_render_sections()</span>
+│   ├── post-types/case-study.php
+│   └── taxonomies/case-study-cat.php
+├── template-parts/
+│   ├── flexible/                <span class="c"># ONE file per section layout</span>
+│   │   └── hero.php · text.php · text-media.php · …
+│   └── cards/case-study-card.php
+├── single-case_study.php
+├── archive-case_study.php
+└── single.php · archive.php     <span class="c"># blog — Part III, W1</span></code></pre>
+      </div>
+
+      <p><strong>The engine.</strong> One renderer loops the Flexible Content field and includes the matching template-part. Every template becomes ~3 lines: header → render → footer.</p>
+      <div class="code">
+        <div class="t">inc/helpers.php</div>
+<pre><code><span class="g">function</span> rmd_render_sections( $field = <span class="o">'sections'</span>, $post_id = <span class="g">null</span> ) {
+    <span class="g">if</span> ( ! have_rows( $field, $post_id ) ) <span class="g">return</span>;
+    <span class="g">while</span> ( have_rows( $field, $post_id ) ) : the_row();
+        get_template_part( <span class="o">'template-parts/flexible/'</span> . get_row_layout() );
+    <span class="g">endwhile</span>;
+}</code></pre>
+      </div>
+      <div class="code">
+        <div class="t">inc/acf.php — field groups deploy through git/FTP</div>
+<pre><code>add_filter(<span class="o">'acf/settings/save_json'</span>, <span class="g">fn</span>() =&gt; get_stylesheet_directory() . <span class="o">'/acf-json'</span>);
+add_filter(<span class="o">'acf/settings/load_json'</span>, <span class="g">function</span>($paths){
+    $paths[] = get_stylesheet_directory() . <span class="o">'/acf-json'</span>;
+    <span class="g">return</span> $paths;
+});</code></pre>
+      </div>
+      <p><strong>Header &amp; footer are sitewide.</strong> Every template wraps its sections in the global <code>get_header()</code> / <code>get_footer()</code> — one header, one footer, rendered by the theme on every URL. So each template is exactly: header → <code>rmd_render_sections()</code> → footer.</p>
+      <div class="code">
+        <div class="t">single-case_study.php — the whole template</div>
+<pre><code>get_header();
+rmd_render_sections();
+get_footer();</code></pre>
+      </div>
+      <p><strong>Per-CPT exceptions</strong> use WordPress's native variants — no duplication, opt-in only where a CPT genuinely needs it: <code>get_header( 'case_study' )</code> loads <code>header-case_study.php</code> if it exists, otherwise falls back to the global one. Same for footers. Until an exception is real, everything stays on the sitewide pair.</p>
+      <div class="note"><p><strong>Extending the system</strong> = one new ACF layout + one new file in <code>template-parts/flexible/</code>. Nothing else.</p></div>
+    </section>
+
+    <section class="block" id="library">
+      <h3><span class="h-no">1.3</span>Section library — one set, every wave reuses it</h3>
+      <p>Audit the existing Elementor sections, collapse them into a minimal set. Each row = one Flexible Content layout + one template-part.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Layout</th><th>Purpose</th><th>Key fields</th></tr></thead>
+        <tbody>
+          <tr><td class="mono-id">hero</td><td>Page / post hero</td><td>eyebrow, heading, subheading, media, CTA</td></tr>
+          <tr><td class="mono-id">text</td><td>Rich text</td><td>wysiwyg, width, alignment</td></tr>
+          <tr><td class="mono-id">text_media</td><td>Text + image/video, L/R</td><td>heading, wysiwyg, media, side, CTA</td></tr>
+          <tr><td class="mono-id">gallery</td><td>Image grid / slider</td><td>images[], columns, style</td></tr>
+          <tr><td class="mono-id">stats</td><td>Metric row</td><td>repeater(value, label)</td></tr>
+          <tr><td class="mono-id">testimonial</td><td>Client quote</td><td>quote, author, role, logo</td></tr>
+          <tr><td class="mono-id">logos</td><td>Logo strip</td><td>images[], grayscale</td></tr>
+          <tr><td class="mono-id">cta</td><td>Conversion band</td><td>heading, text, button, bg</td></tr>
+          <tr><td class="mono-id">features</td><td>Icon + text grid</td><td>repeater(icon, title, text)</td></tr>
+          <tr><td class="mono-id">faq</td><td>Accordion</td><td>repeater(q, a)</td></tr>
+        </tbody>
+      </table></div>
+      <ul class="dash">
+        <li>Every layout carries a shared <strong>“block settings” clone</strong> (spacing / background / anchor) — this replaces Elementor's per-section controls.</li>
+        <li>Lift colours, fonts and the spacing scale from Elementor's global styles into <strong>CSS custom properties</strong> in <code>style.css</code> so every rebuilt section matches the live look.</li>
+      </ul>
+    </section>
+
+    <section class="block" id="editor-ux">
+      <h3><span class="h-no">1.4</span>Editor experience — see it before you save it</h3>
+      <p>The section picker must sell the system to editors. Two upgrades, both powered by <strong>ACF Extended</strong> (free tier covers all of this) on top of our Flexible Content field:</p>
+      <ul class="dash">
+        <li><strong>Visual section picker.</strong> ACFE replaces ACF's plain dropdown with a <strong>grid modal showing a thumbnail per layout</strong> — editors pick sections by sight, not by name. One screenshot per layout (we capture them once the template-parts render), registered via <code>acfe/flexible/thumbnail/layout=…</code>.</li>
+        <li><strong>Live preview before saving.</strong> ACFE's <strong>Dynamic Render</strong> displays the section's real front-end template inside the admin as the editor fills it — in an <strong>isolated iframe</strong>, so the theme's actual CSS renders without colliding with admin styles. Collapsed rows show the rendered section instead of a field list; editing happens in a modal.</li>
+        <li><strong>Logical switches &amp; conditional fields.</strong> ACF's native conditional logic drives the picker's intelligence, per layout:
+          <br>· <code>media_type</code> select (image / video / none) → only the matching fields appear
+          <br>· <code>show_cta</code> toggle → CTA fields appear only when on
+          <br>· <code>background</code> select (color / image) in the shared block-settings clone → shows a color picker or an image field, never both
+          <br>· ACFE's <strong>layout toggle</strong> → an editor can switch a section off (grayed out, not rendered) without deleting it — drafts survive experiments</li>
+      </ul>
+      <div class="note"><p><strong>Fallback if ACFE is ever dropped:</strong> the thumbnail-modal picker also exists as a tiny standalone approach (the <code>acf-flexible-content-preview</code> pattern) — our layouts and field logic don't depend on ACFE; it only enhances the picking/preview UX. Conditional logic is native ACF and works regardless.</p></div>
+    </section>
+
+    <section class="block" id="media">
+      <h3><span class="h-no">1.5</span>Media pipeline — images that are fast by default</h3>
+      <p>Every image travels through one helper (<code>rmd_image()</code>) so performance rules are enforced by code, not by editor discipline. The renderer passes each section its index — the first section knows it's above the fold.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Rule</th><th>Implementation</th></tr></thead>
+        <tbody>
+          <tr><td><b>Hero loads first, everything else waits</b></td><td>Section 0 imagery: <code>loading="eager"</code> + <code>fetchpriority="high"</code> (the LCP image must never be lazy — costs 300–1500&nbsp;ms). All below-fold images: <code>loading="lazy"</code> + <code>decoding="async"</code>. We do not trust WP's position-based heuristic — the renderer decides.</td></tr>
+          <tr><td><b>No layout shift</b></td><td>Always output <code>width</code>/<code>height</code> (CSS <code>aspect-ratio</code> reserves the box before the image arrives).</td></tr>
+          <tr><td><b>Loading effect</b></td><td>LQIP blur-up: a tiny inlined placeholder shows instantly, the real image fades in on load (<code>opacity</code> transition, disabled under <code>prefers-reduced-motion</code>). Skeleton shimmer for galleries.</td></tr>
+          <tr><td><b>Right size per screen</b></td><td><code>srcset</code> + accurate <code>sizes</code> per block type (WP generates the widths; our helper writes the <code>sizes</code>). 4–6 widths up to 1600–2000px for full-bleed heroes. WebP served by the host.</td></tr>
+          <tr><td><b>Conditional images (art direction)</b></td><td><code>hero</code> and <code>text_media</code> get an optional <strong>mobile image</strong> subfield → rendered as <code>&lt;picture&gt;</code> with a <code>media</code> breakpoint: different crop on phones, not just a smaller copy. Falls back to the desktop image automatically when empty.</td></tr>
+          <tr><td><b>No CSS-background heroes</b></td><td>Background-style sections still render a real <code>&lt;img&gt;</code> (absolutely positioned) — CSS background URLs are discovered too late for LCP.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block" id="sched">
+      <h3><span class="h-no">1.6</span>Schedule — Monday to Wednesday 17:00</h3>
+      <div class="sched">
+        <div class="row">
+          <div class="when"><div class="d">Mon PM</div><div class="g">Blockers + scaffold</div></div>
+          <div class="what"><ul>
+            <li>Verify P1–P6; escalate any red immediately</li>
+            <li><code>inc/</code> bootstrap in <code>functions.php</code>; ACF Local JSON paths; create <code>acf-json/</code></li>
+            <li>Register <code>case_study</code> CPT (public, <code>has_archive</code>) + <code>case_study_cat</code> taxonomy</li>
+            <li>Push → confirm FTP deploy lands and the CPT appears in staging admin</li>
+          </ul></div>
+        </div>
+        <div class="row">
+          <div class="when"><div class="d">Tue</div><div class="g">Section library</div></div>
+          <div class="what"><ul>
+            <li>ACF field group “Case Study — Sections”: Flexible Content field <code>sections</code> (hero, text, text_media, stats, gallery, testimonial, cta)</li>
+            <li>Shared “block settings” clone on every layout</li>
+            <li>Commit the generated <code>acf-json/group_*.json</code> — fields are now code</li>
+            <li>Build the matching <code>template-parts/flexible/*.php</code>; add renderer + <code>single-case_study.php</code></li>
+            <li>Design tokens → CSS variables in <code>style.css</code></li>
+          </ul></div>
+        </div>
+        <div class="row">
+          <div class="when"><div class="d">Wed AM</div><div class="g">Prove it</div></div>
+          <div class="what"><ul>
+            <li>Author one real case study from sections — must render styled, matching an Elementor reference</li>
+            <li><code>archive-case_study.php</code> + card partial; responsive/QA pass</li>
+          </ul></div>
+        </div>
+        <div class="row">
+          <div class="when"><div class="d">Wed 17:00</div><div class="g">Sign-off</div></div>
+          <div class="what"><ul>
+            <li>Final deploy; demo CPT + sections + the live case study</li>
+            <li>Short notes: “how to add a section type” / “how to author a case study”</li>
+          </ul></div>
+        </div>
+      </div>
+      <div class="dod"><b>Definition of done:</b> a non-dev can assemble a new case study from sections on staging — and adding a new section type is one ACF layout + one template-part file.</div>
+    </section>
+  </div>
+
+  <!-- ================= PART II ================= -->
+  <div class="part" id="p2">
+    <div class="part-head">
+      <span class="no">PART II</span>
+      <h2>The migration method</h2>
+      <span class="when">repeated every wave</span>
+    </div>
+    <p class="part-intro">Every Elementor page moves through the same three steps. The method is the product — waves just apply it to different content.</p>
+
+    <section class="block">
+      <ol class="steps">
+        <li>
+          <b>Blueprint — export the Elementor JSON.</b> Editor → Export (or Saved Templates → Export). Store under a non-deployed <code>_reference/elementor-exports/</code>. Read it as a spec — section order, columns, spacing, colours, copy. It is <b>never imported back</b>; it's the plan for rebuilding the page as Flexible Content rows, and the visual-diff reference for QA.
+        </li>
+        <li>
+          <b>Rebuild — same URL, new rendering layer.</b>
+          Pages staying Pages (Home, About): keep the <b>same post object, slug and permalink</b>; swap the template to ACF, move the copy into sections — zero redirects.
+          Content becoming a CPT: map slugs <b>1:1</b>; only if a base must change, add a single-hop <b>301</b>. Copy the Rank Math title / meta / schema onto the rebuilt page.
+        </li>
+        <li>
+          <b>Gate — SEO parity, then cutover.</b> Crawl prod (before) and staging (after) with the <code>rmd-seo-technical-audit</code> skill (Screaming Frog + GSC + PageSpeed + Ahrefs) and diff per URL. The crawl diff is the sign-off artifact. Then: deploy to prod → re-crawl → watch GSC coverage and rankings.
+        </li>
+      </ol>
+      <div class="note">
+        <p><strong>The noindex bridge — how old and new coexist safely.</strong> Rebuilt CPT pages launch on production with Rank Math <strong>noindex</strong> and excluded from the XML sitemap, while the live Elementor pages keep their index and rankings untouched. QA and parity run against the noindexed rebuilds. At cutover, per wave: <strong>kill the Elementor page → 301 its URL to the rebuilt one (or swap in place on the same URL) → lift noindex → update the sitemap</strong>. The two versions are never indexable at the same time — zero duplicate-content risk, and rollback is trivial until the flip.</p>
+      </div>
+    </section>
+
+    <section class="block" id="gate">
+      <h3><span class="h-no">2.1</span>The parity checklist — every URL must pass</h3>
+      <div class="checks">
+        <div>URL / permalink identical (or single-hop 301 → 200)</div>
+        <div>Title + meta description carried over (Rank Math)</div>
+        <div>H1 identical; H2/H3 order preserved</div>
+        <div>Body copy parity (word-count check)</div>
+        <div>Canonical, OG/Twitter, robots meta unchanged</div>
+        <div>Schema present &amp; valid</div>
+        <div>Image alts kept; responsive sizes</div>
+        <div>Internal links preserved</div>
+        <div>Core Web Vitals equal or better</div>
+        <div>Sitemap intact; no new 404s</div>
+      </div>
+      <div class="note"><p>A wave ships <strong>only</strong> when its full URL set passes this list. Anything less waits.</p></div>
+    </section>
+  </div>
+
+  <!-- ================= PART III ================= -->
+  <div class="part" id="p3">
+    <div class="part-head">
+      <span class="no">PART III</span>
+      <h2>Roadmap — the waves</h2>
+      <span class="when">sequenced by sign-off</span>
+    </div>
+    <p class="part-intro">Each wave is independently shippable and reversible (revert = repoint the template / restore Elementor). Ordered easiest-first so the risky pages inherit a proven system.</p>
+
+    <section class="block" id="timeline">
+      <h3><span class="h-no">3.0</span>Sequence &amp; effort</h3>
+      <p><strong>Only W0 has a calendar deadline</strong> — <span class="dl-date">Wed 22 Jul · 17:00</span> on <strong>staging.rhillane.com</strong>. Every later phase starts when the previous phase's gate passes, and carries an effort estimate, not a date.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Phase</th><th>Effort</th><th>Starts when</th><th>Gate deliverable</th></tr></thead>
+        <tbody class="dl-row">
+          <tr><td class="mono-id">W0</td><td>≈ 2.5 days</td><td><span class="dl-date">now → Wed 22 Jul 17:00</span></td><td>System + first case study live on staging</td></tr>
+          <tr><td class="mono-id">W0.5</td><td>≈ 2 days</td><td>W0 signed off</td><td>Visual picker, live preview, conditional fields, media pipeline v1</td></tr>
+          <tr><td class="mono-id">W1</td><td>≈ 1 week</td><td>W0.5 done</td><td>Blog migrated, parity passed, Elementor off for posts</td></tr>
+          <tr><td class="mono-id">W2</td><td>≈ 2 weeks</td><td>W1 gate green</td><td>Six services rebuilt + cut over, Elementor service pages retired</td></tr>
+          <tr><td class="mono-id">W3</td><td>≈ 2 weeks</td><td>W2 gate green</td><td>Home, header/footer, mobile menu live; full-site crawl clean</td></tr>
+          <tr><td class="mono-id">W4</td><td>≈ 1 week</td><td>W3 gate green</td><td>Elementor removed from migrated content; performance audit</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block">
+      <div class="wave w0">
+        <div class="wh"><span class="wn">W0</span><span class="wt">System + Case Studies</span><span class="wd">deadline · Wed 22 Jul 17:00 · staging.rhillane.com</span></div>
+        <div class="wb">
+          <p>The foundation (Part I). Ships the scaffold, the section library, and Case Studies as its proof.</p>
+          <div class="gate"><b>Done when:</b> a non-dev builds a case study from sections on staging.</div>
+        </div>
+      </div>
+
+      <div class="wave">
+        <div class="wh"><span class="wn">W0.5</span><span class="wt">Editor UX + media hardening</span><span class="wd">≈ 2 days · after W0 sign-off</span></div>
+        <div class="wb">
+          <p>Two days to make the system pleasant and fast <em>before</em> real migration volume hits it.</p>
+          <ul class="dash">
+            <li><b>Day 1:</b> ACF Extended in — thumbnail grid picker (capture one screenshot per layout), modal edit, layout on/off toggle; wire conditional fields (<code>media_type</code>, <code>show_cta</code>, background switch) into every layout</li>
+            <li><b>Day 2:</b> Dynamic Render live preview (iframe mode); <code>rmd_image()</code> helper — eager/lazy by section index, <code>fetchpriority</code>, LQIP blur-up, srcset/sizes, mobile-image <code>&lt;picture&gt;</code> support; retrofit onto the W0 template-parts</li>
+          </ul>
+          <div class="gate"><b>Done when:</b> editors pick sections visually, preview before saving, and every image passes the §1.5 rules — verified on the W0 case study.</div>
+        </div>
+      </div>
+
+      <div class="wave">
+        <div class="wh"><span class="wn">W1</span><span class="wt">Blog</span><span class="wd">≈ 1 week · after W0.5</span></div>
+        <div class="wb">
+          <p>Posts are uniform and low-risk — the proving ground before money pages.</p>
+          <ul class="dash">
+            <li><b>Days 1–2:</b> <code>single.php</code> + <code>archive.php</code>/<code>index.php</code> on the renderer, reusing the same section library (shared or “Post — Sections” group)</li>
+            <li><b>Day 3:</b> migrate posts keeping slug, title, meta, date, author, categories</li>
+            <li><b>Day 4:</b> parity diff on the blog URL set; fix deltas</li>
+            <li><b>Day 5:</b> cut over → retire Elementor for posts → re-crawl</li>
+          </ul>
+          <div class="gate"><b>Done when:</b> every post renders via ACF and the blog URL set passes the gate.</div>
+        </div>
+      </div>
+
+      <div class="wave">
+        <div class="wh"><span class="wn">W2</span><span class="wt">Services</span><span class="wd">≈ 2 weeks · after W1 gate</span></div>
+        <div class="wb">
+          <p>Register a <code>service</code> CPT (public, <code>has_archive</code>) on the same section library. <strong>Six services, confirmed:</strong></p>
+          <div class="svcs"><span>Website creation</span><span>SEO</span><span>Social media</span><span>Graphic design</span><span>Ads</span><span>Media buying</span></div>
+          <div class="ab">
+            <div class="rec"><div class="abt">A — one entry per service (recommended)</div><p>Each line is a CPT entry: <code>/services/seo/</code>. Simplest; right when each service is one page.</p></div>
+            <div><div class="abt">B — CPT + service_type taxonomy</div><p>Only if a line has many sub-pages (SEO → technical, local, content); archive per type.</p></div>
+          </div>
+          <p>Build all six as <strong>noindex</strong> first (Part II bridge). Map slugs 1:1 to today's Elementor service URLs; keep Rank Math title / meta / schema per service. When a rebuilt service passes the gate, <strong>kill its live Elementor page</strong> — 301 → lift noindex — service by service, in waves.</p>
+          <ul class="dash">
+            <li><b>Days 1–2:</b> <code>service</code> CPT + single/archive templates</li>
+            <li><b>Days 3–5:</b> build all six services, noindexed, from the section library</li>
+            <li><b>Days 6–7:</b> parity diff + stakeholder visual sign-off per service</li>
+            <li><b>Days 8–10:</b> cutover in mini-waves (2 services/day): kill Elementor page → 301 → lift noindex</li>
+          </ul>
+          <div class="gate"><b>Done when:</b> every service URL passes the gate and its Elementor original is retired.</div>
+        </div>
+      </div>
+
+      <div class="wave">
+        <div class="wh"><span class="wn">W3</span><span class="wt">Home + global</span><span class="wd">≈ 2 weeks · after W2 gate</span></div>
+        <div class="wb">
+          <p>Home page, header / footer, global CTAs — highest-traffic surfaces move last, on a fully proven system.</p>
+          <ul class="dash">
+            <li><b>Days 1–3:</b> rebuild header + footer in the child theme (replacing Vault's chrome), including the <b>mobile menu</b> — see below</li>
+            <li><b>Days 4–6:</b> rebuild the homepage from sections, noindexed</li>
+            <li><b>Days 7–8:</b> full-site parity crawl + CWV pass</li>
+            <li><b>Days 9–10:</b> cutover + monitor GSC</li>
+          </ul>
+          <p><b>Mobile menu &amp; conditional behaviour spec.</b> The hamburger is a real <code>&lt;button&gt;</code> (never a div) with <code>aria-expanded</code>; the panel is the native <code>&lt;dialog&gt;</code> element — focus trap, <kbd>Esc</kbd> to close, and focus return come free and correct. Menu markup is rendered <em>once</em> and adapted by CSS (no duplicate desktop/mobile menus in the DOM). Conditional behaviour: primary CTA surfaces as a fixed bottom action on phones; deep submenu levels collapse to accordions; ≥44px touch targets; opening animation honours <code>prefers-reduced-motion</code>; the header reserves its height up front — zero layout shift on toggle.</p>
+          <div class="gate"><b>Done when:</b> full-site crawl diff is clean and the menu passes keyboard + screen-reader checks.</div>
+        </div>
+      </div>
+
+      <div class="wave">
+        <div class="wh"><span class="wn">W4</span><span class="wt">Decommission Elementor</span><span class="wd">≈ 1 week · after W3 gate</span></div>
+        <div class="wb">
+          <p>Remove Elementor from all migrated content; final performance pass (target: every migrated URL beats its Elementor CWV baseline).</p>
+          <div class="gate"><b>Done when:</b> Elementor renders no migrated URL.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= PART IV ================= -->
+  <div class="part" id="p4">
+    <div class="part-head">
+      <span class="no">PART IV</span>
+      <h2>Working rules</h2>
+    </div>
+    <section class="block">
+      <ul class="dash">
+        <li><strong>Keys:</strong> prefix <code>rmd_</code>; layout keys snake_case, matching the template-part filename exactly — the renderer maps them 1:1.</li>
+        <li><strong>Field groups:</strong> author in staging, commit <code>acf-json/</code>, deploy. Never edit only in the prod DB.</li>
+        <li><strong>Branch per wave</strong> (<code>wave/blog</code>, <code>wave/services</code>); the PR carries the crawl diff as evidence.</li>
+        <li><strong>Keep <code>_reference/</code> out of the FTP deploy</strong> — extend the workflow <code>exclude:</code> list.</li>
+      </ul>
+    </section>
+  </div>
+
+  <footer>
+    <div class="rule" style="margin-bottom:14px">
+      <strong style="color:var(--ink-2)">Research references</strong> —
+      <a href="https://www.acf-extended.com/features/fields/flexible-content" rel="noopener">ACFE Flexible Content</a> (thumbnails, modal, layout toggle) ·
+      <a href="https://www.acf-extended.com/features/fields/flexible-content/dynamic-render-iframe" rel="noopener">ACFE Dynamic Render (iframe)</a> ·
+      <a href="https://www.advancedcustomfields.com/resources/conditional-logic/" rel="noopener">ACF conditional logic</a> ·
+      <a href="https://github.com/jameelmoses/acf-flexible-content-preview" rel="noopener">acf-flexible-content-preview</a> (fallback picker) ·
+      <a href="https://unlighthouse.dev/learn-lighthouse/lcp/lcp-lazy-loaded" rel="noopener">never lazy-load the LCP image</a> ·
+      <a href="https://perfmatters.io/docs/fetch-priority/" rel="noopener">fetchpriority in WP</a> ·
+      <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Responsive_images" rel="noopener">MDN responsive images / art direction</a> ·
+      <a href="https://www.accede-web.com/en/guidelines/rich-interface-components/burger-menu/" rel="noopener">accessible burger menu</a>
+    </div>
+    <div class="rule">
+      Source of truth: <code>docs/REBUILD-PLAN.md</code> · RMD rebuild runbook — Elementor → ACF/CPT, SEO-preserving, staging-first, wave by wave.
+    </div>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    document.getElementById('themeBtn').addEventListener('click', function () {
+      var cur = root.getAttribute('data-theme') ||
+        (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      root.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>

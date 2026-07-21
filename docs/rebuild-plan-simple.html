@@ -1,0 +1,460 @@
+<title>RMD Rebuild Plan — Plain-Language Version</title>
+<style>
+  /* Same design system as the technical runbook — sibling document. */
+  :root {
+    --bg:#FAFAF9; --surface:#FFFFFF; --surface-2:#F3F4F2;
+    --ink:#1B1F21; --ink-2:#4A5257; --muted:#7B8489;
+    --line:#E5E7E3; --line-2:#D3D7D1;
+    --accent:#0E7466; --accent-t:#0A5A4F; --accent-bg:#EAF3F1;
+    --amber:#A05E14; --amber-bg:#F8EFE1; --ok:#2F7D53;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#111517; --surface:#181D20; --surface-2:#1F2529;
+      --ink:#E8ECED; --ink-2:#AEB8BC; --muted:#7E8A90;
+      --line:#272E32; --line-2:#374146;
+      --accent:#3CBCA6; --accent-t:#63D2BE; --accent-bg:#15302B;
+      --amber:#D9973F; --amber-bg:#2A2317; --ok:#54B384;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg:#FAFAF9; --surface:#FFFFFF; --surface-2:#F3F4F2;
+    --ink:#1B1F21; --ink-2:#4A5257; --muted:#7B8489;
+    --line:#E5E7E3; --line-2:#D3D7D1;
+    --accent:#0E7466; --accent-t:#0A5A4F; --accent-bg:#EAF3F1;
+    --amber:#A05E14; --amber-bg:#F8EFE1; --ok:#2F7D53;
+  }
+  :root[data-theme="dark"] {
+    --bg:#111517; --surface:#181D20; --surface-2:#1F2529;
+    --ink:#E8ECED; --ink-2:#AEB8BC; --muted:#7E8A90;
+    --line:#272E32; --line-2:#374146;
+    --accent:#3CBCA6; --accent-t:#63D2BE; --accent-bg:#15302B;
+    --amber:#D9973F; --amber-bg:#2A2317; --ok:#54B384;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--sans); font-size:16.5px; line-height:1.7;
+    -webkit-font-smoothing:antialiased; }
+  .wrap { max-width: 800px; margin: 0 auto; padding: 0 28px; }
+  a { color: var(--accent-t); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  p { margin: 0 0 15px; max-width: 68ch; color: var(--ink-2); }
+  p strong, li strong { color: var(--ink); font-weight: 640; }
+  code { font-family: var(--mono); font-size: .85em; background: var(--surface-2);
+    border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+    color: var(--accent-t); white-space: nowrap; }
+
+  .bar { position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .bar-in { max-width: 800px; margin: 0 auto; padding: 10px 28px;
+    display: flex; align-items: center; gap: 6px; }
+  .bar .logo { font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: .06em; margin-right: auto; color: var(--ink); }
+  .bar a.nav { font-size: 13px; color: var(--muted); padding: 5px 10px; border-radius: 6px; }
+  .bar a.nav:hover { color: var(--ink); background: var(--surface-2); text-decoration: none; }
+  .bar button { border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+    width: 30px; height: 30px; border-radius: 7px; cursor: pointer; font-size: 13px; margin-left: 8px; }
+  @media (max-width: 640px) { .bar a.nav { display: none; } }
+
+  .hero { padding: 50px 0 34px; }
+  .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
+  h1 { font-size: clamp(1.7rem, 4.5vw, 2.3rem); line-height: 1.15; letter-spacing: -.02em;
+    font-weight: 740; margin: 0 0 14px; text-wrap: balance; }
+  .hero .sub { font-size: 1.1rem; max-width: 60ch; }
+
+  .deadline { margin: 22px 0 0; border: 1px solid color-mix(in srgb, var(--amber) 35%, var(--line));
+    background: var(--amber-bg); border-radius: 10px; padding: 14px 18px;
+    display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; }
+  .deadline .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--amber); font-weight: 700; }
+  .deadline .v { font-weight: 680; color: var(--ink); }
+  .deadline .d { color: var(--ink-2); font-size: .93rem; }
+
+  /* glossary */
+  .gloss { margin: 16px 0 0; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); overflow: hidden; }
+  .gloss .gh { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted); font-weight: 700;
+    padding: 10px 18px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+  .gloss dl { margin: 0; padding: 8px 18px 12px; }
+  .gloss dt { font-weight: 650; color: var(--ink); margin-top: 10px; font-size: .95rem; }
+  .gloss dd { margin: 2px 0 0; color: var(--ink-2); font-size: .93rem; max-width: 66ch; }
+
+  .locked { margin: 14px 0 0; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); padding: 14px 18px; }
+  .locked .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
+  .locked ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+  .locked li { font-size: .94rem; color: var(--ink-2); padding-left: 20px; position: relative; }
+  .locked li::before { content: "✓"; position: absolute; left: 0; color: var(--ok); font-weight: 700; }
+
+  .part { padding: 42px 0 8px; }
+  .part-head { display: flex; align-items: baseline; gap: 14px;
+    border-bottom: 2px solid var(--ink); padding-bottom: 10px; margin-bottom: 6px; }
+  .part-head .no { font-family: var(--mono); font-size: 13px; font-weight: 700;
+    color: var(--accent); letter-spacing: .04em; }
+  .part-head h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -.015em; margin: 0; }
+  .part-head .when { margin-left: auto; font-family: var(--mono); font-size: 11.5px;
+    color: var(--muted); white-space: nowrap; }
+  .part-intro { padding-top: 12px; font-size: 1.02rem; }
+
+  section.block { padding: 18px 0 10px; scroll-margin-top: 64px; }
+  h3 { font-size: 1.1rem; font-weight: 680; letter-spacing: -.01em; margin: 0 0 12px; }
+  h3 .h-no { font-family: var(--mono); font-size: .82em; color: var(--accent); margin-right: 8px; font-weight: 700; }
+
+  .tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px;
+    margin: 4px 0 18px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: .93rem; min-width: 440px; }
+  th { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); font-weight: 600; text-align: left; padding: 10px 14px;
+    border-bottom: 1px solid var(--line); background: var(--surface-2); }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-2); }
+  tr:last-child td { border-bottom: none; }
+  td b { color: var(--ink); font-weight: 630; }
+
+  .tag { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; border-radius: 5px; padding: 2px 7px; white-space: nowrap; }
+  .tag.ok   { color: var(--ok);    background: color-mix(in srgb, var(--ok) 13%, transparent); }
+  .tag.warn { color: var(--amber); background: color-mix(in srgb, var(--amber) 15%, transparent); }
+  .tag.crit { color: #C0402F; background: rgba(192,64,47,.12); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tag.crit { color: #E88070; } }
+  :root[data-theme="dark"] .tag.crit { color: #E88070; }
+
+  .note { border-left: 3px solid var(--accent); background: var(--accent-bg);
+    border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 4px 0 18px; }
+  .note p { margin: 0; max-width: none; font-size: .95rem; }
+  .note.warn { border-left-color: var(--amber); background: var(--amber-bg); }
+
+  ol.steps { margin: 4px 0 18px; padding: 0; list-style: none; counter-reset: st; }
+  ol.steps li { counter-increment: st; position: relative; padding: 0 0 16px 42px; color: var(--ink-2); }
+  ol.steps li::before { content: counter(st); position: absolute; left: 0; top: 1px;
+    width: 26px; height: 26px; border-radius: 50%; font-size: 12.5px; font-weight: 700;
+    font-family: var(--mono); display: grid; place-items: center; color: #fff; background: var(--accent); }
+  ol.steps li:not(:last-child)::after { content: ""; position: absolute; left: 12.5px; top: 30px;
+    bottom: 2px; width: 1.5px; background: var(--line-2); }
+  ol.steps li b { color: var(--ink); }
+
+  ul.dash { margin: 4px 0 18px; padding: 0; list-style: none; }
+  ul.dash li { padding: 4px 0 4px 20px; position: relative; color: var(--ink-2); }
+  ul.dash li::before { content: "—"; position: absolute; left: 0; color: var(--accent); }
+
+  .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; margin: 4px 0 18px; }
+  @media (max-width: 620px) { .checks { grid-template-columns: 1fr; } }
+  .checks div { position: relative; padding: 3px 0 3px 24px; font-size: .94rem; color: var(--ink-2); }
+  .checks div::before { content: "☐"; position: absolute; left: 0; color: var(--accent); font-size: 1rem; }
+
+  .sched { border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    background: var(--surface); margin: 4px 0 18px; }
+  .sched .row { display: grid; grid-template-columns: 130px 1fr; border-bottom: 1px solid var(--line); }
+  .sched .row:last-child { border-bottom: none; }
+  .sched .when { padding: 14px 16px; background: var(--surface-2); border-right: 1px solid var(--line); }
+  .sched .when .d { font-family: var(--mono); font-size: 11.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .06em; color: var(--accent); }
+  .sched .when .g { font-size: .8rem; color: var(--muted); margin-top: 2px; line-height: 1.35; }
+  .sched .what { padding: 12px 18px; }
+  .sched .what ul { margin: 0; padding: 0; list-style: none; }
+  .sched .what li { padding: 3px 0 3px 16px; position: relative; font-size: .93rem; color: var(--ink-2); }
+  .sched .what li::before { content: "·"; position: absolute; left: 2px; font-weight: 900; color: var(--accent); }
+  @media (max-width: 560px) { .sched .row { grid-template-columns: 1fr; }
+    .sched .when { border-right: none; border-bottom: 1px solid var(--line); padding: 10px 16px; } }
+  .dod { margin: 0 0 18px; padding: 12px 16px; border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+    background: var(--accent-bg); border-radius: 8px; font-size: .95rem; color: var(--ink-2); }
+  .dod b { color: var(--accent-t); }
+
+  .wave { border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+    margin: 0 0 12px; overflow: hidden; }
+  .wave .wh { display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+    border-bottom: 1px solid var(--line); background: var(--surface-2); flex-wrap: wrap; }
+  .wave .wh .wn { font-family: var(--mono); font-size: 12px; font-weight: 700;
+    color: #fff; background: var(--accent); border-radius: 6px; padding: 3px 8px; }
+  .wave.w0 .wh .wn { background: var(--amber); }
+  .wave .wh .wt { font-weight: 680; color: var(--ink); }
+  .wave .wh .wd { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .wave .wb { padding: 12px 16px; }
+  .wave .wb p { font-size: .95rem; margin-bottom: 8px; max-width: none; }
+  .wave .wb p:last-child { margin-bottom: 0; }
+  .wave .wb ul.dash { margin-bottom: 8px; }
+  .wave .wb ul.dash li { font-size: .93rem; padding-top: 2px; padding-bottom: 2px; }
+  .gate { font-size: .88rem; color: var(--muted); border-top: 1px dashed var(--line-2);
+    margin-top: 10px; padding-top: 9px; }
+  .gate b { color: var(--ink-2); font-weight: 640; }
+
+  .svcs { display: flex; flex-wrap: wrap; gap: 7px; margin: 2px 0 10px; }
+  .svcs span { font-size: .88rem; border: 1px solid var(--line); background: var(--bg);
+    border-radius: 6px; padding: 4px 11px; color: var(--ink-2); }
+
+  footer { padding: 38px 0 56px; }
+  footer .rule { border-top: 1px solid var(--line); padding-top: 18px;
+    font-size: .87rem; color: var(--muted); }
+</style>
+
+<div class="bar">
+  <div class="bar-in">
+    <span class="logo">RMD · REBUILD · PLAIN</span>
+    <a class="nav" href="#p1">I · This week</a>
+    <a class="nav" href="#p2">II · The method</a>
+    <a class="nav" href="#p3">III · The waves</a>
+    <a class="nav" href="#p4">IV · Rules</a>
+    <button id="themeBtn" aria-label="Toggle theme">◐</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ================= HERO ================= -->
+  <header class="hero">
+    <p class="kicker">Plain-language version · rhillane.com</p>
+    <h1>What we're doing to rhillane.com, and why</h1>
+    <p class="sub">Today, every page of the site is built by hand inside <strong>Elementor</strong>, a drag-and-drop page builder. We're replacing that with a system of <strong>ready-made building blocks</strong> that live in our own theme code. Editors fill in content; the code draws the page. Same look, same Google rankings — but faster pages, and a site we fully control.</p>
+
+    <div class="deadline">
+      <span class="k">First deadline</span>
+      <span class="v">Wednesday 22 July, 17:00</span>
+      <span class="d">The building-block system + the first Case Studies, live on the staging site.</span>
+    </div>
+
+    <div class="gloss">
+      <div class="gh">Five terms, in plain words</div>
+      <dl>
+        <dt>Elementor</dt>
+        <dd>The drag-and-drop page builder the site uses today. The problem: every page's layout is trapped inside it — slow, fragile, hard to maintain.</dd>
+        <dt>CPT — Custom Post Type</dt>
+        <dd>A new content type in the WordPress admin. Just like "Posts" exists for the blog, we add "Case Studies" and later "Services" as their own menus.</dd>
+        <dt>ACF Flexible Content</dt>
+        <dd>The building blocks. An editor opens a case study and stacks sections — hero, text, gallery, stats, quote — and fills them in. No design work, no page builder. Our theme code turns that stack into the finished page.</dd>
+        <dt>Staging</dt>
+        <dd>A private copy of the site (on the staging subdomain) where we build and test everything. The public site is untouched until we deliberately switch.</dd>
+        <dt>noindex</dt>
+        <dd>A per-page switch that tells Google "don't list this page yet". We use it so old and new versions never compete in search.</dd>
+      </dl>
+    </div>
+
+    <div class="locked">
+      <div class="k">Already decided (20/07 meeting)</div>
+      <ul>
+        <li><strong>Rank Math</strong> is our SEO plugin — it holds each page's Google title, description and settings.</li>
+        <li>The theme is switched on for the <strong>whole multisite network</strong> at once; content stays separate per site.</li>
+        <li><strong>rhillane.com is the main site</strong> — the target for all of this work.</li>
+        <li><strong>Six services</strong>, confirmed (Part III).</li>
+        <li>Header and footer are <strong>the same across the whole site</strong>; a content type can get its own only if it truly needs one.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ================= PART I ================= -->
+  <div class="part" id="p1">
+    <div class="part-head">
+      <span class="no">PART I</span>
+      <h2>This week — build the system, prove it with Case Studies</h2>
+      <span class="when">now → Wed 17:00</span>
+    </div>
+    <p class="part-intro">We build two things that prove each other: the <strong>system</strong> (the building blocks and the code that draws them) and the <strong>first real content</strong> (Case Studies). Case Studies is brand-new content — there's no existing page to protect — so it's the safest place to test the whole machine before we touch anything Google already ranks.</p>
+
+    <section class="block">
+      <h3><span class="h-no">1.1</span>Before anything else — six checks</h3>
+      <p>Two of these can sink the whole plan if they fail, so they come first.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>#</th><th>Check</th><th>In plain words</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><b>1</b></td><td><b>ACF Pro is installed and active</b></td><td>The paid version of the plugin that gives us the building blocks. Without it, no plan.</td><td><span class="tag crit">Must have</span></td></tr>
+          <tr><td><b>2</b></td><td><b>The theme can save block definitions as files</b></td><td>So our block setup lives in the code repository — versioned, reviewable, deployable — not only inside one database.</td><td><span class="tag crit">Must have</span></td></tr>
+          <tr><td><b>3</b></td><td>Staging is a faithful copy of the live site</td><td>If staging differs from the real site, our tests prove nothing.</td><td><span class="tag warn">To verify</span></td></tr>
+          <tr><td><b>4</b></td><td>A full "before" scan of the live site is saved</td><td>A snapshot of every page's URL, title and headings — our reference for proving nothing was lost.</td><td><span class="tag warn">To verify</span></td></tr>
+          <tr><td><b>5</b></td><td>The server runs PHP 8.1 or newer</td><td>The language version our code needs.</td><td><span class="tag warn">To verify</span></td></tr>
+          <tr><td><b>6</b></td><td>Rank Math's setup is confirmed</td><td>We know exactly where it stores each page's Google title and description.</td><td><span class="tag ok">Done</span></td></tr>
+        </tbody>
+      </table></div>
+      <div class="note warn"><p>If check <strong>1</strong> or <strong>2</strong> fails — everything stops until it's fixed.</p></div>
+    </section>
+
+    <section class="block">
+      <h3><span class="h-no">1.2</span>How the system works</h3>
+      <p>Think of it as three simple parts:</p>
+      <ol class="steps">
+        <li><b>The blocks.</b> A library of about ten section types — hero, text, text-with-image, gallery, stats, quote, logos, call-to-action, features, FAQ. Each block knows what it needs (a heading, an image, a button…) and each has a small spacing/background control, replacing what Elementor used to do.</li>
+        <li><b>The editor experience.</b> An editor opens a case study, stacks the blocks they want in order, fills them in, hits publish. No design decisions, no page builder — just content in labelled fields.</li>
+        <li><b>The drawing code.</b> One small function in the theme reads the stack and renders each block with the site's real design (colours and fonts copied from the current site, so pages look the same as today). Every page template is literally: header → draw the blocks → footer.</li>
+      </ol>
+      <div class="note"><p><strong>Why this is powerful:</strong> adding a brand-new block type to the whole site = one block definition + one small template file. And because block definitions are saved as files in the repository, every change is tracked and deploys automatically when we push to GitHub.</p></div>
+      <p><strong>Header &amp; footer:</strong> one header and one footer serve the entire site, drawn on every page automatically. If a content type ever genuinely needs its own (say, a special case-study header), WordPress lets us add one just for it — and everything else keeps using the shared pair.</p>
+    </section>
+
+    <section class="block">
+      <h3><span class="h-no">1.3</span>The schedule to Wednesday</h3>
+      <div class="sched">
+        <div class="row">
+          <div class="when"><div class="d">Mon PM</div><div class="g">Foundations</div></div>
+          <div class="what"><ul>
+            <li>Run the six checks above; raise any failure immediately</li>
+            <li>Set up the theme's internal structure and the block-saving mechanism</li>
+            <li>Create the "Case Studies" content type (with its categories) in the admin</li>
+            <li>Push to GitHub → confirm it auto-deploys to staging and appears in the admin</li>
+          </ul></div>
+        </div>
+        <div class="row">
+          <div class="when"><div class="d">Tue</div><div class="g">The blocks</div></div>
+          <div class="what"><ul>
+            <li>Build the block library: hero, text, text-with-image, stats, gallery, quote, call-to-action</li>
+            <li>Add the shared spacing/background control to every block</li>
+            <li>Save the block definitions into the repository (the key win of the day)</li>
+            <li>Write the small template file for each block, using the site's real colours and fonts</li>
+          </ul></div>
+        </div>
+        <div class="row">
+          <div class="when"><div class="d">Wed AM</div><div class="g">Prove it</div></div>
+          <div class="what"><ul>
+            <li>Author one real case study using only the blocks — it must look properly styled, on-brand</li>
+            <li>Build the case-studies listing page; check phones and tablets</li>
+          </ul></div>
+        </div>
+        <div class="row">
+          <div class="when"><div class="d">Wed 17:00</div><div class="g">Hand-off</div></div>
+          <div class="what"><ul>
+            <li>Final deploy and demo on staging</li>
+            <li>Short written guides: "how to add a block type" and "how to write a case study"</li>
+          </ul></div>
+        </div>
+      </div>
+      <div class="dod"><b>We're done when:</b> someone who isn't a developer can build a complete case study just by stacking and filling blocks on staging.</div>
+    </section>
+  </div>
+
+  <!-- ================= PART II ================= -->
+  <div class="part" id="p2">
+    <div class="part-head">
+      <span class="no">PART II</span>
+      <h2>The method — how every page moves safely</h2>
+      <span class="when">same 3 steps, every time</span>
+    </div>
+    <p class="part-intro">After this week, we start moving existing Elementor pages onto the new system. Every single page follows the same three steps — this is how we guarantee Google never notices the switch.</p>
+
+    <section class="block">
+      <ol class="steps">
+        <li>
+          <b>Take a blueprint of the old page.</b> We export the Elementor page as a file that records its exact layout — section order, spacing, colours, text. We never load this file back into WordPress; it's the reference we rebuild from, and the "does it look the same?" checklist for review.
+        </li>
+        <li>
+          <b>Rebuild it with blocks — at the same web address.</b> The page keeps its exact URL whenever possible (for Google, same address + same content = nothing happened). Its Google title, description and structured data are copied over into Rank Math. Only if an address truly must change do we add a permanent redirect from old to new.
+        </li>
+        <li>
+          <b>Check, then switch.</b> We scan the old page and the new one and compare them line by line — titles, headings, text, links, speed. Only when everything matches do we make the switch on the live site, then re-scan and watch Google's data for a while.
+        </li>
+      </ol>
+      <div class="note">
+        <p><strong>The safety trick — "hidden until ready".</strong> When a rebuilt page goes onto the live site, it starts <strong>hidden from Google</strong> (noindex, and left out of the sitemap) while the old Elementor page keeps its place in search. We test against the hidden version. At switch time — page by page: <strong>retire the old Elementor page → point its address at the new one → un-hide the new page → update the sitemap</strong>. Old and new are never visible to Google at the same time, and until the switch, going back costs nothing.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <h3><span class="h-no">2.1</span>The checklist every page must pass before switching</h3>
+      <div class="checks">
+        <div>Same web address (or a clean redirect)</div>
+        <div>Same Google title &amp; description</div>
+        <div>Same main heading and heading order</div>
+        <div>No paragraph of text lost</div>
+        <div>Social-sharing &amp; technical tags unchanged</div>
+        <div>Structured data still present and valid</div>
+        <div>Image descriptions (alt text) kept</div>
+        <div>All internal links still work</div>
+        <div>Page speed as good or better</div>
+        <div>Sitemap intact, no broken links created</div>
+      </div>
+      <div class="note"><p>A group of pages goes live <strong>only</strong> when every page in it passes every line. Anything less waits.</p></div>
+    </section>
+  </div>
+
+  <!-- ================= PART III ================= -->
+  <div class="part" id="p3">
+    <div class="part-head">
+      <span class="no">PART III</span>
+      <h2>The waves — what moves, in what order</h2>
+      <span class="when">after Wednesday</span>
+    </div>
+    <p class="part-intro">We move the site in five waves, easiest first — so by the time we touch the most important pages, the system has already proven itself several times. Each wave can ship on its own, and each can be undone on its own.</p>
+
+    <section class="block">
+      <div class="wave w0">
+        <div class="wh"><span class="wn">W0</span><span class="wt">The system + Case Studies</span><span class="wd">this week — Wed 22/07</span></div>
+        <div class="wb">
+          <p>Everything in Part I. New content, nothing to protect — the proof that the machine works.</p>
+          <div class="gate"><b>Done when:</b> a non-developer can build a case study from blocks on staging.</div>
+        </div>
+      </div>
+
+      <div class="wave">
+        <div class="wh"><span class="wn">W1</span><span class="wt">The blog</span><span class="wd">first real migration</span></div>
+        <div class="wb">
+          <p>Blog posts all share one shape, and no single post is business-critical — the perfect first migration. We build the blog listing and article templates on the block system, move every post across (keeping address, title, date, author, categories), run the checklist, switch, and retire Elementor for the blog.</p>
+          <div class="gate"><b>Done when:</b> every post runs on the new system and passes the checklist.</div>
+        </div>
+      </div>
+
+      <div class="wave">
+        <div class="wh"><span class="wn">W2</span><span class="wt">The six services</span></div>
+        <div class="wb">
+          <p>Services become their own content type, built from the same blocks. One page per service:</p>
+          <div class="svcs"><span>Website creation</span><span>SEO</span><span>Social media</span><span>Graphic design</span><span>Ads</span><span>Media buying</span></div>
+          <p>All six are built <strong>hidden from Google</strong> first, at addresses matching today's service pages. Then, service by service: once a rebuilt page passes the checklist, its old Elementor page is retired and the new one takes its place — in small waves, never all at once.</p>
+          <div class="gate"><b>Done when:</b> all six pass the checklist and no Elementor service page is left.</div>
+        </div>
+      </div>
+
+      <div class="wave">
+        <div class="wh"><span class="wn">W3</span><span class="wt">Homepage + shared parts</span></div>
+        <div class="wb">
+          <p>The homepage, the header and the footer — the highest-traffic, highest-risk surfaces — move last, once the system has proven itself three times over.</p>
+          <div class="gate"><b>Done when:</b> a full-site scan shows no differences that matter.</div>
+        </div>
+      </div>
+
+      <div class="wave">
+        <div class="wh"><span class="wn">W4</span><span class="wt">Say goodbye to Elementor</span></div>
+        <div class="wb">
+          <p>With nothing left depending on it, Elementor is removed from the migrated content entirely, followed by a final speed pass. This is the payoff: a lighter, faster site.</p>
+          <div class="gate"><b>Done when:</b> Elementor no longer draws a single migrated page.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= PART IV ================= -->
+  <div class="part" id="p4">
+    <div class="part-head">
+      <span class="no">PART IV</span>
+      <h2>House rules</h2>
+    </div>
+    <section class="block">
+      <ul class="dash">
+        <li><strong>Naming is consistent</strong> — every block's name matches its template file exactly, so the system finds things by convention, not configuration.</li>
+        <li><strong>Blocks are never edited only on the live site</strong> — always: build on staging → save to the repository → deploy. That way every change is reviewed and reversible.</li>
+        <li><strong>One branch per wave</strong>, and the before/after scan is attached to the review as proof.</li>
+        <li><strong>Reference files (Elementor blueprints) never get deployed</strong> — they stay out of the live theme folder.</li>
+      </ul>
+    </section>
+  </div>
+
+  <footer>
+    <div class="rule">
+      Plain-language companion to the technical runbook (<code>docs/rebuild-plan.html</code> / <code>docs/REBUILD-PLAN.md</code>). Same plan, same decisions — friendlier words.
+    </div>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    document.getElementById('themeBtn').addEventListener('click', function () {
+      var cur = root.getAttribute('data-theme') ||
+        (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      root.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
