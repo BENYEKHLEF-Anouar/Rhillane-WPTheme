@@ -27,6 +27,8 @@
 	var current = null;      // { layout, anchor, rowIndex, isRow, hint }
 	var lastFocused = null;
 	var lastFieldKey = '';
+	var lastAddBtn = null;   // the "+ Ajouter une section" button behind the open picker
+	var lastAddAt = 0;       // when it was clicked — gates the popup re-anchor failsafe
 
 	// ── Insert path (Add Section popup only) ─────────────────────────────────
 	document.addEventListener('click', function (e) {
@@ -34,6 +36,8 @@
 		if (!addBtn) return;
 		var field = addBtn.closest('.acf-field-flexible-content');
 		lastFieldKey = field ? field.getAttribute('data-key') || '' : '';
+		lastAddBtn = addBtn;
+		lastAddAt = Date.now();
 	}, true);
 
 	function insertLayout(layoutName, anchor) {
@@ -345,20 +349,85 @@
 		return a;
 	}
 
-	/** Widened card grid can overflow the right edge — nudge it back into view. */
+	/** Move the popup's positioned element by a viewport delta, whatever its
+	    offset parent — adjust the current computed left/top by the difference. */
+	function shiftTo(pos, r, viewportLeft, viewportTop) {
+		var cs = getComputedStyle(pos);
+		var left = parseFloat(cs.left);
+		var top = parseFloat(cs.top);
+		if (isNaN(left)) left = r.left;
+		if (isNaN(top)) top = r.top;
+		pos.style.right = 'auto';
+		pos.style.left = (left + (viewportLeft - r.left)) + 'px';
+		pos.style.top = (top + (viewportTop - r.top)) + 'px';
+	}
+
+	/**
+	 * Popup sanity: ACF positions the picker next to the button that opened it.
+	 * When that goes wrong (seen live: the popup lands in the top-right corner,
+	 * unrelated to the button), re-anchor it under the recorded add button; then
+	 * clamp the widened card grid back inside the right edge of the viewport.
+	 */
 	function clampPopup(popup) {
 		var pos = (popup.closest && popup.closest('.acf-tooltip')) || popup;
 		requestAnimationFrame(function () {
+			var margin = 10;
 			var r = pos.getBoundingClientRect();
-			var over = r.right - (window.innerWidth - 10);
+			if (!r.width && !r.height) return;
+
+			// Re-anchor only the layout picker (not ACF's "more actions" menu),
+			// only when it was just opened from a known button, and only when it
+			// landed nowhere near that button.
+			if (popup.querySelector('a[data-layout]') &&
+				lastAddBtn && document.body.contains(lastAddBtn) &&
+				(Date.now() - lastAddAt) < 1500) {
+				var b = lastAddBtn.getBoundingClientRect();
+				var far = (r.bottom < b.top - 300) || (r.top > b.bottom + 300) ||
+					(r.right < b.left - 400) || (r.left > b.right + 400);
+				if (far) {
+					var left = Math.min(
+						Math.max(margin, b.left + (b.width / 2) - (r.width / 2)),
+						window.innerWidth - r.width - margin
+					);
+					var top = b.bottom + 8;
+					if (top + r.height > window.innerHeight - margin) {
+						top = Math.max(margin, b.top - r.height - 8);
+					}
+					shiftTo(pos, r, left, top);
+					r = pos.getBoundingClientRect();
+				}
+			}
+
+			var over = r.right - (window.innerWidth - margin);
 			if (over > 0) {
-				var left = parseFloat(getComputedStyle(pos).left);
-				if (isNaN(left)) left = r.left;
+				var l = parseFloat(getComputedStyle(pos).left);
+				if (isNaN(l)) l = r.left;
 				pos.style.right = 'auto';
-				pos.style.left = Math.max(10, left - over) + 'px';
+				pos.style.left = Math.max(margin, l - over) + 'px';
 			}
 		});
 	}
+
+	/** ACF normally closes the popup on any outside click. If its handler is
+	    broken the popup stays stuck on screen — give ACF 150 ms, then remove it
+	    ourselves. Clicks inside the popup/modal/add-button never close it, and a
+	    popup deliberately kept behind the preview modal is left alone. */
+	function closeStalePopups(target) {
+		document.querySelectorAll('.acf-fc-popup').forEach(function (popup) {
+			var pos = (popup.closest && popup.closest('.acf-tooltip')) || popup;
+			if (target && (pos.contains(target) ||
+				(lastAddBtn && lastAddBtn.contains(target)))) return;
+			setTimeout(function () {
+				if (!pos.parentNode) return; // ACF already closed it
+				if (document.body.classList.contains('rmd-sp-modal-open')) return;
+				pos.parentNode.removeChild(pos);
+			}, 150);
+		});
+	}
+
+	document.addEventListener('click', function (e) {
+		closeStalePopups(e.target);
+	});
 
 	// ── 1. "Add Section" popup → card grid ───────────────────────────────────
 	function decoratePopup(popup) {
@@ -526,9 +595,12 @@
 	}
 
 	document.addEventListener('keydown', function (e) {
-		if (e.key === 'Escape' && modal && modal.classList.contains('is-open')) {
+		if (e.key !== 'Escape') return;
+		if (modal && modal.classList.contains('is-open')) {
 			e.stopPropagation();
 			closeModal();
+		} else {
+			closeStalePopups(null); // a stuck picker should also close on Esc
 		}
 	});
 })();
