@@ -28,6 +28,13 @@ function rmd_enqueue_assets() {
 		wp_enqueue_style('rmd-main', RMD_URI . '/assets/css/main.css', array('vault-child'), rmd_asset_ver('assets/css/main.css'));
 	}
 
+	// Image loading effects (§12) — hand-written, loaded after main.css so it
+	// needs no Tailwind rebuild. Depend on 'vault-child' (always registered),
+	// not the conditional 'rmd-main'.
+	if (file_exists(RMD_DIR . '/assets/css/rmd-media.css')) {
+		wp_enqueue_style('rmd-media', RMD_URI . '/assets/css/rmd-media.css', array('vault-child'), rmd_asset_ver('assets/css/rmd-media.css'));
+	}
+
 	// Front-end JS — vanilla, deferred.
 	if (file_exists(RMD_DIR . '/assets/js/main.js')) {
 		wp_enqueue_script('rmd-main', RMD_URI . '/assets/js/main.js', array(), rmd_asset_ver('assets/js/main.js'), array(
@@ -36,3 +43,13 @@ function rmd_enqueue_assets() {
 		));
 	}
 }
+
+/**
+ * Tiny render-blocking flag in <head> (priority 0, before anything paints): marks
+ * that JS is available so the image-effect CSS (rmd-media.css) only hides images
+ * it can later reveal. With JS off the class is absent and images render fully —
+ * progressive enhancement, no flash of hidden content.
+ */
+add_action('wp_head', function () {
+	echo "<script>document.documentElement.className+=' rmd-js';</script>\n";
+}, 0);

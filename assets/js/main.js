@@ -61,3 +61,44 @@
 		}
 	});
 })();
+
+/* Image loading effects (§12). The reveal is driven by an inline onload handler
+   (so it works with no external JS), but a cached image can finish before that
+   handler is wired — mark any already-complete image loaded, and attach a load
+   listener as a fallback for the rest. Nothing here can leave an image hidden. */
+(function () {
+	'use strict';
+
+	function reveal(wrap) {
+		if (wrap && !wrap.classList.contains('is-loaded')) {
+			wrap.classList.add('is-loaded');
+		}
+	}
+
+	function init() {
+		var wraps = document.querySelectorAll('.img-wrap');
+		for (var i = 0; i < wraps.length; i++) {
+			(function (wrap) {
+				var img = wrap.querySelector('.img-main');
+				if (!img) {
+					reveal(wrap); // no image to wait on
+					return;
+				}
+				if (img.complete) {
+					// Finished loading — success OR failure (a broken cached image
+					// is complete with naturalWidth 0; never leave it invisible).
+					reveal(wrap);
+				} else {
+					img.addEventListener('load', function () { reveal(wrap); });
+					img.addEventListener('error', function () { reveal(wrap); });
+				}
+			})(wraps[i]);
+		}
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', init);
+	} else {
+		init();
+	}
+})();

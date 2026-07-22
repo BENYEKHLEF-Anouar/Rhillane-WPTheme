@@ -1,0 +1,301 @@
+/**
+ * Section preview — editor-only UI. Hand-written (NOT Tailwind), so changing it
+ * never needs a CSS rebuild. Two surfaces: the "Add Section" picker restyled as
+ * a card grid, and the scaled-iframe preview modal. Brand tokens mirror
+ * src/tailwind.css (ink #041135, purple #3943FF, red #E4004D).
+ */
+
+/* ── "Add Section" popup → card grid ─────────────────────────────────────── */
+/* ACF renders <ul><li><a data-layout>…</a></li></ul>. We turn each <a> into a
+   card. Structural rules carry !important because acf-input.css loads after us
+   and would otherwise collapse the grid to one column.
+   The JS stamps .rmd-sp-grid on the picker's own <ul> only, so these rules never
+   touch ACF 6.5+'s "more layout actions" menu (which reuses .acf-fc-popup). */
+.acf-fc-popup ul.rmd-sp-grid {
+	display: grid !important;
+	grid-template-columns: 1fr 1fr !important;
+	gap: 10px !important;
+	width: 560px !important;
+	max-width: calc(100vw - 40px) !important;
+	padding: 10px !important;
+	max-height: min(70vh, 640px);
+	overflow-y: auto;
+}
+.acf-fc-popup ul.rmd-sp-grid > li {
+	display: block !important;
+	margin: 0 !important;
+}
+.acf-fc-popup a.rmd-sp-card {
+	display: flex !important;
+	flex-direction: column;
+	height: 100%;
+	gap: 6px;
+	padding: 14px 15px !important;
+	border: 1px solid #e2e4ef !important;
+	border-radius: 11px !important;
+	background: #fff !important;
+	color: #041135 !important;
+	text-decoration: none !important;
+	line-height: 1.4 !important;
+	white-space: normal !important;
+	transition: border-color .15s ease, box-shadow .15s ease;
+}
+.acf-fc-popup a.rmd-sp-card:hover {
+	border-color: #3943FF !important;
+	box-shadow: 0 6px 18px -8px rgba(57, 67, 255, .5) !important;
+}
+.rmd-sp-card-head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.rmd-sp-card-title {
+	font-size: 13.5px;
+	font-weight: 600;
+	color: #041135;
+}
+.rmd-sp-card-desc {
+	font-size: 12px;
+	color: #596980;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+/* The eye button, pinned to the right of the card head. */
+.rmd-sp-eye {
+	margin-left: auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	flex: 0 0 auto;
+	border: 1px solid #e2e4ef;
+	border-radius: 7px;
+	background: #f6f7fb;
+	color: #3943FF;
+	cursor: pointer;
+	padding: 0;
+	transition: background .15s ease, color .15s ease;
+}
+.rmd-sp-eye:hover {
+	background: #3943FF;
+	color: #fff;
+}
+.rmd-sp-eye .dashicons {
+	font-size: 17px;
+	width: 17px;
+	height: 17px;
+	line-height: 1;
+}
+
+/* ── Row-toolbar eye — matches ACF's native +/duplicate/trash controls ───── */
+/* ACF hides its row controls until the row is hovered/selected; mirror that so
+   our eye appears and disappears alongside its siblings, using ACF's own
+   real conditions (:hover / .-hover / .active-layout). */
+.acf-fc-layout-controls .rmd-sp-eye--row,
+.acf-fc-layout-handle .rmd-sp-eye--row {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	color: inherit;
+	text-decoration: none;
+	background: transparent;
+	visibility: hidden;
+}
+.layout:hover .rmd-sp-eye--row,
+.layout.-hover .rmd-sp-eye--row,
+.layout.active-layout .rmd-sp-eye--row,
+.rmd-sp-eye--row:focus-visible {
+	visibility: visible !important;
+}
+.layout.active-layout .rmd-sp-eye--row {
+	color: #fff;
+}
+.rmd-sp-eye--row .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	line-height: 1;
+}
+
+/* ── The preview modal ───────────────────────────────────────────────────── */
+.rmd-sp-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 999999;
+	display: none;
+}
+.rmd-sp-modal.is-open {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+/* While the modal is open, hide ACF's own popup (it renders above everything)
+   with visibility — not display — so its anchors stay clickable for insertion. */
+body.rmd-sp-modal-open .acf-fc-popup {
+	visibility: hidden !important;
+}
+.rmd-sp-backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(4, 17, 53, .72);
+}
+.rmd-sp-dialog {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: min(1240px, 100vw - 40px);
+	max-height: calc(100vh - 40px);
+	background: #fff;
+	border-radius: 14px;
+	box-shadow: 0 30px 80px -20px rgba(4, 17, 53, .5);
+	overflow: hidden;
+}
+.rmd-sp-head {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 14px 18px;
+	border-bottom: 1px solid #e9eaf2;
+}
+.rmd-sp-title {
+	margin: 0;
+	font-size: 15px;
+	font-weight: 600;
+	color: #041135;
+}
+.rmd-sp-close {
+	margin-left: auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border: 0;
+	border-radius: 8px;
+	background: #f1f2f7;
+	color: #596980;
+	cursor: pointer;
+	transition: background .15s ease, color .15s ease;
+}
+.rmd-sp-close:hover {
+	background: #fde7ee;
+	color: #E4004D;
+}
+.rmd-sp-close:focus-visible {
+	outline: 2px solid #3943FF;
+	outline-offset: 2px;
+}
+
+.rmd-sp-stage {
+	position: relative;
+	flex: 1 1 auto;
+	overflow-y: auto;
+	overflow-x: hidden;
+	background: #f9fafb;
+	min-height: 200px;
+}
+.rmd-sp-status {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 13px;
+	color: #596980;
+	background: #f9fafb;
+	z-index: 2;
+}
+.rmd-sp-status.is-error {
+	color: #E4004D;
+}
+/* .rmd-sp-clip absorbs the overflow of the scaled render (the scaler keeps its
+   1280px layout box; the clip carries the *scaled* height). */
+.rmd-sp-clip {
+	overflow: hidden;
+}
+.rmd-sp-scaler {
+	transform-origin: top left;
+}
+.rmd-sp-scaler iframe {
+	width: 1280px;
+	border: 0;
+	display: block;
+	background: #fff;
+}
+
+.rmd-sp-body {
+	padding: 12px 18px;
+	border-top: 1px solid #e9eaf2;
+	font-size: 12.5px;
+	color: #596980;
+}
+.rmd-sp-desc {
+	margin: 0;
+	color: #041135;
+	font-weight: 500;
+}
+.rmd-sp-note {
+	margin: 4px 0 0;
+}
+.rmd-sp-hint {
+	display: none;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 8px 0 0;
+	padding: 9px 12px;
+	border-radius: 8px;
+	background: #fef3c7;
+	border: 1px solid #fde68a;
+	color: #92400e;
+	font-weight: 600;
+}
+.rmd-sp-hint .dashicons {
+	flex: 0 0 auto;
+}
+
+.rmd-sp-foot {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	padding: 12px 18px;
+	border-top: 1px solid #e9eaf2;
+	background: #fbfbfd;
+}
+
+@media (max-width: 620px) {
+	.acf-fc-popup ul.rmd-sp-grid {
+		grid-template-columns: 1fr !important;
+		width: calc(100vw - 40px) !important;
+	}
+}
+
+/* Duplicate-section warning (mirrors AMD; injected in inc/admin-ux.php). */
+.rmd-dup-note {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin: 8px 12px;
+	padding: 9px 12px;
+	border-radius: 6px;
+	background: #fef3c7;
+	border: 1px solid #fde68a;
+	color: #92400e;
+	font-size: 12.5px;
+	font-weight: 600;
+	line-height: 1.5;
+}
+.rmd-dup-note button {
+	border: 0;
+	background: none;
+	color: #92400e;
+	cursor: pointer;
+	font-size: 15px;
+	line-height: 1;
+	padding: 0 2px;
+}

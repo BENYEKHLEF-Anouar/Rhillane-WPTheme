@@ -8,8 +8,10 @@ Full runbook: `REBUILD-PLAN.md` (waves W0→W4). AMD architecture reference: `FL
 
 - **Rank Math owns SEO** (titles, meta, schema, canonicals, sitemap). The theme must NEVER
   emit its own schema/sitemap. `inc/seo.php` is for cross-subsite hreflang only.
-- **No ACF Extended.** ACF Pro is the only plugin dependency. Editor UX (section preview,
-  gallery viewer) is our own code, ported from the AMD project → `inc/admin-ux.php`.
+- **No ACF Extended.** ACF Pro is the only plugin dependency. Editor UX is our own code,
+  ported from the AMD project → `inc/admin-ux.php` + `assets/admin/`. Live section preview
+  is DONE (card-grid picker + scaled-iframe modal + saved-row preview + demo mode +
+  duplicate-section warning + runtime field hints). Gallery viewer (§9) is still a TODO.
 - **Theme is network-activated** — CPTs/fields register network-wide; content and Rank Math
   meta stay per-site.
 - **Native i18n** (`languages/`, textdomain `vault-child`) — no Polylang.
@@ -38,6 +40,10 @@ Full runbook: `REBUILD-PLAN.md` (waves W0→W4). AMD architecture reference: `FL
 
 - CSS: Tailwind source in `src/tailwind.css`, compiled **locally** and committed to
   `assets/css/main.css` — no server build. `npx @tailwindcss/cli -i src/tailwind.css -o assets/css/main.css --minify`
+- **Hand-written CSS** (NOT Tailwind, no rebuild needed): `assets/css/rmd-media.css` (image
+  loading effects, §12) loads after main.css; `assets/admin/*.css` (section preview, gallery
+  viewer) are editor-only. Front-end helpers: `rmd_render_link()` (inc/links.php, §10),
+  `rmd_render_image()` (inc/images.php, §12), `rmd_field_default()` (inc/acf.php, §7.3).
 - Deploy: push to `main` → GitHub Action FTPs the repo root into
   `/staging/wp-content/themes/vault-child/`. Non-theme files (src/, docs, this file) must be
   in the workflow's `exclude:` list — it's repeated **3×** (retry blocks); edit all three.

@@ -39,7 +39,15 @@ rmd_section_open('text-center');
 <?php if ($subheading) : ?><p class="section-sub" style="margin-left:auto;margin-right:auto;text-align:center;"><?php echo rmd_inline_html($subheading); ?></p><?php endif; ?>
 <?php if ($button_label && $button_url) : ?>
 <div class="mt-9 flex flex-wrap items-center justify-center gap-4">
-	<a href="<?php echo esc_url($button_url); ?>" class="btn-cta inline-flex items-center gap-2.5 rounded-lg px-8 py-4 text-base font-medium text-white shadow-card hover:opacity-95"><?php echo esc_html($button_label); ?></a>
+	<?php
+	// Routed through the single link renderer (§10.3) so escaping / rel / target
+	// stay consistent across every section. Output matches the previous inline <a>.
+	echo rmd_render_link(
+		array('link_type' => 'url', 'url' => $button_url),
+		esc_html($button_label),
+		'btn-cta inline-flex items-center gap-2.5 rounded-lg px-8 py-4 text-base font-medium text-white shadow-card hover:opacity-95'
+	);
+	?>
 	<?php if ($contact_line) : ?><span class="text-sm text-slight"><?php echo esc_html($contact_line); ?></span><?php endif; ?>
 </div>
 <?php endif; ?>

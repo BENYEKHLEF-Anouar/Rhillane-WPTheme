@@ -3,12 +3,14 @@
  * Component: one screenshot frame (plain card or browser mockup).
  * $args: image (ACF array), style ('plain'|'browser'), label, badge,
  *        scrollable (bool), scroll_height (px), zoomable (bool),
- *        caption (inline-HTML), source, class (extra wrapper class).
+ *        caption (inline-HTML), source, class (extra wrapper class),
+ *        eager (bool — true only for a section-0 LCP image).
  */
 defined('ABSPATH') || exit;
 
 $image = $args['image'] ?? null;
-if (empty($image['ID'])) {
+// Render if we have an attachment ID or a bare URL (demo/preview placeholders).
+if (empty($image['ID']) && empty($image['url'])) {
 	return;
 }
 
@@ -21,14 +23,15 @@ $zoomable   = !empty($args['zoomable']);
 $caption    = $args['caption'] ?? '';
 $source     = $args['source'] ?? '';
 $extra      = $args['class'] ?? '';
+$eager      = !empty($args['eager']);
 
 $zoom_attr = '';
-if ($zoomable) {
+if ($zoomable && !empty($image['ID'])) {
 	$full = wp_get_attachment_image_url($image['ID'], 'full');
 	$zoom_attr = ' data-rmd-zoom data-full="' . esc_url($full) . '"';
 }
 
-$img_html = rmd_image($image, array('size' => 'large'));
+$img_html = rmd_image($image, array('size' => 'large', 'eager' => $eager));
 
 $inner = $img_html;
 if ($scrollable) {

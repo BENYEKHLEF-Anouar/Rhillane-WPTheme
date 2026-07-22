@@ -19,10 +19,13 @@ $rmd_modules = array(
 	'inc/cpt.php',        // custom post types (W0: case_study)
 	'inc/taxonomies.php', // taxonomies (case_study_cat)
 	'inc/helpers.php',    // rmd_render_sections(), rmd_image()
+	'inc/links.php',      // rmd_render_link() + link-options group (§10)
+	'inc/images.php',     // rmd_render_image() + image-options group (§12)
 	'inc/enqueue.php',    // CSS/JS loading (filemtime versioning)
 	'inc/options.php',    // Site Settings options page
 	'inc/seo.php',        // hreflang only — Rank Math owns the rest
-	'inc/admin-ux.php',   // editor helpers (ported AMD preview/gallery)
+	'inc/admin-ux.php',   // live section preview + field hints (ported AMD)
+	'inc/gallery-viewer.php', // in-field image gallery viewer (§9)
 );
 
 foreach ($rmd_modules as $rmd_module) {

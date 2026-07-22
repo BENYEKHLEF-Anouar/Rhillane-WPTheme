@@ -24,6 +24,14 @@ function rmd_get_field($name, $post_id = false, $format = true) {
 	return RMD_ACF_ACTIVE ? get_field($name, $post_id, $format) : null;
 }
 function rmd_get_sub_field($name, $format = true) {
+	// Preview demo mode (§ inc/admin-ux.php): when the section preview renders a
+	// layout with no ACF row (the "Add Row" demo), it seeds $GLOBALS['rmd_demo']
+	// with example sub-field values so the template renders a filled example.
+	// Only ever set inside the admin preview endpoint — the front end never sets
+	// it, so this branch is inert on every real page render.
+	if (isset($GLOBALS['rmd_demo']) && is_array($GLOBALS['rmd_demo']) && array_key_exists($name, $GLOBALS['rmd_demo'])) {
+		return $GLOBALS['rmd_demo'][$name];
+	}
 	return RMD_ACF_ACTIVE ? get_sub_field($name, $format) : null;
 }
 function rmd_have_rows($name, $post_id = false) {
@@ -34,6 +42,20 @@ function rmd_the_row() {
 }
 function rmd_get_row_layout() {
 	return RMD_ACF_ACTIVE ? get_row_layout() : '';
+}
+
+/**
+ * Never-set-vs-cleared helper (spec §7.3). Returns the saved value, or $default
+ * ONLY when the field is unset (null/false). An explicitly emptied field ("", [],
+ * 0) passes through unchanged — so a saved-but-cleared repeater stays hidden while
+ * a never-touched one can fall back to demo/default content.
+ */
+function rmd_field_default($name, $default = '', $is_sub_field = true) {
+	$value = $is_sub_field ? rmd_get_sub_field($name) : rmd_get_field($name);
+	if (null === $value || false === $value) {
+		return $default;
+	}
+	return $value;
 }
 
 // Loud admin notice when ACF Pro is missing (P1 blocker in the rebuild plan).
