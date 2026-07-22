@@ -927,8 +927,11 @@ add_action('wp_ajax_rmd_section_preview', 'rmd_render_section_preview');
  */
 add_filter('admin_body_class', 'rmd_precollapse_body_class');
 function rmd_precollapse_body_class($classes) {
-	global $pagenow;
-	if (('post.php' === $pagenow || 'post-new.php' === $pagenow)
+	// case_study screens ONLY: our sections have no WYSIWYG/select2 fields, so
+	// initialising them CSS-hidden is safe. Other post types' ACF fields are
+	// none of our business — never risk sizing their editors while hidden.
+	$screen = function_exists('get_current_screen') ? get_current_screen() : null;
+	if ($screen && 'post' === $screen->base && 'case_study' === $screen->post_type
 		&& defined('RMD_ACF_ACTIVE') && RMD_ACF_ACTIVE) {
 		$classes .= ' rmd-precollapse';
 	}
@@ -954,6 +957,11 @@ function rmd_section_preview_assets($hook) {
 	// interrupts ACF init (see assets/admin/acf-collapse-guard.js). Standalone and
 	// dependency-free so a bug in the preview script can't take the guard down.
 	wp_enqueue_script('rmd-acf-collapse-guard', RMD_URI . '/assets/admin/acf-collapse-guard.js', array(), file_exists($guard) ? filemtime($guard) : RMD_VERSION, true);
+
+	// Independent failsafe for the rmd-precollapse first-paint veil: this inline
+	// tag prints even if the guard FILE fails to load (404/blocked), so hidden
+	// row bodies always reveal within 3s no matter what.
+	wp_add_inline_script('rmd-acf-collapse-guard', 'setTimeout(function(){if(document.body){document.body.classList.remove("rmd-precollapse");}},3000);');
 
 	$preview_post_id = get_the_ID();
 	if (!$preview_post_id && isset($_GET['post'])) {
