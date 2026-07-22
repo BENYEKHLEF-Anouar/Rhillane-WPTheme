@@ -293,8 +293,20 @@ body.admin-bar .rmd-site-header.is-sticky { top: 32px; }
 	transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
 }
 .rmd-cscard__link { display: flex; flex-direction: column; height: 100%; color: inherit; text-decoration: none; }
-.rmd-cscard__media { aspect-ratio: 16 / 10; background: #F9FAFB; }
+.rmd-cscard__media { aspect-ratio: 16 / 10; background: #F9FAFB; overflow: hidden; }
 .rmd-cscard__image { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* No featured image → a tasteful branded placeholder (soft brand-tint wash +
+   muted Rhillane mark), so the card reads as intentional, never broken. */
+.rmd-cscard__media--empty {
+	background: linear-gradient(135deg, #EEF0FF 0%, #FBFCFE 55%, #F6F4FF 100%);
+}
+.rmd-cscard__placeholder {
+	display: flex; align-items: center; justify-content: center;
+	width: 100%; height: 100%;
+}
+.rmd-cscard__placeholder-logo {
+	width: 46%; max-width: 188px; height: auto; opacity: .5;
+}
 .rmd-cscard__body { display: flex; flex-direction: column; flex: 1; padding: 24px 24px 22px; }
 .rmd-cscard__chip {
 	align-self: flex-start;

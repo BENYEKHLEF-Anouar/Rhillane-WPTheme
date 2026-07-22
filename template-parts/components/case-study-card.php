@@ -1,7 +1,8 @@
 <?php
 /**
  * Component: case-study card — editorial style (category chip, title, excerpt,
- * "read the study" link). Featured image is optional; cards work text-only.
+ * "read the study" link). Featured image optional: without one, the media zone
+ * shows a branded placeholder so the grid stays even and nothing looks broken.
  * Styled in assets/css/rmd-chrome.css (.rmd-cscard*).
  */
 defined('ABSPATH') || exit;
@@ -13,15 +14,19 @@ $chip  = (is_array($terms) && !empty($terms) && !is_wp_error($terms))
 ?>
 <article <?php post_class('rmd-cscard'); ?>>
 	<a class="rmd-cscard__link" href="<?php the_permalink(); ?>">
-		<?php if (has_post_thumbnail()) : ?>
-			<div class="rmd-cscard__media">
+		<div class="rmd-cscard__media<?php echo has_post_thumbnail() ? '' : ' rmd-cscard__media--empty'; ?>">
+			<?php if (has_post_thumbnail()) : ?>
 				<?php the_post_thumbnail('medium_large', array(
 					'class'    => 'rmd-cscard__image',
 					'loading'  => 'lazy',
 					'decoding' => 'async',
 				)); ?>
-			</div>
-		<?php endif; ?>
+			<?php else : // no featured image → branded placeholder, keeps the grid even ?>
+				<span class="rmd-cscard__placeholder" aria-hidden="true">
+					<?php echo rmd_logo_img('header', 'rmd-cscard__placeholder-logo', false); ?>
+				</span>
+			<?php endif; ?>
+		</div>
 		<div class="rmd-cscard__body">
 			<span class="rmd-cscard__chip"><?php echo esc_html($chip); ?></span>
 			<h2 class="rmd-cscard__title"><?php the_title(); ?></h2>
