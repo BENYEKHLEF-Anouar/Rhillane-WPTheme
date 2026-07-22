@@ -64,6 +64,10 @@ function rmd_render_image($opts, $size = 'large', $base_class = '') {
 	if ('' !== $ratio && 'auto' !== $ratio && !preg_match('#^\d+(\.\d+)?\s*/\s*\d+(\.\d+)?$#', $ratio)) {
 		$ratio = '';
 	}
+	// object-position goes into inline CSS too — allowlist it (same defense).
+	if (!in_array($focal, array('top', 'bottom', 'left', 'right'), true)) {
+		$focal = '';
+	}
 
 	// Reserve space (CLS): explicit aspect-ratio, or derive from dimensions.
 	$wrap_style = '';

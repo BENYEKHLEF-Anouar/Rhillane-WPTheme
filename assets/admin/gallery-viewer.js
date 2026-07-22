@@ -286,14 +286,25 @@
 	function init() {
 		scan(document);
 
-		// ACF adds rows and swaps image previews on select/remove; a debounced
-		// observer re-derives the strips. buildRow is idempotent, so re-running
-		// on any real mutation is safe.
+		// A single ACF image field is edited via attribute changes only (no
+		// childList mutation), so the observer alone misses a "remove image" click.
+		// Catch any interaction inside an ACF image/gallery control and refresh
+		// (debounced + idempotent). Add/select also churn the wp.media modal.
+		document.addEventListener('click', function (e) {
+			if (e.target.closest && e.target.closest('.acf-image-uploader, .acf-gallery')) {
+				scheduleRefresh();
+			}
+		}, true);
+
+		// ACF adds rows and swaps image previews; a debounced observer re-derives
+		// the strips. buildRow is idempotent, so re-running on any real mutation is
+		// safe. Skip our own bar/modal mutations — avoids the loop and the wasted
+		// rebuild when the lightbox (which lives in .rmd-gv-modal) opens.
 		new MutationObserver(function (mutations) {
 			for (var i = 0; i < mutations.length; i++) {
 				var m = mutations[i];
 				if (isOwnMutation(m)) continue;
-				if (m.target && m.target.closest && m.target.closest('.rmd-gv-bar')) continue;
+				if (m.target && m.target.closest && m.target.closest('.rmd-gv-bar, .rmd-gv-modal')) continue;
 				scheduleRefresh();
 				break;
 			}

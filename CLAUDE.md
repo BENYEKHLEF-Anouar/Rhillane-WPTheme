@@ -41,9 +41,13 @@ Full runbook: `REBUILD-PLAN.md` (waves W0→W4). AMD architecture reference: `FL
 - CSS: Tailwind source in `src/tailwind.css`, compiled **locally** and committed to
   `assets/css/main.css` — no server build. `npx @tailwindcss/cli -i src/tailwind.css -o assets/css/main.css --minify`
 - **Hand-written CSS** (NOT Tailwind, no rebuild needed): `assets/css/rmd-media.css` (image
-  loading effects, §12) loads after main.css; `assets/admin/*.css` (section preview, gallery
-  viewer) are editor-only. Front-end helpers: `rmd_render_link()` (inc/links.php, §10),
-  `rmd_render_image()` (inc/images.php, §12), `rmd_field_default()` (inc/acf.php, §7.3).
+  loading effects, §12); `assets/admin/*.css` (section preview, gallery viewer) are editor-only.
+  Front-end helpers: `rmd_render_link()` (inc/links.php, §10), `rmd_render_image()`
+  (inc/images.php, §12), `rmd_field_default()` (inc/acf.php, §7.3).
+- **§12 effects are OFF by default** — the `rmd_render_image()` renderer + `rmd-media.css` + the
+  `rmd-js` head flag only load when `add_filter('rmd_image_effects', '__return_true')` is set
+  (do this once a section actually renders via `rmd_render_image()`). Baseline lazy/eager loading
+  (via `rmd_image()`) is always on. Theme floor is **PHP 7.4** (arrow functions; `Requires PHP` set).
 - Deploy: push to `main` → GitHub Action FTPs the repo root into
   `/staging/wp-content/themes/vault-child/`. Non-theme files (src/, docs, this file) must be
   in the workflow's `exclude:` list — it's repeated **3×** (retry blocks); edit all three.

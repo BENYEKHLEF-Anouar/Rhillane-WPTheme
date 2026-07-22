@@ -29,9 +29,11 @@ function rmd_enqueue_assets() {
 	}
 
 	// Image loading effects (§12) — hand-written, loaded after main.css so it
-	// needs no Tailwind rebuild. Depend on 'vault-child' (always registered),
-	// not the conditional 'rmd-main'.
-	if (file_exists(RMD_DIR . '/assets/css/rmd-media.css')) {
+	// needs no Tailwind rebuild. Gated behind the `rmd_image_effects` filter
+	// (default off): nothing calls rmd_render_image() yet, so we don't ship the
+	// effect CSS + head flag dead on every page. Flip the filter on when a section
+	// adopts rmd_render_image(): add_filter('rmd_image_effects', '__return_true').
+	if (apply_filters('rmd_image_effects', false) && file_exists(RMD_DIR . '/assets/css/rmd-media.css')) {
 		wp_enqueue_style('rmd-media', RMD_URI . '/assets/css/rmd-media.css', array('vault-child'), rmd_asset_ver('assets/css/rmd-media.css'));
 	}
 
@@ -51,5 +53,8 @@ function rmd_enqueue_assets() {
  * progressive enhancement, no flash of hidden content.
  */
 add_action('wp_head', function () {
+	if (!apply_filters('rmd_image_effects', false)) {
+		return; // only needed when the §12 effect CSS is enqueued
+	}
 	echo "<script>document.documentElement.className+=' rmd-js';</script>\n";
 }, 0);
