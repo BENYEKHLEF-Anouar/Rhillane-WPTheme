@@ -41,17 +41,18 @@ function rmd_locale_switcher() {
 	$map     = rmd_locale_map();
 	$current = get_current_blog_id();
 
-	// Build the visible entries: only public, live subsites that are in the map.
+	// Build the visible entries: every live subsite that's in the map. We do NOT
+	// filter by the "public" flag — staging subsites are often marked non-public,
+	// and the curated map already decides what shows.
 	$entries = array();
 	$sites   = get_sites(array(
 		'number'   => 50,
 		'archived' => 0,
 		'deleted'  => 0,
 		'spam'     => 0,
-		'public'   => 1,
 	));
 	foreach ($sites as $site) {
-		$path = $site->path;
+		$path = untrailingslashit($site->path) . '/'; // normalise: always one trailing slash
 		if (!isset($map[$path])) {
 			continue; // a subsite we don't expose in the switcher
 		}
