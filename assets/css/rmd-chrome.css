@@ -7,6 +7,13 @@
  * Loaded only where the RMD chrome renders (case-study templates today).
  */
 
+/* The chrome renders outside the .rmd-case scope, so give the case-study page
+   body the design font (this class is only on case-study pages). */
+.rmd-body {
+	font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+	-webkit-font-smoothing: antialiased;
+}
+
 /* ── Header ──────────────────────────────────────────────────────────────── */
 .rmd-site-header {
 	position: static;
