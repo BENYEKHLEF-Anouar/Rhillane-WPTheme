@@ -10,6 +10,12 @@ function rmd_setup() {
 	// Translations for our own strings (native i18n — no Polylang).
 	load_child_theme_textdomain('vault-child', RMD_DIR . '/languages');
 
+	// The RMD chrome renders its own <head> (not parent Vault's), so the child
+	// must guarantee these itself: <title> output (Rank Math hooks it) and
+	// featured-image support. Idempotent if the parent already declared them.
+	add_theme_support('title-tag');
+	add_theme_support('post-thumbnails');
+
 	// Nav menu locations for the RMD chrome (managed in Appearance → Menus).
 	// The header nav pulls from these, so editors assign links without code.
 	register_nav_menus(array(
