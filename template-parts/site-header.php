@@ -39,17 +39,23 @@ $has_menu = has_nav_menu('rmd_header');
 			?>
 		</a>
 
-		<?php if ($has_menu) : ?>
 		<nav class="rmd-nav" aria-label="<?php esc_attr_e('Navigation principale', 'vault-child'); ?>">
-			<?php wp_nav_menu(array(
-				'theme_location' => 'rmd_header',
-				'container'      => false,
-				'menu_class'     => 'rmd-nav-list',
-				'depth'          => 1,
-				'fallback_cb'    => false,
-			)); ?>
+			<?php if ($has_menu) : ?>
+				<?php wp_nav_menu(array(
+					'theme_location' => 'rmd_header',
+					'container'      => false,
+					'menu_class'     => 'rmd-nav-list',
+					'depth'          => 1,
+					'fallback_cb'    => false,
+				)); ?>
+			<?php else : // Mariner-style default until a menu is assigned in Appearance → Menus ?>
+				<ul class="rmd-nav-list">
+					<li><a href="#resultats"><?php esc_html_e('Résultats', 'vault-child'); ?></a></li>
+					<li><a href="#methode"><?php esc_html_e('Notre méthode', 'vault-child'); ?></a></li>
+					<li><a href="#contact"><?php esc_html_e('Contact', 'vault-child'); ?></a></li>
+				</ul>
+			<?php endif; ?>
 		</nav>
-		<?php endif; ?>
 
 		<?php if ($cta_label && $cta_url) : ?>
 			<a href="<?php echo esc_url($cta_url); ?>" class="rmd-cta"><?php echo esc_html($cta_label); ?></a>
@@ -64,24 +70,32 @@ $has_menu = has_nav_menu('rmd_header');
 <div id="mobile-menu-panel" class="rmd-mobile-panel" aria-hidden="true">
 	<div class="rmd-mobile-inner">
 		<div class="rmd-mobile-top">
-			<span class="rmd-mobile-brand"><?php echo esc_html(get_bloginfo('name')); ?></span>
+			<?php if ($logo) : ?>
+				<?php echo rmd_image($logo, array('size' => 'medium', 'class' => 'rmd-logo-img')); ?>
+			<?php else : ?>
+				<span class="rmd-mobile-brand"><?php echo esc_html(get_bloginfo('name')); ?></span>
+			<?php endif; ?>
 			<button id="mobile-menu-close" type="button" class="rmd-burger" aria-label="<?php esc_attr_e('Fermer le menu', 'vault-child'); ?>">
 				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 			</button>
 		</div>
-		<?php if ($has_menu) : ?>
 		<nav aria-label="<?php esc_attr_e('Navigation mobile', 'vault-child'); ?>">
-			<?php wp_nav_menu(array(
-				'theme_location' => 'rmd_header',
-				'container'      => false,
-				'menu_class'     => 'rmd-mobile-list',
-				'depth'          => 1,
-				'fallback_cb'    => false,
-				'link_before'    => '<span class="mobile-nav-link">',
-				'link_after'     => '</span>',
-			)); ?>
+			<?php if ($has_menu) : ?>
+				<?php wp_nav_menu(array(
+					'theme_location' => 'rmd_header',
+					'container'      => false,
+					'menu_class'     => 'rmd-mobile-list',
+					'depth'          => 1,
+					'fallback_cb'    => false,
+				)); ?>
+			<?php else : ?>
+				<ul class="rmd-mobile-list">
+					<li><a href="#resultats"><?php esc_html_e('Résultats', 'vault-child'); ?></a></li>
+					<li><a href="#methode"><?php esc_html_e('Notre méthode', 'vault-child'); ?></a></li>
+					<li><a href="#contact"><?php esc_html_e('Contact', 'vault-child'); ?></a></li>
+				</ul>
+			<?php endif; ?>
 		</nav>
-		<?php endif; ?>
 		<?php if ($cta_label && $cta_url) : ?>
 			<a href="<?php echo esc_url($cta_url); ?>" class="rmd-cta rmd-mobile-cta mobile-nav-link"><?php echo esc_html($cta_label); ?></a>
 		<?php endif; ?>

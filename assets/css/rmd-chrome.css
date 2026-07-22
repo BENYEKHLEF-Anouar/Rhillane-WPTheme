@@ -145,7 +145,7 @@ body.admin-bar .rmd-site-header.is-sticky { top: 32px; }
 @media (min-width: 768px) { .rmd-mobile-panel { display: none; } }
 .rmd-mobile-inner { display: flex; flex-direction: column; height: 100%; padding: 24px; }
 .rmd-mobile-top { display: flex; align-items: center; justify-content: space-between; }
-.rmd-mobile-top .rmd-burger { display: inline-flex; }
+.rmd-mobile-top .rmd-burger { display: inline-flex; width: 40px; height: 40px; }
 .rmd-mobile-brand { font-weight: 700; font-size: 18px; color: #041135; }
 .rmd-mobile-list {
 	display: flex;
@@ -191,9 +191,10 @@ body.admin-bar .rmd-site-header.is-sticky { top: 32px; }
 .rmd-footer-copy {
 	text-align: center;
 	font-size: 12.5px;
-	line-height: 1.6;
+	line-height: 1.625;
 	color: rgba(255, 255, 255, .5);
 	margin: 0;
+	max-width: 640px;
 }
 .rmd-footer-copy b { color: rgba(255, 255, 255, .8); font-weight: 600; }
 
