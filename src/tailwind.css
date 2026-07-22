@@ -214,7 +214,15 @@
 	@media (max-width: 900px) { .rmd-archive__grid { grid-template-columns: 1fr; } }
 	.rmd-card--case-study { border: 1px solid #E9EAF2; border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 8px 26px rgba(4, 17, 53, .05); }
 	.rmd-card--case-study .rmd-card__link { display: block; color: inherit; text-decoration: none; }
-	.rmd-card--case-study .rmd-card__image { width: 100%; height: auto; display: block; }
+	/* Fixed-ratio media zone: the featured image (Image mise en avant) is
+	   cropped by CSS (no thumbnail regeneration), and cards WITHOUT an image
+	   show a branded gradient + logo so the grid never goes ragged. */
+	.rmd-card--case-study .rmd-card__media { aspect-ratio: 16 / 10; background: #f3f4fa; overflow: hidden; }
+	.rmd-card--case-study .rmd-card__image { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .35s ease; }
+	.rmd-card--case-study .rmd-card__link:hover .rmd-card__image,
+	.rmd-card--case-study .rmd-card__link:focus-visible .rmd-card__image { transform: scale(1.04); }
+	.rmd-card__media-fallback { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #041135 0%, #1c2470 55%, #3943FF 100%); }
+	.rmd-card__media-logo { width: 42%; height: auto; opacity: .92; }
 	.rmd-card--case-study .rmd-card__title { font-size: 18px; font-weight: 600; margin: 16px 18px 6px; color: #041135; }
 	.rmd-card--case-study .rmd-card__excerpt { font-size: 14px; color: #596980; margin: 0 18px 18px; }
 }
