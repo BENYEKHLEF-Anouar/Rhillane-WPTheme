@@ -91,14 +91,14 @@
 	text-decoration: none !important;
 	line-height: 1.45 !important;
 	white-space: normal !important;
-	box-shadow: 0 1px 2px rgba(4, 17, 53, .04) !important;
-	transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+	box-shadow: none !important;
+	transition: border-color .15s ease, background .15s ease;
 }
 .acf-fc-popup a.rmd-sp-card:hover,
 .acf-fc-popup a.rmd-sp-card:focus-visible {
 	border-color: #3943FF !important;
-	box-shadow: 0 10px 24px -12px rgba(57, 67, 255, .55) !important;
-	transform: translateY(-1px);
+	background: #fafbff !important;
+	box-shadow: none !important;
 	outline: none;
 }
 .rmd-sp-card-head {
