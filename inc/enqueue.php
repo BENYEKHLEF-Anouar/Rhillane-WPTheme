@@ -47,6 +47,22 @@ function rmd_enqueue_assets() {
 }
 
 /**
+ * Case-study pages render our own document shell — no UiCore components at all.
+ * Parent UiCore's global sheet (uploads/uicore-global.css) styles BARE elements:
+ * h1–h6 get the Elementor site's DARK design values (--uicore-headline-color:#FFF
+ * → white headings on our white page), plus p margins and link colors. Being
+ * unlayered, it beats every @layer rule in our compiled Tailwind no matter the
+ * specificity. Nothing on these pages needs it — drop it. (Checked the rest of
+ * the stack: bdt-uikit, Elementor, EA, jet-engine are all class-scoped, harmless.)
+ */
+add_action('wp_enqueue_scripts', 'rmd_drop_uicore_global_on_case_pages', 100);
+function rmd_drop_uicore_global_on_case_pages() {
+	if (is_singular('case_study') || is_post_type_archive('case_study')) {
+		wp_dequeue_style('uicore_global');
+	}
+}
+
+/**
  * Tiny render-blocking flag in <head> (priority 0, before anything paints): marks
  * that JS is available so the image-effect CSS (rmd-media.css) only hides images
  * it can later reveal. With JS off the class is absent and images render fully —
