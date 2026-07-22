@@ -22,6 +22,7 @@ $rmd_modules = array(
 	'inc/links.php',      // rmd_render_link() + link-options group (§10)
 	'inc/images.php',     // rmd_render_image() + image-options group (§12)
 	'inc/chrome.php',     // rmd_render_header()/rmd_render_footer() + Site Settings fields
+	'inc/locale.php',     // rmd_locale_switcher() — multisite country switcher
 	'inc/enqueue.php',    // CSS/JS loading (filemtime versioning)
 	'inc/options.php',    // Site Settings options page
 	'inc/seo.php',        // hreflang only — Rank Math owns the rest

@@ -139,3 +139,37 @@
 		});
 	}
 })();
+
+/* Country/language switcher dropdown — open/close only (active state + URLs
+   are server-rendered in inc/locale.php). Null-guarded: inert when absent. */
+(function () {
+	'use strict';
+
+	var switches = document.querySelectorAll('.rmd-locale-switch');
+	if (!switches.length) { return; }
+
+	switches.forEach(function (sw) {
+		var btn = sw.querySelector('.rmd-locale-btn');
+		if (!btn) { return; }
+		btn.addEventListener('click', function (e) {
+			e.stopPropagation();
+			var open = sw.classList.toggle('open');
+			btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+		});
+	});
+
+	var closeAll = function () {
+		switches.forEach(function (sw) {
+			sw.classList.remove('open');
+			var btn = sw.querySelector('.rmd-locale-btn');
+			if (btn) { btn.setAttribute('aria-expanded', 'false'); }
+		});
+	};
+
+	document.addEventListener('click', function (e) {
+		if (!e.target.closest || !e.target.closest('.rmd-locale-switch')) { closeAll(); }
+	});
+	document.addEventListener('keydown', function (e) {
+		if (e.key === 'Escape') { closeAll(); }
+	});
+})();
