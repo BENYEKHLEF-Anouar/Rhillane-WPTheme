@@ -35,28 +35,31 @@ function rmd_section_i18n() {
 	$locale = function_exists('get_user_locale') ? get_user_locale() : get_locale();
 	$is_fr  = (0 === strpos((string) $locale, 'fr'));
 
+	// Keep the ORIGINAL technical names (the team knows them); the description
+	// below each carries the plain-language detail. Still bilingual so an English
+	// admin gets the technical name in English too.
 	$labels = $is_fr ? array(
-		'hero'               => 'Ouverture — grand titre + carte de chiffres',
-		'stats_band'         => 'Bandeau de chiffres clés',
-		'stat_cards'         => 'Cartes de chiffres (problème ou résultats)',
-		'feature_cards'      => 'Notre approche (cartes + chiffres + preuve)',
-		'numbered_steps'     => 'Méthode en étapes numérotées',
-		'screenshot_gallery' => 'Galerie de captures d’écran',
-		'table_split'        => 'Tableau de données + commentaire',
-		'line_chart'         => 'Graphique en courbe',
-		'recap_band'         => 'Bandeau de synthèse (points clés)',
-		'cta'                => 'Appel à l’action (bouton de contact)',
+		'hero'               => 'Hero',
+		'stats_band'         => 'Bandeau de stats (navy)',
+		'stat_cards'         => 'Cartes chiffres',
+		'feature_cards'      => 'Insight (cartes + tuiles + preuve)',
+		'numbered_steps'     => 'Méthode (étapes numérotées)',
+		'screenshot_gallery' => 'Galerie de captures',
+		'table_split'        => 'Tableau + colonne compagnon',
+		'line_chart'         => 'Courbe (SVG)',
+		'recap_band'         => 'Bandeau récap (dégradé)',
+		'cta'                => 'CTA final',
 	) : array(
-		'hero'               => 'Opening — big title + figures card',
-		'stats_band'         => 'Key-figures band',
-		'stat_cards'         => 'Number cards (problem or results)',
-		'feature_cards'      => 'Our approach (cards + figures + proof)',
-		'numbered_steps'     => 'Method in numbered steps',
+		'hero'               => 'Hero',
+		'stats_band'         => 'Stats band (navy)',
+		'stat_cards'         => 'Number cards',
+		'feature_cards'      => 'Insight (cards + tiles + proof)',
+		'numbered_steps'     => 'Method (numbered steps)',
 		'screenshot_gallery' => 'Screenshot gallery',
-		'table_split'        => 'Data table + commentary',
-		'line_chart'         => 'Line chart',
-		'recap_band'         => 'Summary band (key points)',
-		'cta'                => 'Call to action (contact button)',
+		'table_split'        => 'Table + companion column',
+		'line_chart'         => 'Chart (SVG)',
+		'recap_band'         => 'Recap band (gradient)',
+		'cta'                => 'Final CTA',
 	);
 
 	$desc = $is_fr ? array(
