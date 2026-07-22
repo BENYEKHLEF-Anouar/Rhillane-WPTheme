@@ -16,7 +16,9 @@ defined('ABSPATH') || exit;
 
 add_action('admin_init', 'rmd_seed_mariner_case_study');
 function rmd_seed_mariner_case_study() {
-	if ('1' === get_option('rmd_seed_mariner_hero_v1')) {
+	// v2: also repairs an existing-but-empty post (v1 locked itself out if the
+	// post existed with no sections — seen on the US subsite).
+	if ('1' === get_option('rmd_seed_mariner_hero_v2')) {
 		return;
 	}
 	if (!RMD_ACF_ACTIVE || !function_exists('update_field')) {
@@ -25,21 +27,28 @@ function rmd_seed_mariner_case_study() {
 	if (!current_user_can('manage_options')) {
 		return;
 	}
-	// Never overwrite: if the post exists (manually created), just close the gate.
-	if (get_page_by_path('mariner-underwear', OBJECT, 'case_study')) {
-		update_option('rmd_seed_mariner_hero_v1', '1');
-		return;
-	}
 
-	$post_id = wp_insert_post(array(
-		'post_type'    => 'case_study',
-		'post_status'  => 'publish',
-		'post_title'   => 'Mariner Underwear : #1 sur Google face aux géants',
-		'post_name'    => 'mariner-underwear',
-		'post_excerpt' => "Une marque française de sous-vêtements hissée en première page de Google face à Amazon, Calvin Klein et Dim — 4,04M d'impressions, DR 25→55, trafic 100 % organique.",
-	));
-	if (!$post_id || is_wp_error($post_id)) {
-		return; // retry next admin visit
+	$existing = get_page_by_path('mariner-underwear', OBJECT, 'case_study');
+	if ($existing) {
+		// Post already there: never overwrite real content — only repair it
+		// when its sections are empty (a half-seeded / manually created shell).
+		$has_sections = get_post_meta($existing->ID, 'sections', true);
+		if (!empty($has_sections)) {
+			update_option('rmd_seed_mariner_hero_v2', '1');
+			return;
+		}
+		$post_id = $existing->ID;
+	} else {
+		$post_id = wp_insert_post(array(
+			'post_type'    => 'case_study',
+			'post_status'  => 'publish',
+			'post_title'   => 'Mariner Underwear : #1 sur Google face aux géants',
+			'post_name'    => 'mariner-underwear',
+			'post_excerpt' => "Une marque française de sous-vêtements hissée en première page de Google face à Amazon, Calvin Klein et Dim — 4,04M d'impressions, DR 25→55, trafic 100 % organique.",
+		));
+		if (!$post_id || is_wp_error($post_id)) {
+			return; // retry next admin visit
+		}
 	}
 
 	$svg_search = '<svg viewBox="0 0 24 24" fill="none" stroke="#041135" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
@@ -77,5 +86,8 @@ function rmd_seed_mariner_case_study() {
 	);
 
 	update_field('field_rmd_cs_sections', $sections, $post_id);
-	update_option('rmd_seed_mariner_hero_v1', '1');
+	update_option('rmd_seed_mariner_hero_v2', '1');
+
+	// The empty version of the page may be cached — purge so the hero shows.
+	do_action('litespeed_purge_all');
 }
