@@ -4,11 +4,10 @@
  * The case-study editor kept losing row collapse/expand while an unrelated
  * plugin/extension script (mistral-api.js) errors on the page. Three layers:
  *
- * 1. renderLayout() → permanent no-op. ACF Pro fires it on every collapse to
- *    fetch a dynamic "layout title" over AJAX; its first line throws when the
- *    row's [acf_fc_layout] input is missing. Our layouts have static labels,
- *    so the call is pure overhead + a throw surface. We keep a one-time warning
- *    when the input IS missing, because that's a symptom worth diagnosing.
+ * 1. renderLayout() guard. ACF Pro fires it on every collapse to refresh the
+ *    dynamic "layout title" over AJAX (we use it: variant suffixes on row
+ *    titles); its first line throws when the row's [acf_fc_layout] input is
+ *    missing. Defer to ACF when the row is sane, no-op + warn once when not.
  *
  * 2. Collapse failsafe. ACF's own handler adds/removes `-collapsed` — but if it
  *    never runs (broken init) or runs twice (double-bound handlers cancel out),
@@ -41,7 +40,12 @@
 		});
 	});
 
-	/* ── 1. renderLayout → no-op (static labels, no dynamic-title AJAX). ───── */
+	/* ── 1. renderLayout guard. ──────────────────────────────────────────────
+	 * ACF fires renderLayout on collapse to refresh the row's dynamic title
+	 * (we DO use those now: the layout_title filter appends the variant, e.g.
+	 * « Cartes chiffres — Vert (résultat) »). Its first line throws when the
+	 * row's [acf_fc_layout] input is unusable, so: defer to ACF's original when
+	 * the row is sane (healRow runs first), no-op + warn when it isn't. */
 	function applyGuard() {
 		if (!window.acf || typeof acf.getFieldType !== 'function') {
 			return false;
@@ -57,9 +61,9 @@
 			return true; // already wrapped
 		}
 
+		var original = FC.prototype.renderLayout;
+
 		FC.prototype.renderLayout = function ($layout) {
-			// Diagnosis only — a row without a usable [acf_fc_layout] input means
-			// something reorganised ACF's row markup; report it, never throw.
 			try {
 				var $input = ($layout && typeof $layout.children === 'function')
 					? $layout.children('input')
@@ -67,8 +71,10 @@
 				if (!$input || !$input.length || !$input.attr('name')) {
 					warnOnce('fc-input', 'A section row has no usable [acf_fc_layout] ' +
 						'input — run rmdAcfDiag() in this console and report the output.');
+					return; // ACF's original would throw; skip the title refresh only
 				}
-			} catch (e) { /* never break collapse */ }
+				return original.apply(this, arguments);
+			} catch (e) { /* a title refresh must never break collapse */ }
 		};
 
 		FC.prototype.rmdCollapseGuard = true;

@@ -117,6 +117,53 @@ function rmd_localize_section_labels($field) {
 }
 
 /**
+ * layout => the ONE sub-field whose value makes two uses of the same layout
+ * visually different sections (red problem cards vs green result cards, strip
+ * vs card band…). Drives two things: the variant suffix on collapsed row titles
+ * (rmd_section_layout_title) and the duplicate warning, which only fires for
+ * same layout + same variant. Field keys match acf-json.
+ */
+function rmd_section_variant_fields() {
+	return array(
+		'stat_cards'         => array('name' => 'accent',         'key' => 'field_rmd_cs_stat_cards_accent'),
+		'stats_band'         => array('name' => 'style',          'key' => 'field_rmd_cs_stats_band_style'),
+		'screenshot_gallery' => array('name' => 'columns',        'key' => 'field_rmd_cs_screenshot_gallery_columns'),
+		'table_split'        => array('name' => 'media_position', 'key' => 'field_rmd_cs_table_split_media_position'),
+	);
+}
+
+/**
+ * Collapsed row titles carry the variant so similar-but-different sections are
+ * distinguishable at a glance: « Cartes chiffres — Vert (résultat) ». The suffix
+ * text is the select choice's own label (source of truth: the field group), so
+ * it never drifts from what the editor picked. Editor display only — the front
+ * end never sees layout titles.
+ */
+add_filter('acf/fields/flexible_content/layout_title', 'rmd_section_layout_title', 10, 4);
+function rmd_section_layout_title($title, $field, $layout, $i) {
+	if (!isset($field['key']) || 'field_rmd_cs_sections' !== $field['key']) {
+		return $title;
+	}
+	$map  = rmd_section_variant_fields();
+	$name = isset($layout['name']) ? $layout['name'] : '';
+	if (!isset($map[$name]) || !function_exists('get_sub_field')) {
+		return $title;
+	}
+	$value = get_sub_field($map[$name]['name']);
+	if (!$value || !is_scalar($value)) {
+		return $title;
+	}
+	$suffix = (string) $value;
+	foreach ((array) ($layout['sub_fields'] ?? array()) as $sub) {
+		if (($sub['name'] ?? '') === $map[$name]['name'] && !empty($sub['choices'][$value])) {
+			$suffix = $sub['choices'][$value];
+			break;
+		}
+	}
+	return $title . ' — ' . $suffix;
+}
+
+/**
  * layout name => { label, desc }. Labels read from the real ACF field group so
  * they never drift from the picker; falls back to a prettified name. Only layouts
  * with a real template file are exposed. Doubles as the security allowlist.
@@ -542,10 +589,30 @@ add_action('admin_enqueue_scripts', 'rmd_section_preview_assets');
  * 5. Duplicate-section warning (AMD §7.2) — non-blocking, dismissible.
  * ───────────────────────────────────────────────────────────────────────── */
 function rmd_section_duplicate_notice() {
+	// layout name => variant field key: two rows of the same layout only count
+	// as duplicates when their variant matches (red cards vs green cards are
+	// DIFFERENT sections, not a repeat).
+	$rmd_variants = array();
+	foreach (rmd_section_variant_fields() as $rmd_layout_name => $rmd_variant) {
+		$rmd_variants[$rmd_layout_name] = $rmd_variant['key'];
+	}
 	?>
 	<script>
 	(function ($) {
 		if (typeof acf === 'undefined') return;
+
+		var variants = <?php echo wp_json_encode($rmd_variants); ?>;
+
+		/** The row's variant value ('' when the layout has no variant field). */
+		function variantOf($row) {
+			var fkey = variants[$row.attr('data-layout')];
+			if (!fkey) return '';
+			var $f = $row.find('.acf-field[data-key="' + fkey + '"]').first();
+			if (!$f.length) return '';
+			var v = $f.find('select').first().val();
+			if (v == null) v = $f.find('input:checked').first().val();
+			return v == null ? '' : String(v);
+		}
 
 		function scan(field) {
 			var $rows = field.$el.find('.acf-flexible-content .values > .layout')
@@ -558,12 +625,13 @@ function rmd_section_duplicate_notice() {
 				var $row = $(this);
 				var name = $row.attr('data-layout');
 				if (!name) return;
-				if (!seen[name]) { seen[name] = true; return; }
+				var sig = name + '|' + variantOf($row);
+				if (!seen[sig]) { seen[sig] = true; return; }
 				if ($row.attr('data-rmd-dup-dismissed') === '1') return;
 
 				var label = $row.attr('data-label') || name;
 				var $note = $('<div class="rmd-dup-note" style="display:flex;align-items:flex-start;gap:10px;margin:8px 12px;padding:9px 12px;border-radius:6px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;font-size:12.5px;font-weight:600;line-height:1.5;">' +
-					'<span style="flex:1;">⚠ La section « ' + label + ' » est déjà utilisée sur cette page. Vous pouvez continuer, mais vérifiez que c\'est intentionnel.</span>' +
+					'<span style="flex:1;">⚠ La section « ' + label + ' » est déjà utilisée sur cette page avec le même style. Vous pouvez continuer, mais vérifiez que c\'est intentionnel.</span>' +
 					'<button type="button" class="rmd-dup-dismiss" aria-label="Ignorer" style="border:0;background:none;color:#92400e;cursor:pointer;font-size:15px;line-height:1;padding:0 2px;">×</button>' +
 					'</div>');
 
