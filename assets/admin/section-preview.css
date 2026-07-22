@@ -22,6 +22,38 @@
 	max-width: none !important;
 	white-space: normal !important;
 }
+
+/* ── The "Ajouter une section" button (ACF's native add-row control) ──────── */
+/* Its "+" glyph/icon can sit off-baseline next to the label. data-name=
+   "add-layout" / .acf-fc-add are ACF's stable hooks for this button; make it a
+   flex row so the icon and text are vertically centred with a clean gap.
+   (Scoped to that button — does NOT touch the popup cards, which are
+   a[data-layout].) */
+[data-name="add-layout"],
+.acf-fc-add {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center;
+	gap: 6px;
+	line-height: 1.4;
+}
+[data-name="add-layout"] .dashicons,
+.acf-fc-add .dashicons,
+[data-name="add-layout"] .acf-icon,
+.acf-fc-add .acf-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+	vertical-align: middle;
+	margin: 0;
+}
+[data-name="add-layout"]::before,
+.acf-fc-add::before {
+	line-height: 1;
+	vertical-align: middle;
+	align-self: center;
+}
 .acf-fc-popup ul.rmd-sp-grid {
 	display: grid !important;
 	/* minmax(0,1fr) lets columns shrink instead of overflowing — kills the
