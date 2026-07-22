@@ -14,6 +14,12 @@
 	-webkit-font-smoothing: antialiased;
 }
 
+/* A site-wide breadcrumb snippet (injected at wp_body_open, white text meant to
+   float over the Elementor pages' DARK heroes) also lands on our case-study
+   shell, where it shows as a faint grey chip over the white hero. It's not ours
+   and it's wanted elsewhere — just hide it where our chrome renders. */
+.rmd-body .breadcrumb-wrapper { display: none !important; }
+
 /* ── Header ──────────────────────────────────────────────────────────────── */
 .rmd-site-header {
 	position: static;
