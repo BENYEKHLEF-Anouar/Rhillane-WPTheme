@@ -16,17 +16,66 @@
 defined('ABSPATH') || exit;
 
 /**
- * Path → { flag, label } for each language subsite. Filterable so the mapping
+ * Path → { code, label } for each language subsite. Filterable so the mapping
  * can change without touching code. Keys are site paths as WP stores them
- * (leading + trailing slash; the main site is '/').
+ * (leading + trailing slash; the main site is '/'). `code` selects the inline
+ * SVG flag (see rmd_locale_flag_svg) — SVG, not emoji, so flags render on every
+ * OS (Windows Chrome shows flag emoji as bare letters like "MA").
  */
 function rmd_locale_map() {
 	return apply_filters('rmd_locale_map', array(
-		'/'        => array('flag' => '🇲🇦', 'label' => 'Morocco'),
-		'/fr-fr/'  => array('flag' => '🇫🇷', 'label' => 'France'),
-		'/en-us/'  => array('flag' => '🇺🇸', 'label' => 'US'),
-		'/en-ae/'  => array('flag' => '🇦🇪', 'label' => 'UAE'),
+		'/'        => array('code' => 'ma', 'label' => 'Morocco'),
+		'/fr-fr/'  => array('code' => 'fr', 'label' => 'France'),
+		'/en-us/'  => array('code' => 'us', 'label' => 'US'),
+		'/en-ae/'  => array('code' => 'ae', 'label' => 'UAE'),
 	));
+}
+
+/**
+ * Inline SVG flag for a country code. Self-contained (no external asset), simple
+ * geometry that stays crisp at ~20px. Returns '' for an unknown code.
+ */
+function rmd_locale_flag_svg($code) {
+	$flags = array(
+		'fr' => '<rect width="20" height="14" fill="#fff"/><rect width="6.67" height="14" fill="#0055A4"/><rect x="13.33" width="6.67" height="14" fill="#EF4135"/>',
+		'ae' => '<rect width="20" height="14" fill="#fff"/><rect width="20" height="4.67" fill="#00732F"/><rect y="9.33" width="20" height="4.67" fill="#000"/><rect width="5" height="14" fill="#FF0000"/>',
+		'ma' => '<rect width="20" height="14" fill="#C1272D"/><path d="M10 3.2 12.35 10.24 6.2 5.76H13.8L7.65 10.24Z" fill="none" stroke="#006233" stroke-width="0.7"/>',
+		'us' => '<rect width="20" height="14" fill="#fff"/><g fill="#B22234"><rect width="20" height="1.077"/><rect y="2.154" width="20" height="1.077"/><rect y="4.308" width="20" height="1.077"/><rect y="6.462" width="20" height="1.077"/><rect y="8.615" width="20" height="1.077"/><rect y="10.769" width="20" height="1.077"/><rect y="12.923" width="20" height="1.077"/></g><rect width="8" height="7.54" fill="#3C3B6E"/><g fill="#fff"><circle cx="1.6" cy="1.4" r="0.35"/><circle cx="3.4" cy="1.4" r="0.35"/><circle cx="5.2" cy="1.4" r="0.35"/><circle cx="6.6" cy="1.4" r="0.35"/><circle cx="2.5" cy="2.9" r="0.35"/><circle cx="4.3" cy="2.9" r="0.35"/><circle cx="6.1" cy="2.9" r="0.35"/><circle cx="1.6" cy="4.4" r="0.35"/><circle cx="3.4" cy="4.4" r="0.35"/><circle cx="5.2" cy="4.4" r="0.35"/><circle cx="6.6" cy="4.4" r="0.35"/><circle cx="2.5" cy="5.9" r="0.35"/><circle cx="4.3" cy="5.9" r="0.35"/><circle cx="6.1" cy="5.9" r="0.35"/></g>',
+	);
+	$code = strtolower((string) $code);
+	if (!isset($flags[$code])) {
+		return '';
+	}
+	return '<svg class="rmd-flag" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' . $flags[$code] . '</svg>';
+}
+
+/**
+ * Resolve where a country link goes on a given subsite, keeping the visitor in
+ * place across languages:
+ *   'single'  → the case study with the SAME slug on that subsite (so the FR
+ *               link on a case study lands on that case study in French).
+ *               Falls back to the subsite's home if it isn't published there.
+ *   'archive' → that subsite's case-study archive (fallback: home).
+ *   'home'    → that subsite's home.
+ * Uses switch_to_blog so the slug lookup and permalink resolve on the TARGET
+ * site's database, not the current one.
+ */
+function rmd_locale_target_url($blog_id, $context, $slug) {
+	switch_to_blog($blog_id);
+	$url = home_url('/');
+	if ('single' === $context && $slug) {
+		$post = get_page_by_path($slug, OBJECT, 'case_study');
+		if ($post && 'publish' === $post->post_status) {
+			$url = get_permalink($post->ID);
+		}
+	} elseif ('archive' === $context) {
+		$archive = get_post_type_archive_link('case_study');
+		if ($archive) {
+			$url = $archive;
+		}
+	}
+	restore_current_blog();
+	return $url;
 }
 
 /**
@@ -41,23 +90,37 @@ function rmd_locale_switcher() {
 	$map     = rmd_locale_map();
 	$current = get_current_blog_id();
 
-	// Build the visible entries: only public, live subsites that are in the map.
+	// Work out what each country link points AT. On a single case study we send
+	// the visitor to the SAME case study on the target subsite (matched by slug),
+	// falling back to that subsite's home if it isn't published there. On the
+	// case-study archive we point at that subsite's archive; anywhere else, home.
+	$context = 'home';
+	$slug    = '';
+	if (is_singular('case_study')) {
+		$context = 'single';
+		$slug    = get_post_field('post_name', get_queried_object_id());
+	} elseif (is_post_type_archive('case_study')) {
+		$context = 'archive';
+	}
+
+	// Build the visible entries: every live subsite that's in the map. We do NOT
+	// filter by the "public" flag — staging subsites are often marked non-public,
+	// and the curated map already decides what shows.
 	$entries = array();
 	$sites   = get_sites(array(
 		'number'   => 50,
 		'archived' => 0,
 		'deleted'  => 0,
 		'spam'     => 0,
-		'public'   => 1,
 	));
 	foreach ($sites as $site) {
-		$path = $site->path;
+		$path = untrailingslashit($site->path) . '/'; // normalise: always one trailing slash
 		if (!isset($map[$path])) {
 			continue; // a subsite we don't expose in the switcher
 		}
 		$entries[] = array(
-			'url'    => get_home_url($site->blog_id, '/'),
-			'flag'   => $map[$path]['flag'],
+			'url'    => rmd_locale_target_url((int) $site->blog_id, $context, $slug),
+			'code'   => $map[$path]['code'],
 			'label'  => $map[$path]['label'],
 			'active' => ((int) $site->blog_id === (int) $current),
 		);
@@ -67,18 +130,19 @@ function rmd_locale_switcher() {
 		return; // nothing meaningful to switch between
 	}
 
-	// Flag shown on the button = the current site's (globe fallback).
-	$current_flag = '🌐';
+	// Flag shown on the button = the current site's.
+	$current_code = '';
 	foreach ($entries as $e) {
 		if ($e['active']) {
-			$current_flag = $e['flag'];
+			$current_code = $e['code'];
 			break;
 		}
 	}
+	// SVG flags are static, trusted markup built in this file — safe to echo raw.
 	?>
 	<div class="rmd-locale-switch">
 		<button class="rmd-locale-btn" type="button" aria-haspopup="true" aria-expanded="false">
-			<span class="rmd-locale-current" aria-hidden="true"><?php echo esc_html($current_flag); ?></span>
+			<span class="rmd-locale-current" aria-hidden="true"><?php echo rmd_locale_flag_svg($current_code); ?></span>
 			<span class="rmd-locale-arrow" aria-hidden="true">
 				<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="#041135" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
 			</span>
@@ -87,7 +151,7 @@ function rmd_locale_switcher() {
 		<div class="rmd-locale-menu" role="menu">
 			<?php foreach ($entries as $e) : ?>
 				<a href="<?php echo esc_url($e['url']); ?>"<?php echo $e['active'] ? ' class="active" aria-current="true"' : ''; ?> role="menuitem" aria-label="<?php echo esc_attr($e['label']); ?>">
-					<span class="rmd-locale-flag" aria-hidden="true"><?php echo esc_html($e['flag']); ?></span>
+					<span class="rmd-locale-flag" aria-hidden="true"><?php echo rmd_locale_flag_svg($e['code']); ?></span>
 					<span class="rmd-locale-label"><?php echo esc_html($e['label']); ?></span>
 				</a>
 			<?php endforeach; ?>

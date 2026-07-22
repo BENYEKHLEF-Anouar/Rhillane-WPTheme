@@ -16,6 +16,11 @@ $sticky    = rmd_get_field('rmd_header_sticky', 'option');
 $sticky    = (null === $sticky) ? true : (bool) $sticky; // default on
 
 $has_menu = has_nav_menu('rmd_header');
+// The default nav is in-page jump links (#resultats…) that only exist on a
+// single case study. On the archive there's nothing to jump to, so show the
+// fallback only there. A real menu (once assigned) shows on every chrome page.
+$show_fallback_nav = !$has_menu && is_singular('case_study');
+$show_nav          = $has_menu || $show_fallback_nav;
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -40,6 +45,7 @@ $has_menu = has_nav_menu('rmd_header');
 			?>
 		</a>
 
+		<?php if ($show_nav) : ?>
 		<nav class="rmd-nav" aria-label="<?php esc_attr_e('Navigation principale', 'vault-child'); ?>">
 			<?php if ($has_menu) : ?>
 				<?php wp_nav_menu(array(
@@ -57,6 +63,7 @@ $has_menu = has_nav_menu('rmd_header');
 				</ul>
 			<?php endif; ?>
 		</nav>
+		<?php endif; ?>
 
 		<?php rmd_locale_switcher(); ?>
 
@@ -82,6 +89,7 @@ $has_menu = has_nav_menu('rmd_header');
 				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 			</button>
 		</div>
+		<?php if ($show_nav) : ?>
 		<nav aria-label="<?php esc_attr_e('Navigation mobile', 'vault-child'); ?>">
 			<?php if ($has_menu) : ?>
 				<?php wp_nav_menu(array(
@@ -99,6 +107,7 @@ $has_menu = has_nav_menu('rmd_header');
 				</ul>
 			<?php endif; ?>
 		</nav>
+		<?php endif; ?>
 		<?php if ($cta_label && $cta_url) : ?>
 			<a href="<?php echo esc_url($cta_url); ?>" class="rmd-cta rmd-mobile-cta mobile-nav-link"><?php echo esc_html($cta_label); ?></a>
 		<?php endif; ?>

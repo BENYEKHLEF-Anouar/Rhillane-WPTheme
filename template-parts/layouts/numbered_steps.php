@@ -6,6 +6,12 @@ defined('ABSPATH') || exit;
 
 $steps = rmd_get_sub_field('steps');
 
+// Drop empty step rows (no heading AND no bullet items) so a section left blank
+// in the editor renders nothing instead of a stray "01" box.
+$steps = is_array($steps) ? array_values(array_filter($steps, static function ($s) {
+	return !empty($s['heading']) || '' !== trim((string) ($s['items'] ?? ''));
+})) : array();
+
 if (!$steps) {
 	return;
 }
