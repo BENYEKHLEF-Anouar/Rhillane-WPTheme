@@ -8,31 +8,52 @@ defined('ABSPATH') || exit;
 add_action('init', 'rmd_register_post_types');
 function rmd_register_post_types() {
 
+	// Labels adapt to the admin user's language (get_user_locale via rmd_is_fr):
+	// French admin → French, English admin → English. No .mo files needed.
+	$labels = rmd_is_fr() ? array(
+		'name'               => 'Études de cas',
+		'singular_name'      => 'Étude de cas',
+		'menu_name'          => 'Études de cas',
+		'name_admin_bar'     => 'Étude de cas',
+		'all_items'          => 'Toutes les études de cas',
+		'add_new'            => 'Ajouter',
+		'add_new_item'       => 'Ajouter une étude de cas',
+		'new_item'           => 'Nouvelle étude de cas',
+		'edit_item'          => 'Modifier l’étude de cas',
+		'view_item'          => 'Voir l’étude de cas',
+		'view_items'         => 'Voir les études de cas',
+		'search_items'       => 'Rechercher une étude de cas',
+		'not_found'          => 'Aucune étude de cas trouvée',
+		'not_found_in_trash' => 'Aucune étude de cas dans la corbeille',
+		'archives'           => 'Archives des études de cas',
+		'featured_image'     => 'Image mise en avant',
+		'set_featured_image' => 'Définir l’image mise en avant',
+		'item_published'     => 'Étude de cas publiée.',
+		'item_updated'       => 'Étude de cas mise à jour.',
+	) : array(
+		'name'               => 'Case Studies',
+		'singular_name'      => 'Case Study',
+		'menu_name'          => 'Case Studies',
+		'name_admin_bar'     => 'Case Study',
+		'all_items'          => 'All Case Studies',
+		'add_new'            => 'Add New',
+		'add_new_item'       => 'Add New Case Study',
+		'new_item'           => 'New Case Study',
+		'edit_item'          => 'Edit Case Study',
+		'view_item'          => 'View Case Study',
+		'view_items'         => 'View Case Studies',
+		'search_items'       => 'Search Case Studies',
+		'not_found'          => 'No case studies found',
+		'not_found_in_trash' => 'No case studies found in Trash',
+		'archives'           => 'Case Study Archives',
+		'featured_image'     => 'Featured image',
+		'set_featured_image' => 'Set featured image',
+		'item_published'     => 'Case study published.',
+		'item_updated'       => 'Case study updated.',
+	);
+
 	register_post_type('case_study', array(
-		// French source strings (site is FR-first); the __() wrappers keep them
-		// translatable to EN/AR later via .mo files. Without a translation the
-		// msgid shows verbatim — so English msgids showed English on a FR admin.
-		'labels' => array(
-			'name'               => __('Études de cas', 'vault-child'),
-			'singular_name'      => __('Étude de cas', 'vault-child'),
-			'menu_name'          => __('Études de cas', 'vault-child'),
-			'name_admin_bar'     => __('Étude de cas', 'vault-child'),
-			'all_items'          => __('Toutes les études de cas', 'vault-child'),
-			'add_new'            => __('Ajouter', 'vault-child'),
-			'add_new_item'       => __('Ajouter une étude de cas', 'vault-child'),
-			'new_item'           => __('Nouvelle étude de cas', 'vault-child'),
-			'edit_item'          => __('Modifier l’étude de cas', 'vault-child'),
-			'view_item'          => __('Voir l’étude de cas', 'vault-child'),
-			'view_items'         => __('Voir les études de cas', 'vault-child'),
-			'search_items'       => __('Rechercher une étude de cas', 'vault-child'),
-			'not_found'          => __('Aucune étude de cas trouvée', 'vault-child'),
-			'not_found_in_trash' => __('Aucune étude de cas dans la corbeille', 'vault-child'),
-			'archives'           => __('Archives des études de cas', 'vault-child'),
-			'featured_image'     => __('Image mise en avant', 'vault-child'),
-			'set_featured_image' => __('Définir l’image mise en avant', 'vault-child'),
-			'item_published'     => __('Étude de cas publiée.', 'vault-child'),
-			'item_updated'       => __('Étude de cas mise à jour.', 'vault-child'),
-		),
+		'labels'        => $labels,
 		'public'        => true,
 		'has_archive'   => true,
 		'menu_icon'     => 'dashicons-analytics',

@@ -28,9 +28,7 @@ function rmd_setup() {
  */
 add_action('init', 'rmd_register_menus');
 function rmd_register_menus() {
-	$locale = function_exists('get_user_locale') ? get_user_locale() : get_locale();
-	$is_fr  = (0 === strpos((string) $locale, 'fr'));
 	register_nav_menus(array(
-		'rmd_header' => $is_fr ? 'RMD — Menu d’en-tête' : 'RMD — Header menu',
+		'rmd_header' => rmd_is_fr() ? 'RMD — Menu d’en-tête' : 'RMD — Header menu',
 	));
 }

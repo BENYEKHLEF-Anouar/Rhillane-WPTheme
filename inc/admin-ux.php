@@ -32,8 +32,7 @@ defined('ABSPATH') || exit;
  * French admin sees French, an English admin sees English, no .mo files needed.
  */
 function rmd_section_i18n() {
-	$locale = function_exists('get_user_locale') ? get_user_locale() : get_locale();
-	$is_fr  = (0 === strpos((string) $locale, 'fr'));
+	$is_fr = rmd_is_fr();
 
 	// Keep the ORIGINAL technical names (the team knows them); the description
 	// below each carries the plain-language detail. Still bilingual so an English
