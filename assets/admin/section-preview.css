@@ -1,580 +1,312 @@
 /**
- * Page builder — live section preview (eye button + modal iframe).
- * Styled for ACF's light "Add Row" popup and the WP admin.
+ * Section preview — editor-only UI. Hand-written (NOT Tailwind), so changing it
+ * never needs a CSS rebuild. Two surfaces: the "Add Section" picker restyled as
+ * a card grid, and the scaled-iframe preview modal. Brand tokens mirror
+ * src/tailwind.css (ink #041135, purple #3943FF, red #E4004D).
  */
 
-/* ── "Add Row" popup as a card grid ─────────────────────────────────────────
-   Turns ACF's plain <ul><li><a> list into a 2-column grid of selectable cards
-   (category chip + title + description), the pattern professional block/section
-   pickers use (Gutenberg pattern inserter, Elementor block panel). */
-/* ACF constrains the popup wrapper (narrow width) and its rows (fixed height,
-   nowrap, block display). Every structural override below needs !important to
-   win against acf-input.css, which loads after this stylesheet. */
+/* ── "Add Section" popup → card grid ─────────────────────────────────────── */
+/* ACF renders <ul><li><a data-layout>…</a></li></ul>. We turn each <a> into a
+   card. Structural rules carry !important because acf-input.css loads after us
+   and would otherwise collapse the grid to one column.
+   The JS stamps .rmd-sp-grid on the picker's own <ul> only, so these rules never
+   touch ACF 6.5+'s "more layout actions" menu (which reuses .acf-fc-popup). */
+
+/* ACF constrains the popup wrapper (and its .acf-tooltip parent) to a narrow
+   fixed width and nowrap; without this reset our 560px card grid gets clipped to
+   a single narrow column. Adopted from main's port. width:auto / white-space are
+   benign for the "more actions" menu, so this can safely stay unscoped. */
 .acf-fc-popup,
 .acf-tooltip.acf-fc-popup {
-    width: auto !important;
-    max-width: none !important;
-    white-space: normal !important;
+	width: auto !important;
+	max-width: none !important;
+	white-space: normal !important;
 }
-
-.acf-fc-popup ul {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 8px !important;
-    width: 540px !important;
-    max-width: calc(100vw - 24px) !important;
-    max-height: min(70vh, 560px) !important;
-    overflow-y: auto !important;
-    padding: 10px !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-    background: #fff;
-    border-radius: 8px;
+.acf-fc-popup ul.rmd-sp-grid {
+	display: grid !important;
+	grid-template-columns: 1fr 1fr !important;
+	gap: 10px !important;
+	width: 560px !important;
+	max-width: calc(100vw - 40px) !important;
+	padding: 10px !important;
+	max-height: min(70vh, 640px);
+	overflow-y: auto;
 }
-
-.acf-fc-popup li {
-    margin: 0 !important;
-    padding: 0 !important;
-    display: flex !important;   /* let the card fill the grid cell height */
-    height: auto !important;
-    background: none !important;
-    border: 0 !important;
+.acf-fc-popup ul.rmd-sp-grid > li {
+	display: block !important;
+	margin: 0 !important;
 }
-
-/* The card itself (ACF's <a data-layout> — clicking it still inserts). */
 .acf-fc-popup a.rmd-sp-card {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 7px !important;
-    width: 100% !important;
-    height: auto !important;
-    min-height: 0 !important;
-    line-height: 1.3 !important;
-    white-space: normal !important;   /* ACF sets nowrap; let titles wrap */
-    overflow: visible !important;      /* ACF clips; show the whole card */
-    text-overflow: clip !important;
-    padding: 11px 12px !important;
-    margin: 0 !important;
-    background: #fff !important;
-    border: 1px solid #e2e4e7 !important;
-    border-radius: 8px !important;
-    text-decoration: none !important;
-    box-shadow: 0 1px 1px rgba(15, 23, 42, 0.03);
-    transition: border-color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+	display: flex !important;
+	flex-direction: column;
+	height: 100%;
+	gap: 6px;
+	padding: 14px 15px !important;
+	border: 1px solid #e2e4ef !important;
+	border-radius: 11px !important;
+	background: #fff !important;
+	color: #041135 !important;
+	text-decoration: none !important;
+	line-height: 1.4 !important;
+	white-space: normal !important;
+	transition: border-color .15s ease, box-shadow .15s ease;
 }
-
-.acf-fc-popup a.rmd-sp-card:hover,
-.acf-fc-popup a.rmd-sp-card:focus {
-    border-color: #2563eb !important;
-    box-shadow: none !important;
-    background: #fff !important;
-    outline: none;
+.acf-fc-popup a.rmd-sp-card:hover {
+	border-color: #3943FF !important;
+	box-shadow: 0 6px 18px -8px rgba(57, 67, 255, .5) !important;
 }
-
 .rmd-sp-card-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    min-height: 20px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
 }
-
-.rmd-sp-card-cat {
-    display: inline-block;
-    font-size: 9.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    line-height: 1.4;
-    padding: 2px 7px;
-    border-radius: 999px;
-    background: var(--rmd-chip-bg, #eef0f2);
-    color: var(--rmd-chip-fg, #475569);
-    white-space: nowrap;
-}
-
 .rmd-sp-card-title {
-    font-size: 12.5px;
-    font-weight: 600;
-    line-height: 1.3;
-    color: #1d2327;
+	font-size: 13.5px;
+	font-weight: 600;
+	color: #041135;
 }
-
 .rmd-sp-card-desc {
-    font-size: 11px;
-    line-height: 1.45;
-    color: #646970;
-    /* clamp to 2 lines so cards keep a consistent height */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+	font-size: 12px;
+	color: #596980;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 
-/* Category colour themes, declared ONCE as custom properties and consumed by
-   both the picker card chip (.rmd-sp-card-cat) and the preview-modal chip
-   (.rmd-sp-title-cat), so the two can never drift apart. The properties are set
-   on the chip's ancestor (card) or on the chip itself (modal); either way they
-   inherit down to the background/color declarations. */
-.acf-fc-popup a[data-cat="accueil"],
-.rmd-sp-title-cat[data-cat="accueil"] { --rmd-chip-bg: #e6effd; --rmd-chip-fg: #1d4ed8; }
-.acf-fc-popup a[data-cat="commun"],
-.rmd-sp-title-cat[data-cat="commun"]  { --rmd-chip-bg: #eef0f2; --rmd-chip-fg: #475569; }
-.acf-fc-popup a[data-cat="blog"],
-.rmd-sp-title-cat[data-cat="blog"]    { --rmd-chip-bg: #f3e8ff; --rmd-chip-fg: #7c3aed; }
-.acf-fc-popup a[data-cat="contact"],
-.rmd-sp-title-cat[data-cat="contact"] { --rmd-chip-bg: #e6f6ec; --rmd-chip-fg: #15803d; }
-.acf-fc-popup a[data-cat="methodo"],
-.rmd-sp-title-cat[data-cat="methodo"] { --rmd-chip-bg: #fdf0dd; --rmd-chip-fg: #b45309; }
-.acf-fc-popup a[data-cat="propos"],
-.rmd-sp-title-cat[data-cat="propos"]  { --rmd-chip-bg: #dff5f3; --rmd-chip-fg: #0f766e; }
-.acf-fc-popup a[data-cat="form"],
-.rmd-sp-title-cat[data-cat="form"]    { --rmd-chip-bg: #e6effd; --rmd-chip-fg: #1d4ed8; }
-
-/* The eye button, top-right of each card. */
+/* The eye button, pinned to the right of the card head. */
 .rmd-sp-eye {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    margin: -3px -4px -3px 0;
-    background: transparent;
-    border: 0;
-    border-radius: 5px;
-    cursor: pointer;
-    color: #94a3b8;
-    transition: background-color 0.12s ease, color 0.12s ease;
+	margin-left: auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	flex: 0 0 auto;
+	border: 1px solid #e2e4ef;
+	border-radius: 7px;
+	background: #f6f7fb;
+	color: #3943FF;
+	cursor: pointer;
+	padding: 0;
+	transition: background .15s ease, color .15s ease;
 }
-
-.rmd-sp-card-head:only-child .rmd-sp-eye,
-.rmd-sp-card-head .rmd-sp-eye { margin-left: auto; } /* pin right even with no chip */
-
-.rmd-sp-eye:hover,
-.rmd-sp-eye:focus {
-    background: rgba(37, 99, 235, 0.12);
-    color: #2563eb;
-    outline: none;
+.rmd-sp-eye:hover {
+	background: #3943FF;
+	color: #fff;
 }
-
 .rmd-sp-eye .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-    line-height: 1;
+	font-size: 17px;
+	width: 17px;
+	height: 17px;
+	line-height: 1;
 }
 
-/* ── Per-page grouping: this page / commun / (toggle) other pages ────────────
-   The picker groups the sections belonging to the page being edited, then the
-   reusable "commun" ones, and parks the rest behind a toggle (see
-   applyCategoryFilter / rmd_digital_page_builder_category). Hidden cards are
-   hidden at the grid-cell level — hiding the <a> alone would leave the <li>
-   holding an empty gap in the grid.
-
-   The extra `ul` in the selector is load-bearing: it lifts specificity to
-   (0,2,2) so this beats BOTH `.acf-fc-popup li { display: flex !important }`
-   (0,1,1) and `.acf-fc-popup li.rmd-sp-group { display: block !important }`
-   (0,2,1) below. Without it the group rule ties and, being later in the file,
-   wins — leaving the "autres pages" header visible while collapsed. */
-.acf-fc-popup ul li.rmd-sp-hidden,
-.acf-fc-popup ul a.rmd-sp-hidden {
-    display: none !important;
+/* ── Row-toolbar eye — matches ACF's native +/duplicate/trash controls ───── */
+/* ACF hides its row controls until the row is hovered/selected; mirror that so
+   our eye appears and disappears alongside its siblings, using ACF's own
+   real conditions (:hover / .-hover / .active-layout). */
+.acf-fc-layout-controls .rmd-sp-eye--row,
+.acf-fc-layout-handle .rmd-sp-eye--row {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	color: inherit;
+	text-decoration: none;
+	background: transparent;
+	visibility: hidden;
 }
-
-/* Group heading. Full-width so the cards below it read as one band. */
-.acf-fc-popup li.rmd-sp-group {
-    grid-column: 1 / -1;
-    display: block !important;
-    margin: 6px 2px 0 !important;
-    padding: 0 !important;
-    font-size: 9.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #8c8f94;
-    pointer-events: none; /* a label, never a click target */
-}
-
-.acf-fc-popup li.rmd-sp-group:first-child {
-    margin-top: 0 !important;
-}
-
-/* "Déjà utilisée" pill on a commun card already present on this page. */
-.rmd-sp-card-used {
-    display: inline-block;
-    flex: 0 0 auto;
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    line-height: 1.4;
-    padding: 2px 6px;
-    border-radius: 999px;
-    background: #e6f6ec;
-    color: #15803d;
-    white-space: nowrap;
-}
-
-/* The chip may now sit beside a pill; let the pair shrink before the eye does. */
-.rmd-sp-card-head {
-    flex-wrap: wrap;
-}
-
-/* The toggle spans the full grid width, below every visible card. `1 / -1` also
-   holds in the single-column media query below, so it needs no override. */
-.acf-fc-popup li.rmd-sp-more-li {
-    grid-column: 1 / -1;
-    margin-top: 2px !important;
-}
-
-.rmd-sp-more {
-    flex: 1 1 auto;
-    display: block;
-    width: 100%;
-    padding: 9px 10px;
-    background: transparent;
-    border: 1px dashed #c3c4c7;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 1.3;
-    color: #50575e;
-    text-align: center;
-    transition: border-color 0.12s ease, color 0.12s ease, background-color 0.12s ease;
-}
-
-.rmd-sp-more:hover,
-.rmd-sp-more:focus {
-    background: rgba(37, 99, 235, 0.04);
-    border-color: #2563eb;
-    color: #2563eb;
-    outline: none;
-}
-
-/* Single column when there isn't room for two. */
-@media (max-width: 620px) {
-    .acf-fc-popup ul {
-        grid-template-columns: 1fr;
-        width: min(340px, calc(100vw - 24px));
-    }
-}
-
-/* ── Eye icon in an existing row's toolbar ───────────────────────────────
-   Styled to match the native +/duplicate/trash icons on the row's header bar,
-   including their VISIBILITY RULE: ACF's own CSS keeps those icons
-   `visibility: hidden` at rest and reveals them only on `.layout:hover`/
-   `.layout.-hover` or on `.layout.active-layout` (the class ACF's
-   setActiveLayout() applies to a selected/open row — confirmed in
-   acf-pro-input.js). Our eye follows the exact same rule so it never appears
-   alone on a resting row. `color: inherit` follows the bar's two states
-   (dark on light/resting, white on blue/active) like its siblings.
-   NOT `.acf-icon` (that default is a filled circle). !important guards
-   against acf-input.css, which loads after this file. */
-.rmd-sp-eye--row {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    width: 28px !important;
-    height: 28px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: transparent !important;
-    background-image: none !important;
-    border: 0 !important;
-    border-radius: 4px !important;
-    box-shadow: none !important;
-    color: inherit !important;        /* match siblings: dark on light bar, white on blue */
-    text-decoration: none !important;
-    text-indent: 0 !important;
-    overflow: visible !important;
-    cursor: pointer;
-    visibility: hidden;                /* hidden at rest, like +/duplicate/trash */
-}
-
-.rmd-sp-eye--row .dashicons {
-    display: block;
-    font-size: 17px;
-    width: 17px;
-    height: 17px;
-    line-height: 17px;
-}
-
-/* Our dashicon is the glyph — suppress any pseudo-element ACF might paint. */
-.rmd-sp-eye--row::before,
-.rmd-sp-eye--row::after {
-    content: none !important;
-}
-
-/* Subtle translucent highlight on hover/focus, like the native controls. */
-.rmd-sp-eye--row:hover,
-.rmd-sp-eye--row:focus {
-    background: rgba(127, 127, 127, 0.22) !important;   /* neutral: subtle on light AND blue */
-    color: inherit !important;
-    outline: none;
-}
-
-/* Reveal only on hover or when the row is selected/active — same two
-   conditions ACF uses for the native +/duplicate/trash icons. `.-open` is NOT
-   this class in ACF (it's applied elsewhere, to the popup control) — the row
-   selection class is `.active-layout`. `:focus-visible` is an addition for
-   keyboard users tabbing to the button, harmless since it never fires on click. */
 .layout:hover .rmd-sp-eye--row,
 .layout.-hover .rmd-sp-eye--row,
 .layout.active-layout .rmd-sp-eye--row,
 .rmd-sp-eye--row:focus-visible {
-    visibility: visible;
+	visibility: visible !important;
 }
-
-/* Checked ACF's CSS again: the header bar only turns blue on `.active-layout`
-   (a plain hover leaves it light gray, `#f9f9f9`, and just reveals the dark
-   icons). `color: inherit` doesn't resolve to white either way — ACF sets
-   white explicitly per-icon, only inside the active-layout scope. So white
-   belongs ONLY here, not on hover — forcing it on hover made the eye
-   near-invisible (white on the still-light bar) while merely hovering. */
 .layout.active-layout .rmd-sp-eye--row {
-    color: #fff !important;
+	color: #fff;
+}
+.rmd-sp-eye--row .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	line-height: 1;
 }
 
-/* While the modal is open, get ACF's popup out of the way. `visibility` (not
-   `display`) keeps its anchors in the layout so insertion still works. */
-body.rmd-sp-modal-open .acf-fc-popup,
-body.rmd-sp-modal-open .acf-tooltip {
-    visibility: hidden !important;
-}
-
-/* ── Modal ──────────────────────────────────────────────────────────────── */
+/* ── The preview modal ───────────────────────────────────────────────────── */
 .rmd-sp-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 999999; /* above ACF's popup (which sits very high) and the admin bar */
-    display: none;
+	position: fixed;
+	inset: 0;
+	z-index: 999999;
+	display: none;
 }
-
-/* Centered in the viewport, both axes. */
 .rmd-sp-modal.is-open {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
-
+/* While the modal is open, hide ACF's own popup (it renders above everything)
+   with visibility — not display — so its anchors stay clickable for insertion. */
+body.rmd-sp-modal-open .acf-fc-popup {
+	visibility: hidden !important;
+}
 .rmd-sp-backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.68);
+	position: absolute;
+	inset: 0;
+	background: rgba(4, 17, 53, .72);
 }
-
 .rmd-sp-dialog {
-    position: relative;
-    width: min(1240px, 100%);
-    max-height: calc(100vh - 48px);
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35);
-    overflow: hidden;
-    animation: rmd-sp-in 0.14s ease-out;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: min(1240px, 100vw - 40px);
+	max-height: calc(100vh - 40px);
+	background: #fff;
+	border-radius: 14px;
+	box-shadow: 0 30px 80px -20px rgba(4, 17, 53, .5);
+	overflow: hidden;
 }
-
-@keyframes rmd-sp-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
 .rmd-sp-head {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 13px 18px;
-    border-bottom: 1px solid #dcdcde;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 14px 18px;
+	border-bottom: 1px solid #e9eaf2;
 }
-
-/* The heading is a coloured category chip + the section title (setModalTitle),
-   matching the picker cards rather than printing the raw "[Commun] …" label.
-   min-width:0 lets a long title shrink instead of shoving the close button. */
 .rmd-sp-title {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-    font-size: 15px;
-    font-weight: 600;
-    color: #1d2327;
+	margin: 0;
+	font-size: 15px;
+	font-weight: 600;
+	color: #041135;
 }
-
-.rmd-sp-title-text {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-/* Same palette as the card chip (shared --rmd-chip-* vars), a step larger to sit
-   comfortably against the 15px heading. */
-.rmd-sp-title-cat {
-    flex: 0 0 auto;
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    line-height: 1.4;
-    padding: 3px 9px;
-    border-radius: 999px;
-    background: var(--rmd-chip-bg, #eef0f2);
-    color: var(--rmd-chip-fg, #475569);
-    white-space: nowrap;
-}
-
 .rmd-sp-close {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    padding: 0;              /* a UA/admin padding would shift the glyph */
-    line-height: 0;          /* no text baseline to knock the icon off-centre */
-    color: #50575e;
-    background: #f0f0f1;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+	margin-left: auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border: 0;
+	border-radius: 8px;
+	background: #f1f2f7;
+	color: #596980;
+	cursor: pointer;
+	transition: background .15s ease, color .15s ease;
 }
-
-/* The icon is a dashicon, not a `&times;` character: a text glyph carries its
-   own baseline and side-bearing, which is what pushed the old × off-centre. */
-.rmd-sp-close .dashicons {
-    display: block;
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-    line-height: 20px;
-}
-
 .rmd-sp-close:hover {
-    background: #e0e0e1;
-    color: #1d2327;
+	background: #fde7ee;
+	color: #E4004D;
 }
-
 .rmd-sp-close:focus-visible {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+	outline: 2px solid #3943FF;
+	outline-offset: 2px;
 }
 
-/* The stage scrolls vertically; never horizontally. */
 .rmd-sp-stage {
-    position: relative;
-    flex: 1 1 auto;
-    min-height: 220px;
-    max-height: calc(100vh - 280px);
-    overflow-x: hidden;
-    overflow-y: auto;
-    background: #f6f7f7;
+	position: relative;
+	flex: 1 1 auto;
+	overflow-y: auto;
+	overflow-x: hidden;
+	background: #f9fafb;
+	min-height: 200px;
 }
-
-/* transform:scale() shrinks the render visually but the scaler keeps its
-   1280px layout box — the clip absorbs that overflow and carries the real
-   (scaled) height, so no phantom space or horizontal scrollbar appears. */
-.rmd-sp-clip {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-    background: #fff;
-}
-
-.rmd-sp-scaler {
-    transform-origin: top left;
-    background: #fff;
-}
-
-.rmd-sp-scaler iframe {
-    display: block;
-    width: 1280px;   /* layouts are designed around this width */
-    height: 400px;   /* replaced once the content height is measured */
-    border: 0;
-    background: #fff;
-}
-
 .rmd-sp-status {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    color: #646970;
-    background: #f6f7f7;
-    z-index: 1;
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 13px;
+	color: #596980;
+	background: #f9fafb;
+	z-index: 2;
 }
-
 .rmd-sp-status.is-error {
-    color: #b32d2e;
+	color: #E4004D;
+}
+/* .rmd-sp-clip absorbs the overflow of the scaled render (the scaler keeps its
+   1280px layout box; the clip carries the *scaled* height). */
+.rmd-sp-clip {
+	overflow: hidden;
+}
+.rmd-sp-scaler {
+	transform-origin: top left;
+}
+.rmd-sp-scaler iframe {
+	width: 1280px;
+	border: 0;
+	display: block;
+	background: #fff;
 }
 
 .rmd-sp-body {
-    flex: 0 0 auto;
-    padding: 12px 18px;
-    border-top: 1px solid #dcdcde;
+	padding: 12px 18px;
+	border-top: 1px solid #e9eaf2;
+	font-size: 12.5px;
+	color: #596980;
 }
-
 .rmd-sp-desc {
-    margin: 0;
-    font-size: 13px;
-    line-height: 1.6;
-    color: #50575e;
+	margin: 0;
+	color: #041135;
+	font-weight: 500;
 }
-
 .rmd-sp-note {
-    margin: 6px 0 0;
-    font-size: 12px;
-    font-style: italic;
-    color: #787c82;
+	margin: 4px 0 0;
 }
-
-/* Unsaved-changes warning: the preview shows saved content, say so plainly. */
 .rmd-sp-hint {
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    margin: 8px 0 0;
-    padding: 8px 10px;
-    font-size: 12px;
-    line-height: 1.5;
-    color: #8a6100;
-    background: #fcf3e3;
-    border: 1px solid #f0d9a8;
-    border-radius: 4px;
+	display: none;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 8px 0 0;
+	padding: 9px 12px;
+	border-radius: 8px;
+	background: #fef3c7;
+	border: 1px solid #fde68a;
+	color: #92400e;
+	font-weight: 600;
 }
-
 .rmd-sp-hint .dashicons {
-    flex: 0 0 auto;
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
+	flex: 0 0 auto;
 }
 
 .rmd-sp-foot {
-    flex: 0 0 auto;
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    padding: 12px 18px;
-    background: #f6f7f7;
-    border-top: 1px solid #dcdcde;
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	padding: 12px 18px;
+	border-top: 1px solid #e9eaf2;
+	background: #fbfbfd;
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .rmd-sp-dialog { animation: none; }
-    .rmd-sp-eye { transition: none; }
+@media (max-width: 620px) {
+	.acf-fc-popup ul.rmd-sp-grid {
+		grid-template-columns: 1fr !important;
+		width: calc(100vw - 40px) !important;
+	}
+}
+
+/* Duplicate-section warning (mirrors AMD; injected in inc/admin-ux.php). */
+.rmd-dup-note {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin: 8px 12px;
+	padding: 9px 12px;
+	border-radius: 6px;
+	background: #fef3c7;
+	border: 1px solid #fde68a;
+	color: #92400e;
+	font-size: 12.5px;
+	font-weight: 600;
+	line-height: 1.5;
+}
+.rmd-dup-note button {
+	border: 0;
+	background: none;
+	color: #92400e;
+	cursor: pointer;
+	font-size: 15px;
+	line-height: 1;
+	padding: 0 2px;
 }

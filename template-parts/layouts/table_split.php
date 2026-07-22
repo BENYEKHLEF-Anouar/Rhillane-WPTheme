@@ -16,6 +16,8 @@ if (!$rows && !$side_stats && !$comment) {
 	return;
 }
 
+$lcp = 0 === (int) ($args['index'] ?? -1);
+
 rmd_section_open();
 get_template_part('template-parts/components/section-header', null, array(
 	'eyebrow'    => rmd_get_sub_field('eyebrow'),
@@ -32,9 +34,17 @@ get_template_part('template-parts/components/section-header', null, array(
 			'caption'  => rmd_get_sub_field('media_caption'),
 			'source'   => rmd_get_sub_field('media_source'),
 			'class'    => 'mt-0',
+			'eager'    => $lcp,
 		)); ?>
 		<div>
 			<?php get_template_part('template-parts/components/data-table', null, array('columns' => $columns, 'rows' => $rows)); ?>
+			<?php if ($side_stats) : ?>
+			<div class="statduo mt-6">
+				<?php foreach ($side_stats as $stat) :
+					get_template_part('template-parts/components/stat-cell', null, array_merge($stat, array('style' => 'card')));
+				endforeach; ?>
+			</div>
+			<?php endif; ?>
 			<?php get_template_part('template-parts/components/comment-box', null, array('text' => $comment, 'class' => 'mt-6')); ?>
 		</div>
 	<?php else : ?>

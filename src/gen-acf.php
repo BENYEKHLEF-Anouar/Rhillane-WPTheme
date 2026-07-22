@@ -5,6 +5,11 @@
  * Keys: group_rmd_* / field_rmd_cs_<layout>_<name> / layout_rmd_cs_<name>
  */
 
+// CLI-only tool (and excluded from deploy). Never executable over HTTP.
+if (PHP_SAPI !== 'cli') {
+	exit;
+}
+
 function f_base($layout, $name, $label, $type, $extra = array()) {
 	return array_merge(array(
 		'key'               => "field_rmd_cs_{$layout}_{$name}",

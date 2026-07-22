@@ -48,16 +48,31 @@ function rmd_image($image, $args = array()) {
 	));
 
 	$id = is_array($image) ? (int) ($image['ID'] ?? 0) : (int) $image;
-	if (!$id) {
-		return '';
+	if ($id) {
+		return wp_get_attachment_image($id, $args['size'], false, array(
+			'class'         => $args['class'],
+			'loading'       => $args['eager'] ? 'eager' : 'lazy',
+			'decoding'      => 'async',
+			'fetchpriority' => $args['eager'] ? 'high' : 'auto',
+		));
 	}
 
-	return wp_get_attachment_image($id, $args['size'], false, array(
-		'class'         => $args['class'],
-		'loading'       => $args['eager'] ? 'eager' : 'lazy',
-		'decoding'      => 'async',
-		'fetchpriority' => $args['eager'] ? 'high' : 'auto',
-	));
+	// No attachment ID: fall back to a bare URL if one is present (a demo/preview
+	// placeholder, or an image array that somehow lost its ID). Real section
+	// images always carry an ID and take the branch above.
+	$url = is_array($image) ? ($image['url'] ?? '') : (is_string($image) ? $image : '');
+	if ('' === $url) {
+		return '';
+	}
+	$alt = is_array($image) ? ($image['alt'] ?? '') : '';
+	return sprintf(
+		'<img src="%s" alt="%s" class="%s" loading="%s" decoding="async" fetchpriority="%s">',
+		esc_url($url),
+		esc_attr($alt),
+		esc_attr($args['class']),
+		$args['eager'] ? 'eager' : 'lazy',
+		$args['eager'] ? 'high' : 'auto'
+	);
 }
 
 /**
@@ -71,8 +86,20 @@ function rmd_section_open($extra_class = '') {
 	$flush      = 'flush' === rmd_get_sub_field('padding_top');
 
 	$classes = trim('rmd-sec ' . ('light' === $background ? 'bg-nuk ' : '') . $extra_class);
-	$id      = $anchor ? ' id="' . esc_attr(sanitize_title($anchor)) . '"' : '';
-	$pad     = $flush ? 'pt-0 pb-16 md:pb-24' : 'py-16 md:py-24';
+
+	// Per-instance scoping hook (spec §11.1): a class unique to this section
+	// instance, so styling/JS/analytics can target one instance without leaking
+	// to the same layout elsewhere. Not a styled class — a hook only.
+	$layout = rmd_get_row_layout();
+	if ($layout) {
+		static $rmd_sec_counts = array();
+		$layout = sanitize_html_class($layout);
+		$rmd_sec_counts[$layout] = ($rmd_sec_counts[$layout] ?? 0) + 1;
+		$classes .= ' rmd-sec--' . $layout . ' rmd-sec--' . $layout . '-' . $rmd_sec_counts[$layout];
+	}
+
+	$id  = $anchor ? ' id="' . esc_attr(sanitize_title($anchor)) . '"' : '';
+	$pad = $flush ? 'pt-0 pb-16 md:pb-24' : 'py-16 md:py-24';
 
 	echo '<section class="' . esc_attr($classes) . '"' . $id . '>';
 	echo '<div class="mx-auto max-w-content px-6 ' . $pad . '">';

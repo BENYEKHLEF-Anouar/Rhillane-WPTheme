@@ -1,0 +1,113 @@
+/**
+ * Image loading effects (spec §12) — hand-written, loaded after the compiled
+ * main.css, so it needs no Tailwind rebuild. Drives the markup emitted by
+ * rmd_render_image(): a .img-wrap that reserves space (aspect-ratio, set inline)
+ * and reveals the image with a fade / skeleton / blur-up once .is-loaded lands.
+ *
+ * Progressive enhancement: the hidden/animated states are scoped under
+ * `html.rmd-js` (added by a tiny head script in inc/enqueue.php). With JavaScript
+ * disabled that class is absent, so images render at full opacity — never a blank
+ * box. `.is-loaded` (from the inline onload/onerror + the main.js fallback) does
+ * the reveal, and prefers-reduced-motion forces the image visible outright.
+ */
+
+.img-wrap {
+	display: block;
+	position: relative;
+	overflow: hidden;
+}
+.img-wrap > img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* Fade — the default (only hides when JS is present). */
+html.rmd-js .img-effect--fade .img-main {
+	opacity: 0;
+	transition: opacity .5s ease;
+}
+.img-effect--fade.is-loaded .img-main {
+	opacity: 1;
+}
+
+/* Skeleton — shimmering placeholder until the image fades in. */
+html.rmd-js .img-effect--skeleton {
+	background: #eef0f6;
+}
+html.rmd-js .img-effect--skeleton::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .6), transparent);
+	transform: translateX(-100%);
+	animation: rmdShimmer 1.4s ease-in-out infinite;
+	z-index: 1;
+}
+.img-effect--skeleton.is-loaded::before {
+	display: none;
+}
+html.rmd-js .img-effect--skeleton .img-main {
+	opacity: 0;
+	transition: opacity .4s ease;
+}
+.img-effect--skeleton.is-loaded .img-main {
+	opacity: 1;
+}
+@keyframes rmdShimmer {
+	100% { transform: translateX(100%); }
+}
+
+/* Blur-up (LQIP) — a tiny blurred thumbnail under the full image. */
+html.rmd-js .img-effect--blur .img-lqip {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	filter: blur(14px);
+	transform: scale(1.06);
+	transition: opacity .5s ease;
+}
+.img-effect--blur.is-loaded .img-lqip {
+	opacity: 0;
+}
+html.rmd-js .img-effect--blur .img-main {
+	position: relative;
+	opacity: 0;
+	transition: opacity .5s ease;
+	z-index: 1;
+}
+.img-effect--blur.is-loaded .img-main {
+	opacity: 1;
+}
+
+/* None — no transition. */
+.img-effect--none .img-main {
+	opacity: 1;
+}
+
+.img-link {
+	display: block;
+}
+
+/* Accessibility: no shimmer/fade — just show the image (wins via !important). */
+@media (prefers-reduced-motion: reduce) {
+	.img-main,
+	.img-lqip {
+		transition: none !important;
+	}
+	.img-effect--fade .img-main,
+	.img-effect--skeleton .img-main,
+	.img-effect--blur .img-main {
+		opacity: 1 !important;
+	}
+	.img-effect--skeleton::before {
+		animation: none;
+		display: none;
+	}
+	.img-effect--blur .img-lqip {
+		opacity: 0 !important;
+	}
+}

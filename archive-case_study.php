@@ -4,7 +4,7 @@
  */
 defined('ABSPATH') || exit;
 
-get_header();
+rmd_render_header();
 ?>
 <main class="rmd-archive rmd-archive--case-study">
 	<header class="rmd-archive__head">
@@ -26,4 +26,4 @@ get_header();
 	<?php endif; ?>
 </main>
 <?php
-get_footer();
+rmd_render_footer();

@@ -11,6 +11,9 @@ if (!$items) {
 	return;
 }
 
+// Only the first image of section 0 is a plausible LCP candidate → eager.
+$lcp = 0 === (int) ($args['index'] ?? -1);
+
 rmd_section_open();
 get_template_part('template-parts/components/section-header', null, array(
 	'eyebrow'    => rmd_get_sub_field('eyebrow'),
@@ -20,13 +23,13 @@ get_template_part('template-parts/components/section-header', null, array(
 
 if ('2' === $columns) : ?>
 	<div class="shot-gallery">
-		<?php foreach ($items as $item) :
-			get_template_part('template-parts/components/screenshot-frame', null, $item);
+		<?php foreach ($items as $i => $item) :
+			get_template_part('template-parts/components/screenshot-frame', null, array_merge($item, array('eager' => $lcp && 0 === $i)));
 		endforeach; ?>
 	</div>
 <?php else :
-	foreach ($items as $item) {
-		get_template_part('template-parts/components/screenshot-frame', null, $item);
+	foreach ($items as $i => $item) {
+		get_template_part('template-parts/components/screenshot-frame', null, array_merge($item, array('eager' => $lcp && 0 === $i)));
 	}
 endif;
 
