@@ -411,38 +411,13 @@
 	}
 
 	// ── 2. Existing rows ─────────────────────────────────────────────────────
-	function decorateRow(row) {
-		if (row.dataset.rmdPreview) return;
-		if (!isRealRow(row)) return; // never decorate a clone template
-
-		var name = row.getAttribute('data-layout');
-		if (!name || !layouts[name]) return;
-
-		var controls = row.querySelector('.acf-fc-layout-controls') || row.querySelector('.acf-fc-layout-handle');
-		if (!controls) return;
-
-		row.dataset.rmdPreview = '1';
-
-		var btn = makeRowEye(layouts[name].label);
-		btn.addEventListener('click', function (e) {
-			e.preventDefault();
-			e.stopPropagation();
-
-			var index = rowIndexOf(row);
-			var field = row.closest('.acf-field-flexible-content');
-			var saved = field ? savedRowCount(field) : null;
-
-			var hint = '';
-			if (saved !== null && index >= saved) {
-				hint = i18n.newRowHint || '';   // row added, never saved
-			} else if (postIsDirty()) {
-				hint = i18n.dirtyHint || '';    // page has unsaved edits
-			}
-
-			openModal({ layout: name, rowIndex: index, hint: hint, isRow: true });
-		});
-
-		controls.insertBefore(btn, controls.firstChild);
+	// DISABLED: adding an eye into ACF's row controls is the suspected cause of
+	// rows no longer collapsing/expanding. Until that's confirmed on a live WP,
+	// this is a no-op so our code never touches ACF's rows — the "Add section"
+	// picker (decoratePopup) is unaffected. Re-enable with a safer insertion once
+	// the collapse issue is understood.
+	function decorateRow() {
+		return;
 	}
 
 	/** The post was saved: re-baseline the saved-row count and refresh an open
