@@ -87,6 +87,88 @@
 		}
 	}
 
+	/* ── 1.5 [acf_fc_layout] self-heal. ──────────────────────────────────────
+	 * Live diagnosis showed rows whose hidden [acf_fc_layout] input is not a
+	 * direct child anymore (something on the page restructures ACF's row markup).
+	 * Without that input, saving the post silently corrupts the sections value.
+	 * Heal: move a strayed input back to the row root, or rebuild it from the
+	 * row's own sub-field names. Re-run before every save. */
+
+	var healLog = [];
+
+	function fcInput(row) {
+		for (var i = 0; i < row.children.length; i++) {
+			var c = row.children[i];
+			if (c.tagName === 'INPUT' && /\[acf_fc_layout\]$/.test(c.getAttribute('name') || '')) {
+				return c;
+			}
+		}
+		return null;
+	}
+
+	function healRow(row) {
+		if (!row || row.closest('.clones') || fcInput(row)) return false;
+
+		// The input exists but was wrapped/moved deeper → move it back to the root.
+		var stray = row.querySelector('input[name$="[acf_fc_layout]"]');
+		if (stray) {
+			row.insertBefore(stray, row.firstChild);
+			healLog.push({ row: row.getAttribute('data-id'), how: 'moved-back-from-deeper' });
+			return true;
+		}
+
+		// Fully gone → rebuild it. The name prefix comes from any sub-field input
+		// of this same row (…[row-N]…), the value from the row's data-layout.
+		var id = row.getAttribute('data-id');
+		var layout = row.getAttribute('data-layout');
+		if (!id || !layout) return false;
+
+		var marker = '[' + id + ']';
+		var els = row.querySelectorAll('input[name], textarea[name], select[name]');
+		for (var j = 0; j < els.length; j++) {
+			var n = els[j].getAttribute('name') || '';
+			var at = n.indexOf(marker);
+			if (at > 0) {
+				var input = document.createElement('input');
+				input.type = 'hidden';
+				input.name = n.slice(0, at + marker.length) + '[acf_fc_layout]';
+				input.value = layout;
+				row.insertBefore(input, row.firstChild);
+				healLog.push({ row: id, how: 'rebuilt', name: input.name });
+				return true;
+			}
+		}
+		healLog.push({ row: id, how: 'FAILED — no sub-field input to derive the name from' });
+		return false;
+	}
+
+	function healAll() {
+		var healed = 0;
+		Array.prototype.forEach.call(
+			document.querySelectorAll('.acf-field-flexible-content .acf-flexible-content > .values > .layout'),
+			function (row) { if (healRow(row)) healed++; }
+		);
+		if (healed) {
+			warnOnce('healed', healed + ' section row(s) were missing their [acf_fc_layout] ' +
+				'input — restored so collapse and SAVING work. Something on this page is ' +
+				'restructuring ACF rows; run rmdAcfDiag() and report the output.');
+		}
+		return healed;
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', function () {
+			healAll();
+			setTimeout(healAll, 1500); // catch late restructuring too
+		});
+	} else {
+		healAll();
+		setTimeout(healAll, 1500);
+	}
+
+	// A save with rows un-healed would drop their layout key — heal first, always.
+	document.addEventListener('submit', function () { healAll(); }, true);
+
 	/* ── 2. Collapse/expand failsafe. ────────────────────────────────────────
 	 * Capture phase: we always see the click, even if another handler stops
 	 * propagation. We never preventDefault and never act immediately — ACF gets
@@ -110,6 +192,7 @@
 		if (ctl) {
 			var row = ctl.closest('.layout');
 			if (!row || row.closest('.clones')) return;
+			healRow(row); // ACF's own handler runs after us — give it a sane row
 			var before = row.classList.contains('-collapsed');
 			setTimeout(function () {
 				if (row.classList.contains('-collapsed') === before) {
@@ -159,6 +242,7 @@
 			fcInstances: null,
 			fcClickHandlers: null,
 			rows: [],
+			healLog: healLog,
 			mistralScripts: [],
 			pageErrors: pageErrors
 		};
@@ -188,7 +272,14 @@
 					layout: row.getAttribute('data-layout'),
 					id: row.getAttribute('data-id'),
 					firstChildInputName: input ? (input.getAttribute('name') || '(no name!)') : '(no direct-child input!)',
-					collapsed: row.classList.contains('-collapsed')
+					collapsed: row.classList.contains('-collapsed'),
+					// Direct children reveal WHO restructured the row (foreign wrappers
+					// break both the fc_layout input and ACF's `>` collapse CSS).
+					children: Array.prototype.map.call(row.children, function (c) {
+						return c.tagName.toLowerCase() +
+							(c.className ? '.' + String(c.className).trim().split(/\s+/).slice(0, 3).join('.') : '');
+					}),
+					htmlStart: row.outerHTML.slice(0, 400)
 				});
 			}
 		);
