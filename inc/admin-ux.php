@@ -1043,37 +1043,62 @@ function rmd_section_duplicate_notice() {
 			return v == null ? '' : String(v);
 		}
 
+		function addNote($row, label) {
+			var $note = $('<div class="rmd-dup-note" style="display:flex;align-items:flex-start;gap:10px;margin:8px 12px;padding:9px 12px;border-radius:6px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;font-size:12.5px;font-weight:600;line-height:1.5;">' +
+				'<span style="flex:1;"></span>' +
+				'<button type="button" class="rmd-dup-dismiss" aria-label="' + dupI18n.dismiss + '" style="border:0;background:none;color:#92400e;cursor:pointer;font-size:15px;line-height:1;padding:0 2px;">&times;</button>' +
+				'</div>');
+			$note.children('span').text(dupI18n.text.replace('%s', label));
+
+			$note.find('.rmd-dup-dismiss').on('click', function () {
+				$row.attr('data-rmd-dup-dismissed', '1');
+				$note.remove();
+			});
+
+			// BELOW this row's title bar (ACF <=6.4 uses .acf-fc-layout-handle,
+			// 6.5+ .acf-fc-layout-actions-wrap) so the band unambiguously belongs
+			// to THIS row — never floating above its header like a stray banner.
+			var $header = $row.children('.acf-fc-layout-handle, .acf-fc-layout-actions-wrap').last();
+			if ($header.length) { $header.after($note); } else { $row.prepend($note); }
+		}
+
 		function scan(field) {
 			var $rows = field.$el.find('.acf-flexible-content .values > .layout')
 				.not('[data-id="acfcloneindex"]').not('.acf-clone');
 
 			field.$el.find('.rmd-dup-note').remove();
 
-			var seen = {};
+			// Group rows by layout+variant, then decide who wears the warning:
+			// the rows ADDED THIS SESSION if any (the "new one", even when it was
+			// inserted ABOVE the original), otherwise every duplicate after the
+			// first in page order.
+			var groups = {};
 			$rows.each(function () {
 				var $row = $(this);
 				var name = $row.attr('data-layout');
 				if (!name) return;
 				var sig = name + '|' + variantOf($row);
-				if (!seen[sig]) { seen[sig] = true; return; }
-				if ($row.attr('data-rmd-dup-dismissed') === '1') return;
+				(groups[sig] = groups[sig] || []).push($row);
+			});
 
-				var label = $row.attr('data-label') || name;
-				var $note = $('<div class="rmd-dup-note" style="display:flex;align-items:flex-start;gap:10px;margin:8px 12px;padding:9px 12px;border-radius:6px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;font-size:12.5px;font-weight:600;line-height:1.5;">' +
-					'<span style="flex:1;"></span>' +
-					'<button type="button" class="rmd-dup-dismiss" aria-label="' + dupI18n.dismiss + '" style="border:0;background:none;color:#92400e;cursor:pointer;font-size:15px;line-height:1;padding:0 2px;">&times;</button>' +
-					'</div>');
-				$note.children('span').text(dupI18n.text.replace('%s', label));
-
-				$note.find('.rmd-dup-dismiss').on('click', function () {
-					$row.attr('data-rmd-dup-dismissed', '1');
-					$note.remove();
+			$.each(groups, function (sig, list) {
+				if (list.length < 2) return;
+				var flagged = list.filter(function ($r) { return $r.attr('data-rmd-new') === '1'; });
+				if (!flagged.length) flagged = list.slice(1);
+				flagged.forEach(function ($r) {
+					if ($r.attr('data-rmd-dup-dismissed') === '1') return;
+					addNote($r, $r.attr('data-label') || sig.split('|')[0]);
 				});
-
-				var $handle = $row.children('.acf-fc-layout-handle');
-				if ($handle.length) { $handle.after($note); } else { $row.prepend($note); }
 			});
 		}
+
+		// Rows added during this editing session (insert or duplicate) are "the
+		// new one" a duplicate warning should point at — wherever they landed.
+		acf.addAction('append', function ($el) {
+			if (!$el || !$el.hasClass) return;
+			var $marked = $el.hasClass('layout') ? $el : $el.find('.layout');
+			$marked.each(function () { $(this).attr('data-rmd-new', '1'); });
+		});
 
 		function bind(field) {
 			field.on('change', function () { scan(field); });
