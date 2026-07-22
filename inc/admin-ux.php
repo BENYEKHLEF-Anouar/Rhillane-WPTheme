@@ -117,6 +117,253 @@ function rmd_localize_section_labels($field) {
 }
 
 /**
+ * Runtime English for the French-authored field group (same "no .mo files"
+ * pattern as the section names): acf-json stays the single FR source of truth,
+ * and when the admin's profile language isn't French, every label /
+ * instruction / select choice / "Ajouter…" button is swapped from these FR→EN
+ * dictionaries at load_field time. Keyed by the FRENCH string, so repeated
+ * labels ("Fond", "Ancre (id)"…) are covered once and new fields with known
+ * labels translate automatically. Unknown strings pass through unchanged.
+ */
+function rmd_admin_en_strings() {
+	return array(
+		'labels' => array(
+			'Nom du client (rouge)'    => 'Client name (red)',
+			'Titre — début'            => 'Heading — start',
+			'Titre — partie dégradée'  => 'Heading — gradient part',
+			'Titre — fin'              => 'Heading — end',
+			'Sous-titre'               => 'Subheading',
+			'Icône (SVG)'              => 'Icon (SVG)',
+			'Libellé'                  => 'Label',
+			'Badge rouge'              => 'Red badge',
+			'Afficher la ligne contact' => 'Show the contact line',
+			'Carte stats (bloc navy)'  => 'Stats card (navy block)',
+			'Valeur'                   => 'Value',
+			'Titre (H2)'               => 'Heading (H2)',
+			'Titre'                    => 'Heading',
+			'Mini-tag vert'            => 'Green mini-tag',
+			'Note verte à côté'        => 'Green note beside it',
+			'Libellé / delta'          => 'Label / delta',
+			'Valeur en vert'           => 'Show value in green',
+			'Fond'                     => 'Background',
+			'Ancre (id)'               => 'Anchor (id)',
+			'Espacement haut'          => 'Top spacing',
+			'Couleur des chiffres'     => 'Number color',
+			'Cartes'                   => 'Cards',
+			'Chiffre'                  => 'Number',
+			'Kicker (majuscules)'      => 'Kicker (uppercase)',
+			'Texte'                    => 'Text',
+			'Kicker des cartes'        => 'Cards kicker',
+			'Cartes approche'          => 'Approach cards',
+			'Kicker des tuiles'        => 'Tiles kicker',
+			'Tuiles stats'             => 'Stat tiles',
+			'Valeur (verte)'           => 'Value (green)',
+			'Libellé (2 lignes ok)'    => 'Label (2 lines ok)',
+			'Bandeau preuve (vert)'    => 'Proof band (green)',
+			'Étapes'                   => 'Steps',
+			'Puces — une par ligne'    => 'Bullets — one per line',
+			'Colonnes'                 => 'Columns',
+			'Captures'                 => 'Screenshots',
+			'Capture'                  => 'Screenshot',
+			'Cadre'                    => 'Frame',
+			'Libellé (mot-clé)'        => 'Label (keyword)',
+			'Badge position (#1)'      => 'Position badge (#1)',
+			'Défilement interne'       => 'Internal scrolling',
+			'Hauteur (px)'             => 'Height (px)',
+			'Zoom (lightbox)'          => 'Zoom (lightbox)',
+			'Légende'                  => 'Caption',
+			'Source (pill verte)'      => 'Source (green pill)',
+			'Colonnes du tableau'      => 'Table columns',
+			'En-tête'                  => 'Header',
+			'Colonne verte'            => 'Green column',
+			'Lignes du tableau'        => 'Table rows',
+			'Cellules'                 => 'Cells',
+			'Contenu'                  => 'Content',
+			'Vert/gras'                => 'Green/bold',
+			'Stats latérales (navy)'   => 'Side stats (navy)',
+			'Delta / libellé'          => 'Delta / label',
+			'Commentaire (encadré)'    => 'Comment (boxed)',
+			'Capture à gauche ?'       => 'Screenshot on the left?',
+			'Légende de la capture'    => 'Screenshot caption',
+			'Titre de la courbe'       => 'Chart title',
+			'Note (source)'            => 'Note (source)',
+			'Préfixe des valeurs'      => 'Value prefix',
+			'Points de données'        => 'Data points',
+			'Libellé (mois)'           => 'Label (month)',
+			'Texte du bouton'          => 'Button text',
+			'Lien du bouton'           => 'Button link',
+			'Ligne contact'            => 'Contact line',
+			// Site Settings — header/footer chrome (inc/chrome.php)
+			'Logo (en-tête)'           => 'Logo (header)',
+			'Bouton — texte'           => 'Button — text',
+			'Bouton — lien'            => 'Button — link',
+			'En-tête fixe (sticky)'    => 'Sticky header',
+			'Logo (pied de page)'      => 'Logo (footer)',
+			'Mentions / copyright'     => 'Notices / copyright',
+			'Pied de page'             => 'Footer',
+		),
+		'instructions' => array(
+			'Coller le code SVG inline (icône trait).' => 'Paste the inline SVG code (stroke icon).',
+			'Email / téléphone / site depuis Réglages du site.' => 'Email / phone / website come from Site Settings.',
+			'HTML léger autorisé : <span class="unit">→</span>.' => 'Light HTML allowed: <span class="unit">→</span>.',
+			'HTML léger autorisé : <span class="thin">…</span>, <b>.' => 'Light HTML allowed: <span class="thin">…</span>, <b>.',
+			'HTML léger autorisé : <b>, <span class="…">.' => 'Light HTML allowed: <b>, <span class="…">.',
+			'HTML léger autorisé : <b>.' => 'Light HTML allowed: <b>.',
+			'Ex. resultats, methode, contact — pour les liens #ancre.' => 'E.g. resultats, methode, contact — for #anchor links.',
+			'URL ou mailto: — champ texte volontairement (le type url refuse mailto).' => 'URL or mailto: — deliberately a text field (the url type rejects mailto).',
+			// Site Settings — header/footer chrome (inc/chrome.php)
+			'Optionnel — remplace le logo du thème. Vide = logo par défaut (fond blanc).' => 'Optional — replaces the theme logo. Empty = the default logo (white background).',
+			'Optionnel — remplace le logo du thème. Vide = logo par défaut (fond sombre).' => 'Optional — replaces the theme logo. Empty = the default logo (dark background).',
+			'URL, ancre (#contact) ou mailto:.' => 'URL, anchor (#contact) or mailto:.',
+			'HTML léger autorisé (<b>, <br>). Vide = © année + nom du site.' => 'Light HTML allowed (<b>, <br>). Empty = © year + site name.',
+		),
+		'messages' => array(
+			'Reste en haut et rétrécit au défilement.' => 'Stays at the top and shrinks on scroll.',
+		),
+		// Placeholders authored in acf-json / chrome.php (example content included:
+		// the user wants ZERO French in an English workspace).
+		'placeholders' => array(
+			'Stratégie SEO · 2024 → 2026'             => 'SEO strategy · 2024 → 2026',
+			'AUTORITÉ'                                 => 'AUTHORITY',
+			'Ce que ça a donné, chiffres à l’appui'    => 'What it delivered, numbers in hand',
+			'Domain Rating, juin 2024 → juin 2026'     => 'Domain Rating, June 2024 → June 2026',
+			'Audit web gratuit'                        => 'Free website audit',
+		),
+		'choices' => array(
+			'Bandeau pleine largeur (KPI)'   => 'Full-width band (KPI)',
+			'Carte arrondie (statduo)'       => 'Rounded card (statduo)',
+			'Blanc'                          => 'White',
+			'Gris clair'                     => 'Light grey',
+			'Normal'                         => 'Normal',
+			'Collé à la section précédente'  => 'Flush with the previous section',
+			'Rouge (contexte/problème)'      => 'Red (context/problem)',
+			'Vert (résultat)'                => 'Green (result)',
+			'1 colonne'                      => '1 column',
+			'2 colonnes'                     => '2 columns',
+			'Simple'                         => 'Plain',
+			'Navigateur (points + libellé)'  => 'Browser (dots + label)',
+			'Pas de capture'                 => 'No screenshot',
+			'Capture à gauche'               => 'Screenshot on the left',
+		),
+		'buttons' => array(
+			'Ajouter une section'  => 'Add a section',
+			'Ajouter un tag'       => 'Add a tag',
+			'Ajouter une stat'     => 'Add a stat',
+			'Ajouter une carte'    => 'Add a card',
+			'Ajouter une tuile'    => 'Add a tile',
+			'Ajouter une étape'    => 'Add a step',
+			'Ajouter une capture'  => 'Add a screenshot',
+			'Ajouter une colonne'  => 'Add a column',
+			'Ajouter une ligne'    => 'Add a row',
+			'Ajouter une cellule'  => 'Add a cell',
+			'Ajouter un point'     => 'Add a point',
+			'Ajouter une pill'     => 'Add a pill',
+		),
+	);
+}
+
+/** Swap FR strings for EN on every rmd_ field when the admin isn't French.
+ *  Priority 20: runs AFTER the hints filter, so injected hints (already
+ *  locale-aware) are never double-processed. */
+add_filter('acf/load_field', 'rmd_translate_field_for_admin', 20);
+function rmd_translate_field_for_admin($field) {
+	if (!is_admin() || rmd_is_fr()) {
+		return $field;
+	}
+	if (empty($field['key']) || 0 !== strpos($field['key'], 'field_rmd_')) {
+		return $field;
+	}
+	static $en = null;
+	if (null === $en) {
+		$en = rmd_admin_en_strings();
+	}
+	if (!empty($field['label']) && isset($en['labels'][$field['label']])) {
+		$field['label'] = $en['labels'][$field['label']];
+	}
+	if (!empty($field['instructions']) && isset($en['instructions'][$field['instructions']])) {
+		$field['instructions'] = $en['instructions'][$field['instructions']];
+	}
+	if (!empty($field['button_label']) && isset($en['buttons'][$field['button_label']])) {
+		$field['button_label'] = $en['buttons'][$field['button_label']];
+	}
+	if (!empty($field['message']) && isset($en['messages'][$field['message']])) {
+		$field['message'] = $en['messages'][$field['message']];
+	}
+	if (!empty($field['placeholder']) && isset($en['placeholders'][$field['placeholder']])) {
+		$field['placeholder'] = $en['placeholders'][$field['placeholder']];
+	}
+	if (!empty($field['choices']) && is_array($field['choices'])) {
+		foreach ($field['choices'] as $value => $choice_label) {
+			if (isset($en['choices'][$choice_label])) {
+				$field['choices'][$value] = $en['choices'][$choice_label];
+			}
+		}
+	}
+	return $field;
+}
+
+/** Metabox titles in the admin's language (both directions). */
+add_filter('acf/load_field_group', 'rmd_localize_group_titles');
+function rmd_localize_group_titles($group) {
+	if (!is_admin() || !function_exists('rmd_is_fr') || empty($group['key'])) {
+		return $group;
+	}
+	if ('group_rmd_case_study_sections' === $group['key']) {
+		$group['title'] = rmd_is_fr() ? 'Étude de cas — Sections' : 'Case Study — Sections';
+	} elseif ('group_rmd_chrome' === $group['key']) {
+		$group['title'] = rmd_is_fr() ? 'En-tête & pied de page' : 'Header & footer';
+	}
+	return $group;
+}
+
+/**
+ * layout => the ONE sub-field whose value makes two uses of the same layout
+ * visually different sections (red problem cards vs green result cards, strip
+ * vs card band…). Drives two things: the variant suffix on collapsed row titles
+ * (rmd_section_layout_title) and the duplicate warning, which only fires for
+ * same layout + same variant. Field keys match acf-json.
+ */
+function rmd_section_variant_fields() {
+	return array(
+		'stat_cards'         => array('name' => 'accent',         'key' => 'field_rmd_cs_stat_cards_accent'),
+		'stats_band'         => array('name' => 'style',          'key' => 'field_rmd_cs_stats_band_style'),
+		'screenshot_gallery' => array('name' => 'columns',        'key' => 'field_rmd_cs_screenshot_gallery_columns'),
+		'table_split'        => array('name' => 'media_position', 'key' => 'field_rmd_cs_table_split_media_position'),
+	);
+}
+
+/**
+ * Collapsed row titles carry the variant so similar-but-different sections are
+ * distinguishable at a glance: « Cartes chiffres — Vert (résultat) ». The suffix
+ * text is the select choice's own label (source of truth: the field group), so
+ * it never drifts from what the editor picked. Editor display only — the front
+ * end never sees layout titles.
+ */
+add_filter('acf/fields/flexible_content/layout_title', 'rmd_section_layout_title', 10, 4);
+function rmd_section_layout_title($title, $field, $layout, $i) {
+	if (!isset($field['key']) || 'field_rmd_cs_sections' !== $field['key']) {
+		return $title;
+	}
+	$map  = rmd_section_variant_fields();
+	$name = isset($layout['name']) ? $layout['name'] : '';
+	if (!isset($map[$name]) || !function_exists('get_sub_field')) {
+		return $title;
+	}
+	$value = get_sub_field($map[$name]['name']);
+	if (!$value || !is_scalar($value)) {
+		return $title;
+	}
+	$suffix = (string) $value;
+	foreach ((array) ($layout['sub_fields'] ?? array()) as $sub) {
+		if (($sub['name'] ?? '') === $map[$name]['name'] && !empty($sub['choices'][$value])) {
+			$suffix = $sub['choices'][$value];
+			break;
+		}
+	}
+	return $title . ' — ' . $suffix;
+}
+
+/**
  * layout name => { label, desc }. Labels read from the real ACF field group so
  * they never drift from the picker; falls back to a prettified name. Only layouts
  * with a real template file are exposed. Doubles as the security allowlist.
@@ -163,12 +410,23 @@ function rmd_preview_layouts() {
  * ───────────────────────────────────────────────────────────────────────── */
 
 /** A placeholder screenshot shaped like an ACF image array (url only, no ID). */
-function rmd_demo_shot($alt = 'Aperçu de capture') {
+function rmd_demo_shot($alt = null) {
+	if (null === $alt) {
+		$alt = rmd_is_fr() ? 'Aperçu de capture' : 'Sample screenshot';
+	}
 	return array('ID' => 0, 'url' => RMD_URI . '/assets/admin/section-placeholder.svg', 'alt' => $alt);
 }
 
-/** Example sub-field values keyed by sub-field name, per layout. */
+/**
+ * Example sub-field values keyed by sub-field name, per layout — in the admin
+ * user's language (the editor never mixes languages, demo previews included).
+ */
 function rmd_section_demo($layout) {
+	return rmd_is_fr() ? rmd_section_demo_fr($layout) : rmd_section_demo_en($layout);
+}
+
+/** French demo content (the Mariner story). */
+function rmd_section_demo_fr($layout) {
 	switch ($layout) {
 
 		case 'hero':
@@ -334,6 +592,173 @@ function rmd_section_demo($layout) {
 	return array();
 }
 
+/** English demo content — same Mariner story, EN number formatting. */
+function rmd_section_demo_en($layout) {
+	switch ($layout) {
+
+		case 'hero':
+			return array(
+				'eyebrow'        => 'Client case study · SEO',
+				'kicker'         => 'Client name',
+				'heading'        => 'Beating the giants to',
+				'heading_accent' => 'Google’s first page',
+				'heading_after'  => '.',
+				'subheading'     => 'One sentence of context: the sector, the stakes, and the result in one line.',
+				'tags'           => array(
+					array('icon' => '', 'label' => 'SEO'),
+					array('icon' => '', 'label' => 'Content'),
+					array('icon' => '', 'label' => 'Link building'),
+					array('icon' => '', 'label' => 'Technical SEO'),
+				),
+				'badge'          => 'SEO strategy · 2024 → 2026',
+				'show_contact'   => true,
+				'stats'          => array(
+					array('value' => '#1', 'label' => 'on your target query'),
+					array('value' => 'DR 25 <span class="unit">&rarr;</span> 55', 'label' => 'domain authority ×2.2'),
+					array('value' => '4.04M', 'label' => 'Google impressions · 13 months'),
+				),
+			);
+
+		case 'stats_band':
+			return array(
+				'style' => 'strip',
+				'items' => array(
+					array('value' => '60.4K', 'label' => 'Organic clicks (GSC)'),
+					array('value' => '4.04M', 'label' => 'Google impressions'),
+					array('value' => '55', 'value_note' => '▲ vs 25', 'label' => 'Domain Rating'),
+					array('value' => '157', 'label' => 'Keywords in the Top 3'),
+					array('value' => '€58.9K', 'label' => 'Revenue from organic Google', 'highlight' => true),
+				),
+			);
+
+		case 'stat_cards':
+			return array(
+				'background' => 'light',
+				'accent'     => 'negative',
+				'eyebrow'    => 'The context',
+				'heading'    => 'A market dominated <span class="thin">by giants</span>',
+				'subheading' => 'The starting point: the difficulty, in one sentence.',
+				'cards'      => array(
+					array('icon' => '', 'value' => '#49', 'label' => 'Starting position', 'body' => 'On a strategic product query, the site sat on <b>page 5 of Google</b>.'),
+					array('icon' => '', 'value' => '25', 'label' => 'Domain Rating', 'body' => 'A domain authority <b>half of what it takes</b> to compete.'),
+					array('icon' => '', 'value' => '4', 'label' => 'Giants to face', 'body' => 'Competitors with <b>massive marketing budgets</b> on every query.'),
+				),
+			);
+
+		case 'feature_cards':
+			return array(
+				'eyebrow'      => 'The insight',
+				'heading'      => '“Take the queries <span class="thin">one by one”</span>',
+				'subheading'   => 'The strategic angle that changed everything, explained simply.',
+				'cards_kicker' => 'Our approach',
+				'cards'        => array(
+					array('icon' => '', 'heading' => 'One page per query', 'body' => 'Each product family gets its own targeted, optimised page.'),
+					array('icon' => '', 'heading' => 'On-page & content', 'body' => 'Titles, internal linking, copy that answers the exact search.'),
+					array('icon' => '', 'heading' => 'Link building & authority', 'body' => 'Quality links earned over time to rank faster.'),
+				),
+				'tiles_kicker' => 'What it delivered, numbers in hand',
+				'tiles'        => array(
+					array('value' => '#49 → #1', 'label' => "target query\nAug 2024 → Jun 2026"),
+					array('value' => '157', 'label' => "keywords in the Top 3\nof the 250 highest-value"),
+					array('value' => '×2.2', 'label' => "domain authority\nDR 25 → 55"),
+					array('value' => '99%', 'label' => "of the 250 keywords\non page one"),
+				),
+				'highlight'    => 'And the payoff: <b>€58,884 of revenue from organic Google</b> in 6 months, without ads.',
+			);
+
+		case 'numbered_steps':
+			return array(
+				'background' => 'light',
+				'eyebrow'    => 'Our method',
+				'heading'    => 'An SEO strategy <span class="thin">in 4 phases</span>',
+				'steps'      => array(
+					array('heading' => 'Technical & semantic audit', 'items' => "Crawl, indexing, speed\nMarket keyword research\nCompetitor benchmark\nQuery prioritisation"),
+					array('heading' => 'On-page & collection pages', 'items' => "One page per product family\nMeta titles & descriptions\nInternal linking\nA clear structure for Google"),
+					array('heading' => 'Editorial content', 'items' => "Content targeted at the queries\nAnswers to buying questions\nContinuous optimisation\nSeasonal queries"),
+					array('heading' => 'Link building & authority', 'items' => "Regular quality backlinks\nDomain Rating 25 → 55\nReferring domains at their peak\nMonthly position tracking"),
+				),
+			);
+
+		case 'screenshot_gallery':
+			return array(
+				'eyebrow'    => 'SEO results',
+				'heading'    => 'Page one <span class="thin">against the giants</span>',
+				'subheading' => 'Screenshots of real Google results on your business keywords.',
+				'columns'    => '2',
+				'items'      => array(
+					array('image' => rmd_demo_shot('Sample SERP'), 'style' => 'browser', 'label' => '“your query”', 'badge' => '#1', 'zoomable' => true),
+					array('image' => rmd_demo_shot('Sample SERP'), 'style' => 'browser', 'label' => '“another query”', 'badge' => '#1', 'zoomable' => true),
+				),
+			);
+
+		case 'table_split':
+			return array(
+				'background'    => 'light',
+				'eyebrow'       => 'Google positions',
+				'heading'       => 'The keywords <span class="thin">that bring the traffic</span>',
+				'subheading'    => 'Of the 250 highest-value keywords: 157 in the Top 3.',
+				'media_position' => 'none',
+				'table_columns' => array(
+					array('label' => 'Keyword', 'highlight' => false),
+					array('label' => 'Volume', 'highlight' => false),
+					array('label' => 'Before', 'highlight' => false),
+					array('label' => 'After', 'highlight' => true),
+				),
+				'table_rows'    => array(
+					array('cells' => array(array('content' => 'query A'), array('content' => '200'), array('content' => '#49'), array('content' => '#1', 'is_win' => true))),
+					array('cells' => array(array('content' => 'query B'), array('content' => '2,300'), array('content' => '#9'), array('content' => '#1', 'is_win' => true))),
+					array('cells' => array(array('content' => 'query C'), array('content' => '800'), array('content' => 'n/a'), array('content' => '#7', 'is_win' => true))),
+				),
+				'side_stats'    => array(
+					array('tag' => 'TOP 3', 'value' => '157', 'label' => 'keywords out of 250 in positions 1–3'),
+					array('tag' => 'TOP 10', 'value' => '247', 'label' => 'i.e. 99% on page one'),
+				),
+				'comment'       => '<b>From page 5 to position 1.</b> That’s SEO turning pages into profitable entry points.',
+			);
+
+		case 'line_chart':
+			return array(
+				'eyebrow'      => 'Domain authority',
+				'heading'      => 'Authority built <span class="thin">over time</span>',
+				'chart_title'  => 'Domain Rating, June 2024 → June 2026',
+				'chart_note'   => '(Ahrefs)',
+				'value_prefix' => 'DR',
+				'points'       => array(
+					array('label' => 'June 2024', 'value' => 25),
+					array('label' => 'Dec 2024', 'value' => 34),
+					array('label' => 'June 2025', 'value' => 41),
+					array('label' => 'Dec 2025', 'value' => 49),
+					array('label' => 'June 2026', 'value' => 55),
+				),
+			);
+
+		case 'recap_band':
+			return array(
+				'heading' => 'Beating the giants, without an ad budget.',
+				'pills'   => array(
+					array('text' => '<b>#1</b> on the target query'),
+					array('text' => 'Authority: <b>DR 25 → 55</b>'),
+					array('text' => '<b>157</b> keywords in the Top 3'),
+					array('text' => '<b>4.04M</b> Google impressions'),
+				),
+			);
+
+		case 'cta':
+			return array(
+				'background'     => 'light',
+				'eyebrow'        => 'Your turn',
+				'heading'        => 'Get the',
+				'heading_accent' => 'same results',
+				'heading_after'  => '.',
+				'subheading'     => 'Your market has its giants too. Let’s talk about your Google visibility.',
+				'button_label'   => 'Discuss my project',
+				'button_url'     => '#',
+				'contact_line'   => 'contact@example.com · +212 000-000000',
+			);
+	}
+	return array();
+}
+
 /* ─────────────────────────────────────────────────────────────────────────
  * 3. Rendering — one saved row, or a demo, into a standalone document.
  * ───────────────────────────────────────────────────────────────────────── */
@@ -390,14 +815,14 @@ function rmd_render_section_preview() {
 	$allowed = $post_id ? current_user_can('edit_post', $post_id) : current_user_can('edit_posts');
 	if (!$allowed) {
 		status_header(403);
-		wp_die(esc_html__('Accès refusé.', 'vault-child'), '', array('response' => 403));
+		wp_die(esc_html(rmd_is_fr() ? 'Accès refusé.' : 'Access denied.'), '', array('response' => 403));
 	}
 
 	// Allowlist — the template path is never built from raw input.
 	$layouts = rmd_preview_layouts();
 	if (!isset($layouts[$layout])) {
 		status_header(400);
-		wp_die(esc_html__('Section inconnue.', 'vault-child'), '', array('response' => 400));
+		wp_die(esc_html(rmd_is_fr() ? 'Section inconnue.' : 'Unknown section.'), '', array('response' => 400));
 	}
 
 	// Post context: hero/cta read per-site contact options; some may use the ID.
@@ -466,17 +891,18 @@ function rmd_render_section_preview() {
 	</style>
 </head>
 <body>
+<?php $fr = rmd_is_fr(); ?>
 <?php if ($has_visible) : ?>
 	<main class="rmd-case"><?php echo $section_html; // phpcs:ignore WordPress.Security.EscapeOutput — theme template output ?></main>
 <?php elseif ($row_index >= 0) : ?>
 	<div class="rmd-preview-empty">
-		<strong><?php echo esc_html__('Section non encore enregistrée', 'vault-child'); ?></strong>
-		<?php echo esc_html__('L’aperçu affiche le contenu enregistré. Cliquez sur « Mettre à jour » puis rouvrez l’aperçu.', 'vault-child'); ?>
+		<strong><?php echo esc_html($fr ? 'Section non encore enregistrée' : 'Section not saved yet'); ?></strong>
+		<?php echo esc_html($fr ? 'L’aperçu affiche le contenu enregistré. Cliquez sur « Mettre à jour » puis rouvrez l’aperçu.' : 'The preview shows saved content. Click "Update", then reopen the preview.'); ?>
 	</div>
 <?php else : ?>
 	<div class="rmd-preview-empty">
-		<strong><?php echo esc_html__('Rien à afficher', 'vault-child'); ?></strong>
-		<?php echo esc_html__('Cette section n’affiche du contenu qu’une fois ses champs remplis.', 'vault-child'); ?>
+		<strong><?php echo esc_html($fr ? 'Rien à afficher' : 'Nothing to show'); ?></strong>
+		<?php echo esc_html($fr ? 'Cette section n’affiche du contenu qu’une fois ses champs remplis.' : 'This section only shows content once its fields are filled.'); ?>
 	</div>
 <?php endif; ?>
 	<?php if (file_exists($main_js)) : ?>
@@ -517,22 +943,39 @@ function rmd_section_preview_assets($hook) {
 		$preview_post_id = absint($_GET['post']);
 	}
 
+	// Editor-UI strings follow the admin user's language (rmd_is_fr pattern,
+	// like the section names) — not the site locale and no .mo files.
+	$fr = rmd_is_fr();
+
 	wp_localize_script('rmd-section-preview', 'rmdSectionPreview', array(
 		'ajaxUrl' => admin_url('admin-ajax.php'),
 		'nonce'   => wp_create_nonce('rmd_section_preview'),
 		'postId'  => $preview_post_id ? (int) $preview_post_id : 0,
 		'layouts' => rmd_preview_layouts(),
-		'i18n'    => array(
-			'previewTitle' => __('Aperçu de la section', 'vault-child'),
-			'insert'       => __('Insérer', 'vault-child'),
-			'close'        => __('Fermer', 'vault-child'),
-			'refresh'      => __('Rafraîchir', 'vault-child'),
-			'loading'      => __('Chargement de l’aperçu…', 'vault-child'),
-			'error'        => __('Impossible de charger l’aperçu.', 'vault-child'),
-			'demoNotice'   => __('Aperçu de démonstration — le contenu réel dépendra de vos réglages.', 'vault-child'),
-			'rowPreview'   => __('Aperçu de cette section avec son contenu enregistré.', 'vault-child'),
-			'dirtyHint'    => __('Modifications non enregistrées : l’aperçu montre la dernière version enregistrée. Cliquez sur « Mettre à jour ».', 'vault-child'),
-			'newRowHint'   => __('Cette section n’a jamais été enregistrée. Cliquez sur « Mettre à jour » puis rouvrez l’aperçu.', 'vault-child'),
+		'i18n'    => $fr ? array(
+			'previewTitle' => 'Aperçu de la section',
+			'insert'       => 'Insérer',
+			'close'        => 'Fermer',
+			'refresh'      => 'Rafraîchir',
+			'loading'      => 'Chargement de l’aperçu…',
+			'error'        => 'Impossible de charger l’aperçu.',
+			'demoNotice'   => 'Aperçu de démonstration — le contenu réel dépendra de vos réglages.',
+			'rowPreview'   => 'Aperçu de cette section avec son contenu enregistré.',
+			'dirtyHint'    => 'Modifications non enregistrées : l’aperçu montre la dernière version enregistrée. Cliquez sur « Mettre à jour ».',
+			'newRowHint'   => 'Cette section n’a jamais été enregistrée. Cliquez sur « Mettre à jour » puis rouvrez l’aperçu.',
+			'addSection'   => 'Ajouter une section',
+		) : array(
+			'previewTitle' => 'Section preview',
+			'insert'       => 'Insert',
+			'close'        => 'Close',
+			'refresh'      => 'Refresh',
+			'loading'      => 'Loading the preview…',
+			'error'        => 'Could not load the preview.',
+			'demoNotice'   => 'Demo preview — the real content will depend on your settings.',
+			'rowPreview'   => 'Preview of this section with its saved content.',
+			'dirtyHint'    => 'Unsaved changes: the preview shows the last saved version. Click "Update".',
+			'newRowHint'   => 'This section has never been saved. Click "Update", then reopen the preview.',
+			'addSection'   => 'Add a section',
 		),
 	));
 }
@@ -542,10 +985,38 @@ add_action('admin_enqueue_scripts', 'rmd_section_preview_assets');
  * 5. Duplicate-section warning (AMD §7.2) — non-blocking, dismissible.
  * ───────────────────────────────────────────────────────────────────────── */
 function rmd_section_duplicate_notice() {
+	// layout name => variant field key: two rows of the same layout only count
+	// as duplicates when their variant matches (red cards vs green cards are
+	// DIFFERENT sections, not a repeat).
+	$rmd_variants = array();
+	foreach (rmd_section_variant_fields() as $rmd_layout_name => $rmd_variant) {
+		$rmd_variants[$rmd_layout_name] = $rmd_variant['key'];
+	}
+	$rmd_dup_i18n = rmd_is_fr() ? array(
+		'text'    => '⚠ La section « %s » est déjà utilisée sur cette page avec le même style. Vous pouvez continuer, mais vérifiez que c’est intentionnel.',
+		'dismiss' => 'Ignorer',
+	) : array(
+		'text'    => '⚠ The “%s” section is already used on this page with the same style. You can continue, but make sure it’s intentional.',
+		'dismiss' => 'Dismiss',
+	);
 	?>
 	<script>
 	(function ($) {
 		if (typeof acf === 'undefined') return;
+
+		var variants = <?php echo wp_json_encode($rmd_variants); ?>;
+		var dupI18n = <?php echo wp_json_encode($rmd_dup_i18n); ?>;
+
+		/** The row's variant value ('' when the layout has no variant field). */
+		function variantOf($row) {
+			var fkey = variants[$row.attr('data-layout')];
+			if (!fkey) return '';
+			var $f = $row.find('.acf-field[data-key="' + fkey + '"]').first();
+			if (!$f.length) return '';
+			var v = $f.find('select').first().val();
+			if (v == null) v = $f.find('input:checked').first().val();
+			return v == null ? '' : String(v);
+		}
 
 		function scan(field) {
 			var $rows = field.$el.find('.acf-flexible-content .values > .layout')
@@ -558,14 +1029,16 @@ function rmd_section_duplicate_notice() {
 				var $row = $(this);
 				var name = $row.attr('data-layout');
 				if (!name) return;
-				if (!seen[name]) { seen[name] = true; return; }
+				var sig = name + '|' + variantOf($row);
+				if (!seen[sig]) { seen[sig] = true; return; }
 				if ($row.attr('data-rmd-dup-dismissed') === '1') return;
 
 				var label = $row.attr('data-label') || name;
 				var $note = $('<div class="rmd-dup-note" style="display:flex;align-items:flex-start;gap:10px;margin:8px 12px;padding:9px 12px;border-radius:6px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;font-size:12.5px;font-weight:600;line-height:1.5;">' +
-					'<span style="flex:1;">⚠ La section « ' + label + ' » est déjà utilisée sur cette page. Vous pouvez continuer, mais vérifiez que c\'est intentionnel.</span>' +
-					'<button type="button" class="rmd-dup-dismiss" aria-label="Ignorer" style="border:0;background:none;color:#92400e;cursor:pointer;font-size:15px;line-height:1;padding:0 2px;">×</button>' +
+					'<span style="flex:1;"></span>' +
+					'<button type="button" class="rmd-dup-dismiss" aria-label="' + dupI18n.dismiss + '" style="border:0;background:none;color:#92400e;cursor:pointer;font-size:15px;line-height:1;padding:0 2px;">&times;</button>' +
 					'</div>');
+				$note.children('span').text(dupI18n.text.replace('%s', label));
 
 				$note.find('.rmd-dup-dismiss').on('click', function () {
 					$row.attr('data-rmd-dup-dismissed', '1');
@@ -598,7 +1071,7 @@ add_action('acf/input/admin_footer', 'rmd_section_duplicate_notice');
  * ───────────────────────────────────────────────────────────────────────── */
 function rmd_field_hints() {
 	// key => array('placeholder' => …, 'instructions' => …)
-	return array(
+	$hints = array(
 		// The sections field itself — ownership note (spec §11.1).
 		'field_rmd_cs_sections' => array('instructions' => 'Composez la page en ajoutant des sections. Ces sections appartiennent à cette étude de cas uniquement — les modifier ici n’affecte aucune autre page.'),
 		// hero
@@ -641,6 +1114,57 @@ function rmd_field_hints() {
 		'field_rmd_cs_cta_heading'        => array('placeholder' => 'Obtenez les'),
 		'field_rmd_cs_cta_heading_accent' => array('placeholder' => 'mêmes résultats'),
 		'field_rmd_cs_cta_subheading'     => array('placeholder' => 'Une phrase qui invite à la prise de contact.'),
+	);
+
+	if (rmd_is_fr()) {
+		return $hints;
+	}
+
+	// English admin: EVERY hint in English, example content included — the
+	// workspace must never mix languages (owner's call). Numbers keep EN
+	// formatting ('4.04M', '2,300').
+	return array(
+		'field_rmd_cs_sections' => array('instructions' => 'Compose the page by adding sections. These sections belong to this case study only — editing them here affects no other page.'),
+		// hero
+		'field_rmd_cs_hero_kicker'          => array('placeholder' => 'Client name (shown in red)'),
+		'field_rmd_cs_hero_heading'         => array('placeholder' => 'Beating the giants to'),
+		'field_rmd_cs_hero_heading_accent'  => array('placeholder' => 'Google’s first page', 'instructions' => 'The gradient part of the heading (red → orange).'),
+		'field_rmd_cs_hero_subheading'      => array('placeholder' => 'The sector, the stakes and the result, in one sentence.'),
+		'field_rmd_cs_hero_stats_value'     => array('placeholder' => '#1', 'instructions' => 'Light HTML: <span class="unit">→</span> for a green arrow.'),
+		'field_rmd_cs_hero_stats_label'     => array('placeholder' => 'on “your target query”'),
+		// stats_band
+		'field_rmd_cs_stats_band_items_value'      => array('placeholder' => '4.04M'),
+		'field_rmd_cs_stats_band_items_label'      => array('placeholder' => 'Google impressions (GSC)'),
+		// stat_cards
+		'field_rmd_cs_stat_cards_cards_value' => array('placeholder' => '#49'),
+		'field_rmd_cs_stat_cards_cards_label' => array('placeholder' => 'STARTING POSITION'),
+		'field_rmd_cs_stat_cards_cards_body'  => array('placeholder' => 'One sentence of context for this number.'),
+		// feature_cards
+		'field_rmd_cs_feature_cards_cards_heading' => array('placeholder' => 'One page per query'),
+		'field_rmd_cs_feature_cards_tiles_value'   => array('placeholder' => '#49 → #1'),
+		'field_rmd_cs_feature_cards_highlight'     => array('placeholder' => 'The business result in one sentence (green band).'),
+		// numbered_steps
+		'field_rmd_cs_numbered_steps_steps_heading' => array('placeholder' => 'Technical & semantic audit'),
+		'field_rmd_cs_numbered_steps_steps_items'   => array('instructions' => 'One bullet per line.'),
+		// screenshot_gallery
+		'field_rmd_cs_screenshot_gallery_items_image'   => array('instructions' => 'PNG/JPG screenshot — SERP, Search Console, Ahrefs, Semrush…'),
+		'field_rmd_cs_screenshot_gallery_items_label'   => array('placeholder' => '“your query”'),
+		'field_rmd_cs_screenshot_gallery_items_caption' => array('placeholder' => 'What the screenshot shows, in one line.'),
+		// table_split
+		'field_rmd_cs_table_split_table_columns_label'      => array('placeholder' => 'Keyword'),
+		'field_rmd_cs_table_split_table_rows_cells_content' => array('placeholder' => '#1'),
+		'field_rmd_cs_table_split_comment'                  => array('placeholder' => 'The comment that interprets the table.'),
+		'field_rmd_cs_table_split_media_image'              => array('instructions' => 'The screenshot shown to the left of the table.'),
+		// line_chart
+		'field_rmd_cs_line_chart_points_label' => array('placeholder' => 'June 2024'),
+		'field_rmd_cs_line_chart_points_value' => array('placeholder' => '25'),
+		// recap_band
+		'field_rmd_cs_recap_band_heading'    => array('placeholder' => 'The promise kept, in one sentence.'),
+		'field_rmd_cs_recap_band_pills_text' => array('placeholder' => '<b>#1</b> on the target query'),
+		// cta
+		'field_rmd_cs_cta_heading'        => array('placeholder' => 'Get the'),
+		'field_rmd_cs_cta_heading_accent' => array('placeholder' => 'same results'),
+		'field_rmd_cs_cta_subheading'     => array('placeholder' => 'One sentence inviting the reader to get in touch.'),
 	);
 }
 

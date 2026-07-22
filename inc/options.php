@@ -10,9 +10,12 @@ add_action('acf/init', function () {
 	if (!function_exists('acf_add_options_page')) {
 		return;
 	}
+	// Admin-language aware (rmd_is_fr pattern) — the hints/instructions across
+	// the editor reference this page by name, so it must match in both languages.
+	$rmd_title = (function_exists('rmd_is_fr') && rmd_is_fr()) ? 'Réglages du site' : 'Site Settings';
 	acf_add_options_page(array(
-		'page_title' => __('Site Settings', 'vault-child'),
-		'menu_title' => __('Site Settings', 'vault-child'),
+		'page_title' => $rmd_title,
+		'menu_title' => $rmd_title,
 		'menu_slug'  => 'rmd-site-settings',
 		'capability' => 'manage_options',
 		'redirect'   => false,

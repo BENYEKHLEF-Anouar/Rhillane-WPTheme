@@ -432,9 +432,10 @@
 		pickerPopup = popup;
 		buildPicker();
 
-		// Title = the button that was clicked ("+ Ajouter une section"), so the
-		// modal stays localized without new i18n plumbing.
-		var title = (lastAddBtn && lastAddBtn.textContent.trim()) || 'Ajouter une section';
+		// Title = the button that was clicked ("+ Ajouter une section" / "+ Add a
+		// section"), falling back to the localized string for label-less buttons
+		// (the small per-row "+").
+		var title = (lastAddBtn && lastAddBtn.textContent.trim()) || i18n.addSection || 'Ajouter une section';
 		picker.querySelector('.rmd-sp-title').textContent = title.replace(/^\+\s*/, '');
 
 		var grid = picker.querySelector('.rmd-sp-picker-grid');
