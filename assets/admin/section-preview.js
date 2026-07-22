@@ -1,10 +1,13 @@
 /**
- * Case-study page builder — live section preview.
+ * Case-study page builder — section picker modal + live section preview.
  * Ported from the AMD project and simplified: one CPT, so no per-page category
- * grouping. Two entry points, both opening the same scaled-iframe modal:
+ * grouping.
  *
- *  1. "Add Section" popup — an eye on each layout card previews it as a generic
- *     DEMO (no ACF row exists yet → the server seeds example content). "Insérer".
+ *  1. "Add Section" → ACF's cramped fc-popup is hidden and replaced by our own
+ *     centered card-grid modal (title + description + preview eye per layout).
+ *     Picking a card replays the hidden ACF anchor's click, so insert position
+ *     and min/max rules stay ACF's. The eye previews a generic DEMO (no row
+ *     exists yet → the server seeds example content) with an "Insérer" button.
  *  2. An existing row's toolbar — an eye previews THAT row with its SAVED values.
  *     Unsaved / never-saved rows show an amber warning, never stale content.
  *
@@ -323,6 +326,9 @@
 			if (lastFocused && document.body.contains(lastFocused)) lastFocused.focus();
 		}
 		current = null;
+		// A picker-origin preview holds ACF's hidden popup for its Insérer anchor;
+		// the insert click (if any) fires synchronously before this delayed sweep.
+		removeBackingPopup();
 	}
 
 	function makeEyeButton(labelText) {
@@ -349,63 +355,147 @@
 		return a;
 	}
 
-	/** Move the popup's positioned element by a viewport delta, whatever its
-	    offset parent — adjust the current computed left/top by the difference. */
-	function shiftTo(pos, r, viewportLeft, viewportTop) {
-		var cs = getComputedStyle(pos);
-		var left = parseFloat(cs.left);
-		var top = parseFloat(cs.top);
-		if (isNaN(left)) left = r.left;
-		if (isNaN(top)) top = r.top;
-		pos.style.right = 'auto';
-		pos.style.left = (left + (viewportLeft - r.left)) + 'px';
-		pos.style.top = (top + (viewportTop - r.top)) + 'px';
+	// ── Section picker modal ─────────────────────────────────────────────────
+	// ACF's fc-popup is a cramped tooltip that lands wherever ACF drops it and
+	// fights any restyling (seen live on 6.8: stuck corners, styles overridden).
+	// So we don't decorate it anymore — we HIDE it and open our own centered
+	// modal built from its anchors. Inserting replays the hidden anchor's click,
+	// so insert position and ACF's min/max rules stay ACF's business.
+
+	var picker = null;       // our modal
+	var pickerPopup = null;  // the hidden ACF popup backing the open picker
+
+	function pickerAnchor(name) {
+		if (!pickerPopup || !document.body.contains(pickerPopup)) return null;
+		return pickerPopup.querySelector('a[data-layout="' + name + '"]');
 	}
 
-	/**
-	 * Popup sanity: ACF positions the picker next to the button that opened it.
-	 * When that goes wrong (seen live: the popup lands in the top-right corner,
-	 * unrelated to the button), re-anchor it under the recorded add button; then
-	 * clamp the widened card grid back inside the right edge of the viewport.
-	 */
-	function clampPopup(popup) {
-		var pos = (popup.closest && popup.closest('.acf-tooltip')) || popup;
-		requestAnimationFrame(function () {
-			var margin = 10;
-			var r = pos.getBoundingClientRect();
-			if (!r.width && !r.height) return;
+	/** Sweep the hidden ACF popup once it's no longer needed. Delayed so ACF's
+	    own insert/close handling (which also removes it) always wins the race. */
+	function removeBackingPopup() {
+		if (!pickerPopup) return;
+		var pos = (pickerPopup.closest && pickerPopup.closest('.acf-tooltip')) || pickerPopup;
+		pickerPopup = null;
+		setTimeout(function () {
+			if (pos.parentNode) pos.parentNode.removeChild(pos);
+		}, 150);
+	}
 
-			// Re-anchor only the layout picker (not ACF's "more actions" menu),
-			// only when it was just opened from a known button, and only when it
-			// landed nowhere near that button.
-			if (popup.querySelector('a[data-layout]') &&
-				lastAddBtn && document.body.contains(lastAddBtn) &&
-				(Date.now() - lastAddAt) < 1500) {
-				var b = lastAddBtn.getBoundingClientRect();
-				var far = (r.bottom < b.top - 300) || (r.top > b.bottom + 300) ||
-					(r.right < b.left - 400) || (r.left > b.right + 400);
-				if (far) {
-					var left = Math.min(
-						Math.max(margin, b.left + (b.width / 2) - (r.width / 2)),
-						window.innerWidth - r.width - margin
-					);
-					var top = b.bottom + 8;
-					if (top + r.height > window.innerHeight - margin) {
-						top = Math.max(margin, b.top - r.height - 8);
-					}
-					shiftTo(pos, r, left, top);
-					r = pos.getBoundingClientRect();
-				}
+	function buildPicker() {
+		if (picker) return picker;
+
+		picker = document.createElement('div');
+		picker.className = 'rmd-sp-picker';
+		picker.setAttribute('aria-hidden', 'true');
+		picker.innerHTML =
+			'<div class="rmd-sp-backdrop" data-close></div>' +
+			'<div class="rmd-sp-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="rmd-sp-picker-title">' +
+			'  <header class="rmd-sp-head">' +
+			'    <h2 class="rmd-sp-title" id="rmd-sp-picker-title"></h2>' +
+			'    <button type="button" class="rmd-sp-close" data-close aria-label="' + esc(i18n.close || 'Fermer') + '">' +
+			'      <span class="dashicons dashicons-no-alt" aria-hidden="true"></span>' +
+			'    </button>' +
+			'  </header>' +
+			'  <div class="rmd-sp-picker-grid"></div>' +
+			'</div>';
+
+		picker.addEventListener('click', function (e) {
+			// Keep clicks away from ACF's document-level close handler and from
+			// closeStalePopups — the hidden popup must survive while we're open.
+			e.stopPropagation();
+
+			if (e.target.closest('[data-close]')) {
+				closePicker();
+				return;
 			}
-
-			var over = r.right - (window.innerWidth - margin);
-			if (over > 0) {
-				var l = parseFloat(getComputedStyle(pos).left);
-				if (isNaN(l)) l = r.left;
-				pos.style.right = 'auto';
-				pos.style.left = Math.max(margin, l - over) + 'px';
+			var eye = e.target.closest('.rmd-sp-eye');
+			if (eye) {
+				var name = eye.getAttribute('data-layout');
+				closePicker({ keepPopup: true, keepFocus: true });
+				openModal({ layout: name, anchor: pickerAnchor(name), isRow: false });
+				return;
+			}
+			var card = e.target.closest('.rmd-sp-pick');
+			if (card && !card.disabled) {
+				var anchor = pickerAnchor(card.getAttribute('data-layout'));
+				closePicker({ keepPopup: true, keepFocus: true });
+				if (anchor) anchor.click(); // ACF inserts and closes its popup
+				removeBackingPopup();       // …and we sweep if it didn't
 			}
 		});
+
+		document.body.appendChild(picker);
+		return picker;
+	}
+
+	function openPicker(popup) {
+		pickerPopup = popup;
+		buildPicker();
+
+		// Title = the button that was clicked ("+ Ajouter une section"), so the
+		// modal stays localized without new i18n plumbing.
+		var title = (lastAddBtn && lastAddBtn.textContent.trim()) || 'Ajouter une section';
+		picker.querySelector('.rmd-sp-title').textContent = title.replace(/^\+\s*/, '');
+
+		var grid = picker.querySelector('.rmd-sp-picker-grid');
+		grid.innerHTML = '';
+
+		popup.querySelectorAll('a[data-layout]').forEach(function (anchor) {
+			var name = anchor.getAttribute('data-layout');
+			var info = layouts[name] || {};
+			var label = (info.label || anchor.textContent || name).trim();
+			var disabled = anchor.classList.contains('disabled');
+
+			var wrap = document.createElement('div');
+			wrap.className = 'rmd-sp-pick-wrap';
+
+			var card = document.createElement('button');
+			card.type = 'button';
+			card.className = 'rmd-sp-pick';
+			card.setAttribute('data-layout', name);
+			if (disabled) {
+				card.disabled = true; // min/max reached — mirror ACF's state
+				card.title = anchor.getAttribute('title') || '';
+			}
+			card.innerHTML =
+				'<span class="rmd-sp-pick-title">' + esc(label) + '</span>' +
+				(info.desc ? '<span class="rmd-sp-pick-desc">' + esc(info.desc) + '</span>' : '');
+			wrap.appendChild(card);
+
+			if (layouts[name]) { // only known layouts have a preview endpoint
+				var eye = makeEyeButton(label);
+				eye.setAttribute('data-layout', name);
+				wrap.appendChild(eye);
+			}
+			grid.appendChild(wrap);
+		});
+
+		picker.classList.add('is-open');
+		picker.setAttribute('aria-hidden', 'false');
+		var first = picker.querySelector('.rmd-sp-pick:not([disabled])');
+		if (first) first.focus();
+	}
+
+	function closePicker(opts) {
+		if (!picker || !picker.classList.contains('is-open')) return;
+		picker.classList.remove('is-open');
+		picker.setAttribute('aria-hidden', 'true');
+		if (!opts || !opts.keepPopup) removeBackingPopup();
+		if ((!opts || !opts.keepFocus) && lastAddBtn && document.body.contains(lastAddBtn)) {
+			lastAddBtn.focus();
+		}
+	}
+
+	/** An ACF layout picker appeared → hide it and show our modal instead.
+	    The "more layout actions" menu (same .acf-fc-popup class, no data-layout
+	    anchors) is left untouched. */
+	function hijackPopup(popup) {
+		if (!popup.querySelector('a[data-layout]')) return;
+		if (popup.dataset.rmdHijacked) return;
+		popup.dataset.rmdHijacked = '1';
+		var pos = (popup.closest && popup.closest('.acf-tooltip')) || popup;
+		pos.classList.add('rmd-sp-hijacked');
+		openPicker(popup);
 	}
 
 	/** ACF normally closes the popup on any outside click. If its handler is
@@ -415,10 +505,13 @@
 	function closeStalePopups(target) {
 		document.querySelectorAll('.acf-fc-popup').forEach(function (popup) {
 			var pos = (popup.closest && popup.closest('.acf-tooltip')) || popup;
+			// A hijacked popup backs our open picker/preview — never sweep it here.
+			if (popup === pickerPopup) return;
 			if (target && (pos.contains(target) ||
 				(lastAddBtn && lastAddBtn.contains(target)))) return;
 			setTimeout(function () {
 				if (!pos.parentNode) return; // ACF already closed it
+				if (popup === pickerPopup) return;
 				if (document.body.classList.contains('rmd-sp-modal-open')) return;
 				pos.parentNode.removeChild(pos);
 			}, 150);
@@ -429,60 +522,7 @@
 		closeStalePopups(e.target);
 	});
 
-	// ── 1. "Add Section" popup → card grid ───────────────────────────────────
-	function decoratePopup(popup) {
-		// Mark the picker's own <ul> so the grid CSS targets ONLY it — never
-		// ACF 6.5+'s "more layout actions" menu (which reuses .acf-fc-popup but
-		// has no data-layout anchors). A marker class beats :has() for browser
-		// support and is set only when real layout cards are present.
-		if (popup.querySelector('a[data-layout]')) {
-			var list = popup.querySelector('ul');
-			if (list) list.classList.add('rmd-sp-grid');
-		}
-
-		popup.querySelectorAll('a[data-layout]').forEach(function (anchor) {
-			if (anchor.dataset.rmdPreview) return;
-			anchor.dataset.rmdPreview = '1';
-
-			var name = anchor.getAttribute('data-layout');
-			var info = layouts[name];
-			if (!info) return; // unknown layout (e.g. ACF's "more actions" menu) → skip
-
-			var full = (info.label || anchor.textContent || name).trim();
-			anchor.title = full;
-			anchor.textContent = '';
-			anchor.classList.add('rmd-sp-card');
-
-			var head = document.createElement('div');
-			head.className = 'rmd-sp-card-head';
-
-			var title = document.createElement('span');
-			title.className = 'rmd-sp-card-title';
-			title.textContent = full;
-			head.appendChild(title);
-
-			var eye = makeEyeButton(full);
-			eye.addEventListener('click', function (e) {
-				// Never reach ACF's anchor (inserts) nor the document (closes).
-				e.preventDefault();
-				e.stopPropagation();
-				openModal({ layout: name, anchor: anchor, isRow: false });
-			});
-			head.appendChild(eye);
-			anchor.appendChild(head);
-
-			if (info.desc) {
-				var d = document.createElement('span');
-				d.className = 'rmd-sp-card-desc';
-				d.textContent = info.desc;
-				anchor.appendChild(d);
-			}
-		});
-
-		clampPopup(popup);
-	}
-
-	// ── 2. Existing rows ─────────────────────────────────────────────────────
+	// ── Existing rows ────────────────────────────────────────────────────────
 	// The row eye (preview a saved section). Kept, but made ACF-inert: the eye
 	// carries no data-name / acf-js-tooltip (see makeRowEye), so it can't disturb
 	// ACF's control-click delegation or the row collapse/expand. Wrapped in
@@ -558,7 +598,7 @@
 	}
 
 	function scan(root) {
-		(root.querySelectorAll ? root : document).querySelectorAll('.acf-fc-popup').forEach(decoratePopup);
+		(root.querySelectorAll ? root : document).querySelectorAll('.acf-fc-popup').forEach(hijackPopup);
 		(root.querySelectorAll ? root : document).querySelectorAll('.acf-field-flexible-content .layout').forEach(decorateRow);
 	}
 
@@ -577,7 +617,7 @@
 				m.addedNodes.forEach(function (node) {
 					if (node.nodeType !== 1) return;
 					if (node.classList && node.classList.contains('acf-fc-popup')) {
-						decoratePopup(node);
+						hijackPopup(node);
 					} else if (node.classList && node.classList.contains('layout')) {
 						decorateRow(node);
 					} else if (node.querySelector) {
@@ -599,8 +639,11 @@
 		if (modal && modal.classList.contains('is-open')) {
 			e.stopPropagation();
 			closeModal();
+		} else if (picker && picker.classList.contains('is-open')) {
+			e.stopPropagation();
+			closePicker();
 		} else {
-			closeStalePopups(null); // a stuck picker should also close on Esc
+			closeStalePopups(null); // a stuck ACF popup should also close on Esc
 		}
 	});
 })();
