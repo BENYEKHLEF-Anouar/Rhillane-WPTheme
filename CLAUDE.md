@@ -35,6 +35,10 @@ Full runbook: `REBUILD-PLAN.md` (waves W0→W4). AMD architecture reference: `FL
   `404.php` before their wave — a child-theme file overrides parent Vault instantly and
   breaks the live Elementor pages on deploy. (Blog templates = W1, home/header/footer = W3.)
 - Safe now: CPT-specific templates only (`single-case_study.php`, `archive-case_study.php`).
+- **RMD chrome** (header/footer): lives in `template-parts/site-{header,footer}.php` + `rmd_render_header()`/
+  `rmd_render_footer()` (`inc/chrome.php`), called **only** from the case-study templates — NOT a global
+  `header.php`/`footer.php`. Editable via Site Settings (logo/CTA/copyright) + the `rmd_header` menu location
+  (Appearance → Menus). Site-wide = W3: make `header.php`/`footer.php` one-liners that call these helpers.
 
 ## Build & deploy
 

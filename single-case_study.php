@@ -1,11 +1,13 @@
 <?php
 /**
  * Single case study — the whole template: header → sections → footer.
- * Header/footer are sitewide (parent Vault chrome until W3).
+ * Uses the RMD chrome (rmd_render_header/footer) — its own document shell with
+ * wp_head()/wp_footer(), NOT parent Vault. Scoped to this CPT template so it
+ * doesn't touch other pages (a global header.php would — that's W3).
  */
 defined('ABSPATH') || exit;
 
-get_header();
+rmd_render_header();
 ?>
 <main class="rmd-case">
 <?php
@@ -16,4 +18,4 @@ while (have_posts()) {
 ?>
 </main>
 <?php
-get_footer();
+rmd_render_footer();

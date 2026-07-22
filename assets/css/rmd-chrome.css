@@ -1,0 +1,197 @@
+/**
+ * Site chrome — RMD header + footer (spec chrome). Hand-written (NOT Tailwind),
+ * so it needs no rebuild and doesn't depend on utilities being present in the
+ * compiled main.css. Semantic classes only. Ported from the case-study design
+ * (ink #041135, slight #596980, bord #E9EAF2, gradient CTA).
+ *
+ * Loaded only where the RMD chrome renders (case-study templates today).
+ */
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.rmd-site-header {
+	position: static;
+	background: rgba(255, 255, 255, .95);
+	-webkit-backdrop-filter: blur(8px);
+	backdrop-filter: blur(8px);
+	border-bottom: 1px solid #E9EAF2;
+}
+.rmd-site-header.is-sticky {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 50;
+	transition: padding .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+/* Don't hide behind the WordPress admin bar for logged-in users. */
+body.admin-bar .rmd-site-header.is-sticky { top: 32px; }
+@media screen and (max-width: 782px) {
+	body.admin-bar .rmd-site-header.is-sticky { top: 46px; }
+}
+.rmd-header-inner {
+	max-width: 1200px;
+	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 16px 24px;
+}
+@media (min-width: 768px) {
+	.rmd-header-inner { padding: 20px 24px; }
+}
+.rmd-site-header.is-sticky.scrolled {
+	padding-top: .625rem;
+	padding-bottom: .625rem;
+	box-shadow: 0 2px 8px -4px rgba(4, 17, 53, .08);
+	background: rgba(255, 255, 255, .98);
+}
+.rmd-site-header.is-sticky.scrolled .rmd-header-inner {
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.rmd-logo { display: inline-flex; align-items: center; text-decoration: none; }
+.rmd-logo-img { height: 30px; width: auto; display: block; }
+.rmd-logo-text { font-weight: 700; font-size: 20px; color: #041135; }
+@media (min-width: 768px) { .rmd-logo-img { height: 38px; } }
+
+.rmd-nav { display: none; }
+@media (min-width: 768px) { .rmd-nav { display: block; } }
+.rmd-nav-list {
+	display: flex;
+	gap: 24px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.rmd-nav-list a {
+	font-size: 14px;
+	font-weight: 500;
+	color: #596980;
+	text-decoration: none;
+	transition: color .15s ease;
+}
+.rmd-nav-list a:hover,
+.rmd-nav-list .current-menu-item > a { color: #041135; }
+
+/* Gradient CTA with the shine sweep (matches the case-study .btn-cta). */
+.rmd-cta {
+	display: none;
+	align-items: center;
+	gap: 10px;
+	border-radius: 8px;
+	padding: 12px 24px;
+	font-size: 14px;
+	font-weight: 500;
+	color: #fff;
+	text-decoration: none;
+	position: relative;
+	overflow: hidden;
+	background-image: linear-gradient(90deg, #D7045A 50%, #FC8831 100%);
+	box-shadow: -4px 0 10px 0 rgba(0, 0, 0, .02), 4px 0 10px 0 rgba(0, 0, 0, .02), 0 4px 10px 0 rgba(0, 0, 0, .02);
+}
+@media (min-width: 768px) { .rmd-cta { display: inline-flex; } }
+.rmd-cta:hover { opacity: .95; color: #fff; }
+.rmd-cta::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: -75%;
+	width: 50%;
+	height: 100%;
+	background: linear-gradient(120deg, transparent, rgba(255, 255, 255, .45), transparent);
+	transform: skewX(-20deg);
+	animation: rmdCtaShine 3s ease-in-out infinite;
+}
+@keyframes rmdCtaShine {
+	0% { left: -75%; }
+	25% { left: 125%; }
+	100% { left: 125%; }
+}
+
+.rmd-burger {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	flex: 0 0 auto;
+	border: 1px solid #E9EAF2;
+	border-radius: 8px;
+	background: #fff;
+	color: #041135;
+	cursor: pointer;
+}
+@media (min-width: 768px) { .rmd-burger { display: none; } }
+
+/* Mobile slide-in panel. */
+.rmd-mobile-panel {
+	position: fixed;
+	inset: 0;
+	z-index: 60;
+	background: #fff;
+	transform: translateX(100%);
+	transition: transform .3s ease;
+}
+.rmd-mobile-panel.open { transform: translateX(0); }
+@media (min-width: 768px) { .rmd-mobile-panel { display: none; } }
+.rmd-mobile-inner { display: flex; flex-direction: column; height: 100%; padding: 24px; }
+.rmd-mobile-top { display: flex; align-items: center; justify-content: space-between; }
+.rmd-mobile-top .rmd-burger { display: inline-flex; }
+.rmd-mobile-brand { font-weight: 700; font-size: 18px; color: #041135; }
+.rmd-mobile-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	list-style: none;
+	margin: 40px 0 0;
+	padding: 0;
+}
+.rmd-mobile-list a {
+	display: block;
+	border-bottom: 1px solid #E9EAF2;
+	padding: 16px 0;
+	font-size: 24px;
+	font-weight: 500;
+	color: #041135;
+	text-decoration: none;
+}
+.rmd-mobile-cta {
+	display: inline-flex;
+	justify-content: center;
+	margin-top: auto;
+	height: 54px;
+	padding: 0 32px;
+}
+
+/* Spacer reserves the fixed header's height (only output when sticky). */
+.rmd-header-spacer { height: 78px; }
+@media (min-width: 768px) { .rmd-header-spacer { height: 86px; } }
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.rmd-site-footer { background: #041135; }
+.rmd-footer-inner {
+	max-width: 1200px;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 20px;
+	padding: 48px 24px;
+}
+.rmd-footer-logo { height: 34px; width: auto; display: block; }
+.rmd-footer-copy {
+	text-align: center;
+	font-size: 12.5px;
+	line-height: 1.6;
+	color: rgba(255, 255, 255, .5);
+	margin: 0;
+}
+.rmd-footer-copy b { color: rgba(255, 255, 255, .8); font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) {
+	.rmd-cta::before { animation: none; }
+	.rmd-mobile-panel { transition: none; }
+	.rmd-site-header.is-sticky { transition: none; }
+}
