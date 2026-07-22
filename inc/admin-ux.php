@@ -117,6 +117,194 @@ function rmd_localize_section_labels($field) {
 }
 
 /**
+ * Runtime English for the French-authored field group (same "no .mo files"
+ * pattern as the section names): acf-json stays the single FR source of truth,
+ * and when the admin's profile language isn't French, every label /
+ * instruction / select choice / "Ajouter…" button is swapped from these FR→EN
+ * dictionaries at load_field time. Keyed by the FRENCH string, so repeated
+ * labels ("Fond", "Ancre (id)"…) are covered once and new fields with known
+ * labels translate automatically. Unknown strings pass through unchanged.
+ */
+function rmd_admin_en_strings() {
+	return array(
+		'labels' => array(
+			'Nom du client (rouge)'    => 'Client name (red)',
+			'Titre — début'            => 'Heading — start',
+			'Titre — partie dégradée'  => 'Heading — gradient part',
+			'Titre — fin'              => 'Heading — end',
+			'Sous-titre'               => 'Subheading',
+			'Icône (SVG)'              => 'Icon (SVG)',
+			'Libellé'                  => 'Label',
+			'Badge rouge'              => 'Red badge',
+			'Afficher la ligne contact' => 'Show the contact line',
+			'Carte stats (bloc navy)'  => 'Stats card (navy block)',
+			'Valeur'                   => 'Value',
+			'Titre (H2)'               => 'Heading (H2)',
+			'Titre'                    => 'Heading',
+			'Mini-tag vert'            => 'Green mini-tag',
+			'Note verte à côté'        => 'Green note beside it',
+			'Libellé / delta'          => 'Label / delta',
+			'Valeur en vert'           => 'Show value in green',
+			'Fond'                     => 'Background',
+			'Ancre (id)'               => 'Anchor (id)',
+			'Espacement haut'          => 'Top spacing',
+			'Couleur des chiffres'     => 'Number color',
+			'Cartes'                   => 'Cards',
+			'Chiffre'                  => 'Number',
+			'Kicker (majuscules)'      => 'Kicker (uppercase)',
+			'Texte'                    => 'Text',
+			'Kicker des cartes'        => 'Cards kicker',
+			'Cartes approche'          => 'Approach cards',
+			'Kicker des tuiles'        => 'Tiles kicker',
+			'Tuiles stats'             => 'Stat tiles',
+			'Valeur (verte)'           => 'Value (green)',
+			'Libellé (2 lignes ok)'    => 'Label (2 lines ok)',
+			'Bandeau preuve (vert)'    => 'Proof band (green)',
+			'Étapes'                   => 'Steps',
+			'Puces — une par ligne'    => 'Bullets — one per line',
+			'Colonnes'                 => 'Columns',
+			'Captures'                 => 'Screenshots',
+			'Capture'                  => 'Screenshot',
+			'Cadre'                    => 'Frame',
+			'Libellé (mot-clé)'        => 'Label (keyword)',
+			'Badge position (#1)'      => 'Position badge (#1)',
+			'Défilement interne'       => 'Internal scrolling',
+			'Hauteur (px)'             => 'Height (px)',
+			'Zoom (lightbox)'          => 'Zoom (lightbox)',
+			'Légende'                  => 'Caption',
+			'Source (pill verte)'      => 'Source (green pill)',
+			'Colonnes du tableau'      => 'Table columns',
+			'En-tête'                  => 'Header',
+			'Colonne verte'            => 'Green column',
+			'Lignes du tableau'        => 'Table rows',
+			'Cellules'                 => 'Cells',
+			'Contenu'                  => 'Content',
+			'Vert/gras'                => 'Green/bold',
+			'Stats latérales (navy)'   => 'Side stats (navy)',
+			'Delta / libellé'          => 'Delta / label',
+			'Commentaire (encadré)'    => 'Comment (boxed)',
+			'Capture à gauche ?'       => 'Screenshot on the left?',
+			'Légende de la capture'    => 'Screenshot caption',
+			'Titre de la courbe'       => 'Chart title',
+			'Note (source)'            => 'Note (source)',
+			'Préfixe des valeurs'      => 'Value prefix',
+			'Points de données'        => 'Data points',
+			'Libellé (mois)'           => 'Label (month)',
+			'Texte du bouton'          => 'Button text',
+			'Lien du bouton'           => 'Button link',
+			'Ligne contact'            => 'Contact line',
+			// Site Settings — header/footer chrome (inc/chrome.php)
+			'Logo (en-tête)'           => 'Logo (header)',
+			'Bouton — texte'           => 'Button — text',
+			'Bouton — lien'            => 'Button — link',
+			'En-tête fixe (sticky)'    => 'Sticky header',
+			'Logo (pied de page)'      => 'Logo (footer)',
+			'Mentions / copyright'     => 'Notices / copyright',
+			'Pied de page'             => 'Footer',
+		),
+		'instructions' => array(
+			'Coller le code SVG inline (icône trait).' => 'Paste the inline SVG code (stroke icon).',
+			'Email / téléphone / site depuis Réglages du site.' => 'Email / phone / website come from Site Settings.',
+			'HTML léger autorisé : <span class="unit">→</span>.' => 'Light HTML allowed: <span class="unit">→</span>.',
+			'HTML léger autorisé : <span class="thin">…</span>, <b>.' => 'Light HTML allowed: <span class="thin">…</span>, <b>.',
+			'HTML léger autorisé : <b>, <span class="…">.' => 'Light HTML allowed: <b>, <span class="…">.',
+			'HTML léger autorisé : <b>.' => 'Light HTML allowed: <b>.',
+			'Ex. resultats, methode, contact — pour les liens #ancre.' => 'E.g. resultats, methode, contact — for #anchor links.',
+			'URL ou mailto: — champ texte volontairement (le type url refuse mailto).' => 'URL or mailto: — deliberately a text field (the url type rejects mailto).',
+			// Site Settings — header/footer chrome (inc/chrome.php)
+			'Optionnel — remplace le logo du thème. Vide = logo par défaut (fond blanc).' => 'Optional — replaces the theme logo. Empty = the default logo (white background).',
+			'Optionnel — remplace le logo du thème. Vide = logo par défaut (fond sombre).' => 'Optional — replaces the theme logo. Empty = the default logo (dark background).',
+			'URL, ancre (#contact) ou mailto:.' => 'URL, anchor (#contact) or mailto:.',
+			'HTML léger autorisé (<b>, <br>). Vide = © année + nom du site.' => 'Light HTML allowed (<b>, <br>). Empty = © year + site name.',
+		),
+		'messages' => array(
+			'Reste en haut et rétrécit au défilement.' => 'Stays at the top and shrinks on scroll.',
+		),
+		'choices' => array(
+			'Bandeau pleine largeur (KPI)'   => 'Full-width band (KPI)',
+			'Carte arrondie (statduo)'       => 'Rounded card (statduo)',
+			'Blanc'                          => 'White',
+			'Gris clair'                     => 'Light grey',
+			'Normal'                         => 'Normal',
+			'Collé à la section précédente'  => 'Flush with the previous section',
+			'Rouge (contexte/problème)'      => 'Red (context/problem)',
+			'Vert (résultat)'                => 'Green (result)',
+			'1 colonne'                      => '1 column',
+			'2 colonnes'                     => '2 columns',
+			'Simple'                         => 'Plain',
+			'Navigateur (points + libellé)'  => 'Browser (dots + label)',
+			'Pas de capture'                 => 'No screenshot',
+			'Capture à gauche'               => 'Screenshot on the left',
+		),
+		'buttons' => array(
+			'Ajouter une section'  => 'Add a section',
+			'Ajouter un tag'       => 'Add a tag',
+			'Ajouter une stat'     => 'Add a stat',
+			'Ajouter une carte'    => 'Add a card',
+			'Ajouter une tuile'    => 'Add a tile',
+			'Ajouter une étape'    => 'Add a step',
+			'Ajouter une capture'  => 'Add a screenshot',
+			'Ajouter une colonne'  => 'Add a column',
+			'Ajouter une ligne'    => 'Add a row',
+			'Ajouter une cellule'  => 'Add a cell',
+			'Ajouter un point'     => 'Add a point',
+			'Ajouter une pill'     => 'Add a pill',
+		),
+	);
+}
+
+/** Swap FR strings for EN on every rmd_ field when the admin isn't French.
+ *  Priority 20: runs AFTER the hints filter, so injected hints (already
+ *  locale-aware) are never double-processed. */
+add_filter('acf/load_field', 'rmd_translate_field_for_admin', 20);
+function rmd_translate_field_for_admin($field) {
+	if (!is_admin() || rmd_is_fr()) {
+		return $field;
+	}
+	if (empty($field['key']) || 0 !== strpos($field['key'], 'field_rmd_')) {
+		return $field;
+	}
+	static $en = null;
+	if (null === $en) {
+		$en = rmd_admin_en_strings();
+	}
+	if (!empty($field['label']) && isset($en['labels'][$field['label']])) {
+		$field['label'] = $en['labels'][$field['label']];
+	}
+	if (!empty($field['instructions']) && isset($en['instructions'][$field['instructions']])) {
+		$field['instructions'] = $en['instructions'][$field['instructions']];
+	}
+	if (!empty($field['button_label']) && isset($en['buttons'][$field['button_label']])) {
+		$field['button_label'] = $en['buttons'][$field['button_label']];
+	}
+	if (!empty($field['message']) && isset($en['messages'][$field['message']])) {
+		$field['message'] = $en['messages'][$field['message']];
+	}
+	if (!empty($field['choices']) && is_array($field['choices'])) {
+		foreach ($field['choices'] as $value => $choice_label) {
+			if (isset($en['choices'][$choice_label])) {
+				$field['choices'][$value] = $en['choices'][$choice_label];
+			}
+		}
+	}
+	return $field;
+}
+
+/** Metabox titles in the admin's language (both directions). */
+add_filter('acf/load_field_group', 'rmd_localize_group_titles');
+function rmd_localize_group_titles($group) {
+	if (!is_admin() || !function_exists('rmd_is_fr') || empty($group['key'])) {
+		return $group;
+	}
+	if ('group_rmd_case_study_sections' === $group['key']) {
+		$group['title'] = rmd_is_fr() ? 'Étude de cas — Sections' : 'Case Study — Sections';
+	} elseif ('group_rmd_chrome' === $group['key']) {
+		$group['title'] = rmd_is_fr() ? 'En-tête & pied de page' : 'Header & footer';
+	}
+	return $group;
+}
+
+/**
  * layout => the ONE sub-field whose value makes two uses of the same layout
  * visually different sections (red problem cards vs green result cards, strip
  * vs card band…). Drives two things: the variant suffix on collapsed row titles
@@ -513,17 +701,18 @@ function rmd_render_section_preview() {
 	</style>
 </head>
 <body>
+<?php $fr = rmd_is_fr(); ?>
 <?php if ($has_visible) : ?>
 	<main class="rmd-case"><?php echo $section_html; // phpcs:ignore WordPress.Security.EscapeOutput — theme template output ?></main>
 <?php elseif ($row_index >= 0) : ?>
 	<div class="rmd-preview-empty">
-		<strong><?php echo esc_html__('Section non encore enregistrée', 'vault-child'); ?></strong>
-		<?php echo esc_html__('L’aperçu affiche le contenu enregistré. Cliquez sur « Mettre à jour » puis rouvrez l’aperçu.', 'vault-child'); ?>
+		<strong><?php echo esc_html($fr ? 'Section non encore enregistrée' : 'Section not saved yet'); ?></strong>
+		<?php echo esc_html($fr ? 'L’aperçu affiche le contenu enregistré. Cliquez sur « Mettre à jour » puis rouvrez l’aperçu.' : 'The preview shows saved content. Click "Update", then reopen the preview.'); ?>
 	</div>
 <?php else : ?>
 	<div class="rmd-preview-empty">
-		<strong><?php echo esc_html__('Rien à afficher', 'vault-child'); ?></strong>
-		<?php echo esc_html__('Cette section n’affiche du contenu qu’une fois ses champs remplis.', 'vault-child'); ?>
+		<strong><?php echo esc_html($fr ? 'Rien à afficher' : 'Nothing to show'); ?></strong>
+		<?php echo esc_html($fr ? 'Cette section n’affiche du contenu qu’une fois ses champs remplis.' : 'This section only shows content once its fields are filled.'); ?>
 	</div>
 <?php endif; ?>
 	<?php if (file_exists($main_js)) : ?>
@@ -564,22 +753,39 @@ function rmd_section_preview_assets($hook) {
 		$preview_post_id = absint($_GET['post']);
 	}
 
+	// Editor-UI strings follow the admin user's language (rmd_is_fr pattern,
+	// like the section names) — not the site locale and no .mo files.
+	$fr = rmd_is_fr();
+
 	wp_localize_script('rmd-section-preview', 'rmdSectionPreview', array(
 		'ajaxUrl' => admin_url('admin-ajax.php'),
 		'nonce'   => wp_create_nonce('rmd_section_preview'),
 		'postId'  => $preview_post_id ? (int) $preview_post_id : 0,
 		'layouts' => rmd_preview_layouts(),
-		'i18n'    => array(
-			'previewTitle' => __('Aperçu de la section', 'vault-child'),
-			'insert'       => __('Insérer', 'vault-child'),
-			'close'        => __('Fermer', 'vault-child'),
-			'refresh'      => __('Rafraîchir', 'vault-child'),
-			'loading'      => __('Chargement de l’aperçu…', 'vault-child'),
-			'error'        => __('Impossible de charger l’aperçu.', 'vault-child'),
-			'demoNotice'   => __('Aperçu de démonstration — le contenu réel dépendra de vos réglages.', 'vault-child'),
-			'rowPreview'   => __('Aperçu de cette section avec son contenu enregistré.', 'vault-child'),
-			'dirtyHint'    => __('Modifications non enregistrées : l’aperçu montre la dernière version enregistrée. Cliquez sur « Mettre à jour ».', 'vault-child'),
-			'newRowHint'   => __('Cette section n’a jamais été enregistrée. Cliquez sur « Mettre à jour » puis rouvrez l’aperçu.', 'vault-child'),
+		'i18n'    => $fr ? array(
+			'previewTitle' => 'Aperçu de la section',
+			'insert'       => 'Insérer',
+			'close'        => 'Fermer',
+			'refresh'      => 'Rafraîchir',
+			'loading'      => 'Chargement de l’aperçu…',
+			'error'        => 'Impossible de charger l’aperçu.',
+			'demoNotice'   => 'Aperçu de démonstration — le contenu réel dépendra de vos réglages.',
+			'rowPreview'   => 'Aperçu de cette section avec son contenu enregistré.',
+			'dirtyHint'    => 'Modifications non enregistrées : l’aperçu montre la dernière version enregistrée. Cliquez sur « Mettre à jour ».',
+			'newRowHint'   => 'Cette section n’a jamais été enregistrée. Cliquez sur « Mettre à jour » puis rouvrez l’aperçu.',
+			'addSection'   => 'Ajouter une section',
+		) : array(
+			'previewTitle' => 'Section preview',
+			'insert'       => 'Insert',
+			'close'        => 'Close',
+			'refresh'      => 'Refresh',
+			'loading'      => 'Loading the preview…',
+			'error'        => 'Could not load the preview.',
+			'demoNotice'   => 'Demo preview — the real content will depend on your settings.',
+			'rowPreview'   => 'Preview of this section with its saved content.',
+			'dirtyHint'    => 'Unsaved changes: the preview shows the last saved version. Click "Update".',
+			'newRowHint'   => 'This section has never been saved. Click "Update", then reopen the preview.',
+			'addSection'   => 'Add a section',
 		),
 	));
 }
@@ -596,12 +802,20 @@ function rmd_section_duplicate_notice() {
 	foreach (rmd_section_variant_fields() as $rmd_layout_name => $rmd_variant) {
 		$rmd_variants[$rmd_layout_name] = $rmd_variant['key'];
 	}
+	$rmd_dup_i18n = rmd_is_fr() ? array(
+		'text'    => '⚠ La section « %s » est déjà utilisée sur cette page avec le même style. Vous pouvez continuer, mais vérifiez que c’est intentionnel.',
+		'dismiss' => 'Ignorer',
+	) : array(
+		'text'    => '⚠ The “%s” section is already used on this page with the same style. You can continue, but make sure it’s intentional.',
+		'dismiss' => 'Dismiss',
+	);
 	?>
 	<script>
 	(function ($) {
 		if (typeof acf === 'undefined') return;
 
 		var variants = <?php echo wp_json_encode($rmd_variants); ?>;
+		var dupI18n = <?php echo wp_json_encode($rmd_dup_i18n); ?>;
 
 		/** The row's variant value ('' when the layout has no variant field). */
 		function variantOf($row) {
@@ -631,9 +845,10 @@ function rmd_section_duplicate_notice() {
 
 				var label = $row.attr('data-label') || name;
 				var $note = $('<div class="rmd-dup-note" style="display:flex;align-items:flex-start;gap:10px;margin:8px 12px;padding:9px 12px;border-radius:6px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;font-size:12.5px;font-weight:600;line-height:1.5;">' +
-					'<span style="flex:1;">⚠ La section « ' + label + ' » est déjà utilisée sur cette page avec le même style. Vous pouvez continuer, mais vérifiez que c\'est intentionnel.</span>' +
-					'<button type="button" class="rmd-dup-dismiss" aria-label="Ignorer" style="border:0;background:none;color:#92400e;cursor:pointer;font-size:15px;line-height:1;padding:0 2px;">×</button>' +
+					'<span style="flex:1;"></span>' +
+					'<button type="button" class="rmd-dup-dismiss" aria-label="' + dupI18n.dismiss + '" style="border:0;background:none;color:#92400e;cursor:pointer;font-size:15px;line-height:1;padding:0 2px;">&times;</button>' +
 					'</div>');
+				$note.children('span').text(dupI18n.text.replace('%s', label));
 
 				$note.find('.rmd-dup-dismiss').on('click', function () {
 					$row.attr('data-rmd-dup-dismissed', '1');
@@ -666,7 +881,7 @@ add_action('acf/input/admin_footer', 'rmd_section_duplicate_notice');
  * ───────────────────────────────────────────────────────────────────────── */
 function rmd_field_hints() {
 	// key => array('placeholder' => …, 'instructions' => …)
-	return array(
+	$hints = array(
 		// The sections field itself — ownership note (spec §11.1).
 		'field_rmd_cs_sections' => array('instructions' => 'Composez la page en ajoutant des sections. Ces sections appartiennent à cette étude de cas uniquement — les modifier ici n’affecte aucune autre page.'),
 		// hero
@@ -710,6 +925,36 @@ function rmd_field_hints() {
 		'field_rmd_cs_cta_heading_accent' => array('placeholder' => 'mêmes résultats'),
 		'field_rmd_cs_cta_subheading'     => array('placeholder' => 'Une phrase qui invite à la prise de contact.'),
 	);
+
+	if (rmd_is_fr()) {
+		return $hints;
+	}
+
+	// English admin: swap the DESCRIPTIVE hints. Content examples ('Battre les
+	// géants en', '#49', 'juin 2024'…) stay as-is — they demonstrate what to
+	// write, and the site's content language is French regardless of who edits.
+	$en = array(
+		'field_rmd_cs_sections' => array('instructions' => 'Compose the page by adding sections. These sections belong to this case study only — editing them here affects no other page.'),
+		'field_rmd_cs_hero_kicker'          => array('placeholder' => 'Client name (shown in red)'),
+		'field_rmd_cs_hero_heading_accent'  => array('instructions' => 'The gradient part of the heading (red → orange).'),
+		'field_rmd_cs_hero_subheading'      => array('placeholder' => 'The sector, the stakes and the result, in one sentence.'),
+		'field_rmd_cs_hero_stats_value'     => array('instructions' => 'Light HTML: <span class="unit">→</span> for a green arrow.'),
+		'field_rmd_cs_hero_stats_label'     => array('placeholder' => 'on "your target query"'),
+		'field_rmd_cs_stat_cards_cards_body'  => array('placeholder' => 'One sentence of context for this number.'),
+		'field_rmd_cs_feature_cards_highlight' => array('placeholder' => 'The business result in one sentence (green band).'),
+		'field_rmd_cs_numbered_steps_steps_items' => array('instructions' => 'One bullet per line.'),
+		'field_rmd_cs_screenshot_gallery_items_image'   => array('instructions' => 'PNG/JPG screenshot — SERP, Search Console, Ahrefs, Semrush…'),
+		'field_rmd_cs_screenshot_gallery_items_label'   => array('placeholder' => '"your query"'),
+		'field_rmd_cs_screenshot_gallery_items_caption' => array('placeholder' => 'What the screenshot shows, in one line.'),
+		'field_rmd_cs_table_split_comment'     => array('placeholder' => 'The comment that interprets the table.'),
+		'field_rmd_cs_table_split_media_image' => array('instructions' => 'The screenshot shown to the left of the table.'),
+		'field_rmd_cs_recap_band_heading'      => array('placeholder' => 'The promise kept, in one sentence.'),
+		'field_rmd_cs_cta_subheading'          => array('placeholder' => 'One sentence inviting the reader to get in touch.'),
+	);
+	foreach ($en as $key => $override) {
+		$hints[$key] = array_merge(isset($hints[$key]) ? $hints[$key] : array(), $override);
+	}
+	return $hints;
 }
 
 add_filter('acf/load_field', function ($field) {
