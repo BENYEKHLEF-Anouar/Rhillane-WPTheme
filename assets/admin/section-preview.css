@@ -11,6 +11,17 @@
    and would otherwise collapse the grid to one column.
    The JS stamps .rmd-sp-grid on the picker's own <ul> only, so these rules never
    touch ACF 6.5+'s "more layout actions" menu (which reuses .acf-fc-popup). */
+
+/* ACF constrains the popup wrapper (and its .acf-tooltip parent) to a narrow
+   fixed width and nowrap; without this reset our 560px card grid gets clipped to
+   a single narrow column. Adopted from main's port. width:auto / white-space are
+   benign for the "more actions" menu, so this can safely stay unscoped. */
+.acf-fc-popup,
+.acf-tooltip.acf-fc-popup {
+	width: auto !important;
+	max-width: none !important;
+	white-space: normal !important;
+}
 .acf-fc-popup ul.rmd-sp-grid {
 	display: grid !important;
 	grid-template-columns: 1fr 1fr !important;

@@ -285,7 +285,9 @@ function rmd_render_saved_section_row($post_id, $row_index, $layout) {
 			if ($index === $row_index) {
 				if (rmd_get_row_layout() === $layout) {
 					ob_start();
-					get_template_part('template-parts/layouts/' . $layout, null, array('index' => 0));
+					// Pass the real row index so the preview's eager/lazy loading
+					// matches the live page (a section-0 preview loads eager).
+					get_template_part('template-parts/layouts/' . $layout, null, array('index' => $row_index));
 					$html = trim(ob_get_clean());
 				}
 				break;
@@ -379,8 +381,10 @@ function rmd_render_section_preview() {
 	<style>
 		html, body { margin: 0; padding: 0; background: #fff; }
 		/* An isolated section has nothing above it; cancel a leading negative top
-		   margin so it can't render off the top of the frame. */
+		   margin so it can't render off the top of the frame. The 1px padding also
+		   blocks a child's top margin from collapsing through <body> (from main). */
 		body > * > *:first-child { margin-top: 0 !important; }
+		body { padding-top: 1px; }
 		/* Nothing in a preview should navigate. */
 		a { pointer-events: none; }
 		.rmd-preview-empty { font-family: Poppins, system-ui, sans-serif; color: #596980; font-size: 14px; text-align: center; padding: 80px 24px; line-height: 1.6; }
