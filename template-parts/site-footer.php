@@ -12,6 +12,8 @@ $copy  = rmd_get_field('rmd_footer_copyright', 'option');
 	<div class="rmd-footer-inner">
 		<?php if ($flogo) : ?>
 			<?php echo rmd_image($flogo, array('size' => 'medium', 'class' => 'rmd-footer-logo')); ?>
+		<?php else : ?>
+			<?php echo rmd_logo_img('footer', 'rmd-footer-logo'); ?>
 		<?php endif; ?>
 		<p class="rmd-footer-copy">
 			<?php

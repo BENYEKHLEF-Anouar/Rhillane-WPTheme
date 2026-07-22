@@ -28,6 +28,25 @@ function rmd_render_footer() {
 }
 
 /**
+ * The theme's bundled default logo (committed in assets/img/) — used when no
+ * logo is set in Site Settings, so the chrome works out of the box.
+ *   'header' → light logo for the white header  ·  'footer' → logo for the navy footer.
+ * Intrinsic size 650×166; CSS controls the displayed height.
+ */
+function rmd_logo_img($which = 'header', $class = 'rmd-logo-img') {
+	$footer = ('footer' === $which);
+	$file   = $footer ? 'rmd-logo.png' : 'rmd-logo-light.png';
+	return sprintf(
+		'<img src="%s" alt="%s" class="%s" width="650" height="166" loading="%s" decoding="async"%s>',
+		esc_url(RMD_URI . '/assets/img/' . $file),
+		esc_attr(get_bloginfo('name')),
+		esc_attr($class),
+		$footer ? 'lazy' : 'eager',
+		$footer ? '' : ' fetchpriority="high"'
+	);
+}
+
+/**
  * The chrome CSS is only needed where the RMD header/footer render (the case-study
  * templates today). Enqueued after main.css; hand-written, so no Tailwind rebuild.
  */
@@ -60,12 +79,12 @@ function rmd_register_chrome_fields() {
 		'title'  => 'En-tête & pied de page',
 		'fields' => array(
 			array('key' => 'field_rmd_chrome_tab_header', 'label' => 'En-tête', 'name' => '', 'type' => 'tab'),
-			array('key' => 'field_rmd_header_logo', 'label' => 'Logo (en-tête)', 'name' => 'rmd_header_logo', 'type' => 'image', 'return_format' => 'array', 'preview_size' => 'medium', 'instructions' => 'Logo clair — sur fond blanc. Vide = nom du site en texte.'),
+			array('key' => 'field_rmd_header_logo', 'label' => 'Logo (en-tête)', 'name' => 'rmd_header_logo', 'type' => 'image', 'return_format' => 'array', 'preview_size' => 'medium', 'instructions' => 'Optionnel — remplace le logo du thème. Vide = logo par défaut (fond blanc).'),
 			array('key' => 'field_rmd_header_cta_label', 'label' => 'Bouton — texte', 'name' => 'rmd_header_cta_label', 'type' => 'text', 'placeholder' => 'Audit web gratuit'),
 			array('key' => 'field_rmd_header_cta_url', 'label' => 'Bouton — lien', 'name' => 'rmd_header_cta_url', 'type' => 'text', 'placeholder' => '#contact', 'instructions' => 'URL, ancre (#contact) ou mailto:.'),
 			array('key' => 'field_rmd_header_sticky', 'label' => 'En-tête fixe (sticky)', 'name' => 'rmd_header_sticky', 'type' => 'true_false', 'ui' => 1, 'default_value' => 1, 'message' => 'Reste en haut et rétrécit au défilement.'),
 			array('key' => 'field_rmd_chrome_tab_footer', 'label' => 'Pied de page', 'name' => '', 'type' => 'tab'),
-			array('key' => 'field_rmd_footer_logo', 'label' => 'Logo (pied de page)', 'name' => 'rmd_footer_logo', 'type' => 'image', 'return_format' => 'array', 'preview_size' => 'medium', 'instructions' => 'Logo clair — sur fond sombre.'),
+			array('key' => 'field_rmd_footer_logo', 'label' => 'Logo (pied de page)', 'name' => 'rmd_footer_logo', 'type' => 'image', 'return_format' => 'array', 'preview_size' => 'medium', 'instructions' => 'Optionnel — remplace le logo du thème. Vide = logo par défaut (fond sombre).'),
 			array('key' => 'field_rmd_footer_copyright', 'label' => 'Mentions / copyright', 'name' => 'rmd_footer_copyright', 'type' => 'textarea', 'rows' => 3, 'instructions' => 'HTML léger autorisé (<b>, <br>). Vide = © année + nom du site.'),
 		),
 		'location' => array(array(array('param' => 'options_page', 'operator' => '==', 'value' => 'rmd-site-settings'))),
