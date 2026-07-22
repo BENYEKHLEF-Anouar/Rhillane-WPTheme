@@ -5,6 +5,17 @@
  * src/tailwind.css (ink #041135, purple #3943FF, red #E4004D).
  */
 
+/* ── Calm first paint ────────────────────────────────────────────────────── */
+/* ACF renders every row EXPANDED and collapses the saved ones only at JS
+   init — on a heavy edit screen the fields visibly flash open then snap
+   shut. body.rmd-precollapse (added server-side, inc/admin-ux.php) hides row
+   bodies from the first frame; acf-collapse-guard.js lifts it once ACF has
+   restored the real collapsed state (timer failsafe included). */
+body.rmd-precollapse .acf-flexible-content > .values > .layout > .acf-fields,
+body.rmd-precollapse .acf-flexible-content > .values > .layout > .acf-table {
+	display: none;
+}
+
 /* ── "Add Section" → our picker modal ────────────────────────────────────── */
 /* ACF's fc-popup tooltip is hidden the instant it appears (the JS stamps
    .rmd-sp-hijacked on it) and our centered modal takes over. The popup element

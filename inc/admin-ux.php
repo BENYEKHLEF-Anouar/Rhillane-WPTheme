@@ -918,6 +918,23 @@ add_action('wp_ajax_rmd_section_preview', 'rmd_render_section_preview');
 /* ─────────────────────────────────────────────────────────────────────────
  * 4. Enqueue the preview UI — post.php / post-new.php only, ACF active.
  * ───────────────────────────────────────────────────────────────────────── */
+/**
+ * Calm first paint: ACF renders every flexible-content row EXPANDED and only
+ * collapses the saved ones once all JS has loaded — on a heavy edit screen the
+ * fields visibly flash open then snap shut. This class hides row bodies from
+ * the first frame (CSS in section-preview.css); acf-collapse-guard.js lifts it
+ * right after ACF restores the real state, with a timer failsafe.
+ */
+add_filter('admin_body_class', 'rmd_precollapse_body_class');
+function rmd_precollapse_body_class($classes) {
+	global $pagenow;
+	if (('post.php' === $pagenow || 'post-new.php' === $pagenow)
+		&& defined('RMD_ACF_ACTIVE') && RMD_ACF_ACTIVE) {
+		$classes .= ' rmd-precollapse';
+	}
+	return $classes;
+}
+
 function rmd_section_preview_assets($hook) {
 	if ('post.php' !== $hook && 'post-new.php' !== $hook) {
 		return;

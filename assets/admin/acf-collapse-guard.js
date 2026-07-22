@@ -210,6 +210,36 @@
 	// A save with rows un-healed would drop their layout key — heal first, always.
 	document.addEventListener('submit', function () { healAll(); }, true);
 
+	/* ── 1.75 Calm load: reveal rows once ACF restored collapsed state. ──────
+	 * body.rmd-precollapse (added server-side) paints all row bodies hidden so
+	 * the page loads looking collapsed instead of flashing every field open.
+	 * Lift it right after ACF's init applied the saved collapse state — and on
+	 * a timer regardless, so nothing can ever stay hidden. */
+	function revealRows() {
+		if (document.body) document.body.classList.remove('rmd-precollapse');
+	}
+
+	function armReveal() {
+		if (window.acf && typeof acf.addAction === 'function') {
+			acf.addAction('ready', function () {
+				requestAnimationFrame(revealRows);
+			}, 99);
+			return true;
+		}
+		return false;
+	}
+
+	if (!armReveal()) {
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', function () {
+				if (!armReveal()) revealRows(); // ACF never arrived → just show
+			});
+		} else {
+			revealRows();
+		}
+	}
+	setTimeout(revealRows, 3000); // absolute failsafe, whatever happened above
+
 	/* ── 2. Collapse/expand failsafe. ────────────────────────────────────────
 	 * Capture phase: we always see the click, even if another handler stops
 	 * propagation. We never preventDefault and never act immediately — ACF gets
