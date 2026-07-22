@@ -65,15 +65,17 @@ $show_nav          = $has_menu || $show_fallback_nav;
 		</nav>
 		<?php endif; ?>
 
-		<?php rmd_locale_switcher(); ?>
+		<div class="rmd-header-actions">
+			<?php rmd_locale_switcher(); ?>
 
-		<?php if ($cta_label && $cta_url) : ?>
-			<a href="<?php echo esc_url($cta_url); ?>" class="rmd-cta"><?php echo esc_html($cta_label); ?></a>
-		<?php endif; ?>
+			<?php if ($cta_label && $cta_url) : ?>
+				<a href="<?php echo esc_url($cta_url); ?>" class="rmd-cta"><?php echo esc_html($cta_label); ?></a>
+			<?php endif; ?>
 
-		<button id="mobile-menu-btn" type="button" class="rmd-burger" aria-label="<?php esc_attr_e('Ouvrir le menu', 'vault-child'); ?>" aria-controls="mobile-menu-panel" aria-expanded="false">
-			<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-		</button>
+			<button id="mobile-menu-btn" type="button" class="rmd-burger" aria-label="<?php esc_attr_e('Ouvrir le menu', 'vault-child'); ?>" aria-controls="mobile-menu-panel" aria-expanded="false">
+				<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+			</button>
+		</div>
 	</div>
 </header>
 
