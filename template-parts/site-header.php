@@ -57,6 +57,8 @@ $has_menu = has_nav_menu('rmd_header');
 			<?php endif; ?>
 		</nav>
 
+		<?php rmd_locale_switcher(); ?>
+
 		<?php if ($cta_label && $cta_url) : ?>
 			<a href="<?php echo esc_url($cta_url); ?>" class="rmd-cta"><?php echo esc_html($cta_label); ?></a>
 		<?php endif; ?>
