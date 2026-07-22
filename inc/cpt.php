@@ -9,11 +9,29 @@ add_action('init', 'rmd_register_post_types');
 function rmd_register_post_types() {
 
 	register_post_type('case_study', array(
+		// French source strings (site is FR-first); the __() wrappers keep them
+		// translatable to EN/AR later via .mo files. Without a translation the
+		// msgid shows verbatim — so English msgids showed English on a FR admin.
 		'labels' => array(
-			'name'          => __('Case Studies', 'vault-child'),
-			'singular_name' => __('Case Study', 'vault-child'),
-			'add_new_item'  => __('Add New Case Study', 'vault-child'),
-			'edit_item'     => __('Edit Case Study', 'vault-child'),
+			'name'               => __('Études de cas', 'vault-child'),
+			'singular_name'      => __('Étude de cas', 'vault-child'),
+			'menu_name'          => __('Études de cas', 'vault-child'),
+			'name_admin_bar'     => __('Étude de cas', 'vault-child'),
+			'all_items'          => __('Toutes les études de cas', 'vault-child'),
+			'add_new'            => __('Ajouter', 'vault-child'),
+			'add_new_item'       => __('Ajouter une étude de cas', 'vault-child'),
+			'new_item'           => __('Nouvelle étude de cas', 'vault-child'),
+			'edit_item'          => __('Modifier l’étude de cas', 'vault-child'),
+			'view_item'          => __('Voir l’étude de cas', 'vault-child'),
+			'view_items'         => __('Voir les études de cas', 'vault-child'),
+			'search_items'       => __('Rechercher une étude de cas', 'vault-child'),
+			'not_found'          => __('Aucune étude de cas trouvée', 'vault-child'),
+			'not_found_in_trash' => __('Aucune étude de cas dans la corbeille', 'vault-child'),
+			'archives'           => __('Archives des études de cas', 'vault-child'),
+			'featured_image'     => __('Image mise en avant', 'vault-child'),
+			'set_featured_image' => __('Définir l’image mise en avant', 'vault-child'),
+			'item_published'     => __('Étude de cas publiée.', 'vault-child'),
+			'item_updated'       => __('Étude de cas mise à jour.', 'vault-child'),
 		),
 		'public'        => true,
 		'has_archive'   => true,
