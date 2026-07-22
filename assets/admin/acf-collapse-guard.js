@@ -142,16 +142,51 @@
 		return false;
 	}
 
+	/**
+	 * Unclosed <b> tags upstream (a plugin's admin banner) make the HTML parser
+	 * re-open <b> chains inside every element that follows — live diagnosis showed
+	 * rows as <div.layout><input><b><b><b>(everything else)</b></b></b>. That
+	 * breaks every direct-child selector ACF relies on (collapse CSS, its
+	 * children('input') lookups). A <b> never legitimately contains form fields
+	 * or ACF structure, so dissolve any that do, innermost content preserved.
+	 */
+	function unwrapSoup() {
+		var scopes = document.querySelectorAll('.acf-postbox, .acf-field-flexible-content');
+		var removed = 0;
+		Array.prototype.forEach.call(scopes, function (scope) {
+			for (var guard = 0; guard < 500; guard++) {
+				var soup = null;
+				var bs = scope.querySelectorAll('b');
+				for (var i = 0; i < bs.length; i++) {
+					if (bs[i].querySelector('input, select, textarea, .acf-field, .acf-fields, ' +
+						'.acf-fc-layout-handle, .acf-fc-layout-controls, .layout, .acf-label, .acf-input')) {
+						soup = bs[i];
+						break;
+					}
+				}
+				if (!soup) break;
+				while (soup.firstChild) {
+					soup.parentNode.insertBefore(soup.firstChild, soup);
+				}
+				soup.parentNode.removeChild(soup);
+				removed++;
+			}
+		});
+		if (removed) healLog.push({ how: 'unwrapped-b-soup', count: removed });
+		return removed;
+	}
+
 	function healAll() {
-		var healed = 0;
+		var healed = unwrapSoup();
 		Array.prototype.forEach.call(
 			document.querySelectorAll('.acf-field-flexible-content .acf-flexible-content > .values > .layout'),
 			function (row) { if (healRow(row)) healed++; }
 		);
 		if (healed) {
-			warnOnce('healed', healed + ' section row(s) were missing their [acf_fc_layout] ' +
-				'input — restored so collapse and SAVING work. Something on this page is ' +
-				'restructuring ACF rows; run rmdAcfDiag() and report the output.');
+			warnOnce('healed', 'Section rows arrived restructured (stray <b> wrappers / ' +
+				'missing [acf_fc_layout] input) — repaired so collapse and SAVING work. ' +
+				'An admin notice above the editor is emitting unclosed <b> tags; dismiss ' +
+				'it or deactivate its plugin, then run rmdAcfDiag() to confirm healLog is empty.');
 		}
 		return healed;
 	}
