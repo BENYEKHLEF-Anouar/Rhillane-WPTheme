@@ -30,6 +30,35 @@ function rmd_locale_map() {
 }
 
 /**
+ * Resolve where a country link goes on a given subsite, keeping the visitor in
+ * place across languages:
+ *   'single'  → the case study with the SAME slug on that subsite (so the FR
+ *               link on a case study lands on that case study in French).
+ *               Falls back to the subsite's home if it isn't published there.
+ *   'archive' → that subsite's case-study archive (fallback: home).
+ *   'home'    → that subsite's home.
+ * Uses switch_to_blog so the slug lookup and permalink resolve on the TARGET
+ * site's database, not the current one.
+ */
+function rmd_locale_target_url($blog_id, $context, $slug) {
+	switch_to_blog($blog_id);
+	$url = home_url('/');
+	if ('single' === $context && $slug) {
+		$post = get_page_by_path($slug, OBJECT, 'case_study');
+		if ($post && 'publish' === $post->post_status) {
+			$url = get_permalink($post->ID);
+		}
+	} elseif ('archive' === $context) {
+		$archive = get_post_type_archive_link('case_study');
+		if ($archive) {
+			$url = $archive;
+		}
+	}
+	restore_current_blog();
+	return $url;
+}
+
+/**
  * Echo the switcher. Renders nothing on single-site installs or when fewer
  * than two mapped subsites exist (a one-country switcher is pointless).
  */
@@ -40,6 +69,19 @@ function rmd_locale_switcher() {
 
 	$map     = rmd_locale_map();
 	$current = get_current_blog_id();
+
+	// Work out what each country link points AT. On a single case study we send
+	// the visitor to the SAME case study on the target subsite (matched by slug),
+	// falling back to that subsite's home if it isn't published there. On the
+	// case-study archive we point at that subsite's archive; anywhere else, home.
+	$context = 'home';
+	$slug    = '';
+	if (is_singular('case_study')) {
+		$context = 'single';
+		$slug    = get_post_field('post_name', get_queried_object_id());
+	} elseif (is_post_type_archive('case_study')) {
+		$context = 'archive';
+	}
 
 	// Build the visible entries: every live subsite that's in the map. We do NOT
 	// filter by the "public" flag — staging subsites are often marked non-public,
@@ -57,7 +99,7 @@ function rmd_locale_switcher() {
 			continue; // a subsite we don't expose in the switcher
 		}
 		$entries[] = array(
-			'url'    => get_home_url($site->blog_id, '/'),
+			'url'    => rmd_locale_target_url((int) $site->blog_id, $context, $slug),
 			'flag'   => $map[$path]['flag'],
 			'label'  => $map[$path]['label'],
 			'active' => ((int) $site->blog_id === (int) $current),
