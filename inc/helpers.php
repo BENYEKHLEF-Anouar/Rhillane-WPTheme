@@ -6,6 +6,17 @@
 defined('ABSPATH') || exit;
 
 /**
+ * Is the current admin user's language French? Used to pick FR/EN for admin-only
+ * UI strings (CPT + taxonomy labels, section names, the header-menu location)
+ * without needing .mo files. On the front end get_user_locale() falls back to the
+ * site locale — fine, since those admin labels aren't shown there.
+ */
+function rmd_is_fr() {
+	$locale = function_exists('get_user_locale') ? get_user_locale() : get_locale();
+	return 0 === strpos((string) $locale, 'fr');
+}
+
+/**
  * Render all sections of a post.
  * Each template-part receives its index via $args — section 0 is above
  * the fold, so its imagery loads eager; everything below loads lazy.

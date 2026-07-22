@@ -334,8 +334,11 @@
 	function makeRowEye(labelText) {
 		var a = document.createElement('a');
 		a.href = '#';
-		a.className = 'acf-js-tooltip rmd-sp-eye--row';
-		a.setAttribute('data-name', 'rmd-preview-layout');
+		// NO data-name and NO acf-js-tooltip: those pull the element into ACF's
+		// own control-click delegation + tooltip system, which was breaking the
+		// row collapse/expand. Our eye is a plain element with its own click
+		// handler — ACF never sees it.
+		a.className = 'rmd-sp-eye--row';
 		a.title = i18n.previewTitle || 'Aperçu';
 		a.setAttribute('aria-label', (i18n.previewTitle || 'Aperçu') + (labelText ? ' : ' + labelText : ''));
 		a.innerHTML = '<span class="dashicons dashicons-visibility" aria-hidden="true"></span>';
@@ -411,38 +414,44 @@
 	}
 
 	// ── 2. Existing rows ─────────────────────────────────────────────────────
+	// The row eye (preview a saved section). Kept, but made ACF-inert: the eye
+	// carries no data-name / acf-js-tooltip (see makeRowEye), so it can't disturb
+	// ACF's control-click delegation or the row collapse/expand. Wrapped in
+	// try/catch so a row-structure edge case can never break the editor.
 	function decorateRow(row) {
-		if (row.dataset.rmdPreview) return;
-		if (!isRealRow(row)) return; // never decorate a clone template
+		try {
+			if (!row || row.dataset.rmdPreview) return;
+			if (!isRealRow(row)) return; // never decorate a clone template
 
-		var name = row.getAttribute('data-layout');
-		if (!name || !layouts[name]) return;
+			var name = row.getAttribute('data-layout');
+			if (!name || !layouts[name]) return;
 
-		var controls = row.querySelector('.acf-fc-layout-controls') || row.querySelector('.acf-fc-layout-handle');
-		if (!controls) return;
+			var controls = row.querySelector('.acf-fc-layout-controls') || row.querySelector('.acf-fc-layout-handle');
+			if (!controls) return;
 
-		row.dataset.rmdPreview = '1';
+			row.dataset.rmdPreview = '1';
 
-		var btn = makeRowEye(layouts[name].label);
-		btn.addEventListener('click', function (e) {
-			e.preventDefault();
-			e.stopPropagation();
+			var btn = makeRowEye(layouts[name].label);
+			btn.addEventListener('click', function (e) {
+				e.preventDefault();
+				e.stopPropagation();
 
-			var index = rowIndexOf(row);
-			var field = row.closest('.acf-field-flexible-content');
-			var saved = field ? savedRowCount(field) : null;
+				var index = rowIndexOf(row);
+				var field = row.closest('.acf-field-flexible-content');
+				var saved = field ? savedRowCount(field) : null;
 
-			var hint = '';
-			if (saved !== null && index >= saved) {
-				hint = i18n.newRowHint || '';   // row added, never saved
-			} else if (postIsDirty()) {
-				hint = i18n.dirtyHint || '';    // page has unsaved edits
-			}
+				var hint = '';
+				if (saved !== null && index >= saved) {
+					hint = i18n.newRowHint || '';   // row added, never saved
+				} else if (postIsDirty()) {
+					hint = i18n.dirtyHint || '';    // page has unsaved edits
+				}
 
-			openModal({ layout: name, rowIndex: index, hint: hint, isRow: true });
-		});
+				openModal({ layout: name, rowIndex: index, hint: hint, isRow: true });
+			});
 
-		controls.insertBefore(btn, controls.firstChild);
+			controls.insertBefore(btn, controls.firstChild);
+		} catch (err) { /* never let row decoration break the editor */ }
 	}
 
 	/** The post was saved: re-baseline the saved-row count and refresh an open

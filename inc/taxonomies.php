@@ -7,23 +7,39 @@ defined('ABSPATH') || exit;
 add_action('init', 'rmd_register_taxonomies');
 function rmd_register_taxonomies() {
 
+	// Labels adapt to the admin user's language (rmd_is_fr), like the CPT.
+	$labels = rmd_is_fr() ? array(
+		'name'              => 'Catégories d’études de cas',
+		'singular_name'     => 'Catégorie d’étude de cas',
+		'menu_name'         => 'Catégories',
+		'all_items'         => 'Toutes les catégories',
+		'edit_item'         => 'Modifier la catégorie',
+		'view_item'         => 'Voir la catégorie',
+		'update_item'       => 'Mettre à jour la catégorie',
+		'add_new_item'      => 'Ajouter une catégorie',
+		'new_item_name'     => 'Nom de la nouvelle catégorie',
+		'search_items'      => 'Rechercher une catégorie',
+		'not_found'         => 'Aucune catégorie trouvée',
+		'parent_item'       => 'Catégorie parente',
+		'parent_item_colon' => 'Catégorie parente :',
+	) : array(
+		'name'              => 'Case Study Categories',
+		'singular_name'     => 'Case Study Category',
+		'menu_name'         => 'Categories',
+		'all_items'         => 'All Categories',
+		'edit_item'         => 'Edit Category',
+		'view_item'         => 'View Category',
+		'update_item'       => 'Update Category',
+		'add_new_item'      => 'Add New Category',
+		'new_item_name'     => 'New Category Name',
+		'search_items'      => 'Search Categories',
+		'not_found'         => 'No categories found',
+		'parent_item'       => 'Parent Category',
+		'parent_item_colon' => 'Parent Category:',
+	);
+
 	register_taxonomy('case_study_cat', array('case_study'), array(
-		// French source strings (translatable to EN/AR later via .mo).
-		'labels' => array(
-			'name'              => __('Catégories d’études de cas', 'vault-child'),
-			'singular_name'     => __('Catégorie d’étude de cas', 'vault-child'),
-			'menu_name'         => __('Catégories', 'vault-child'),
-			'all_items'         => __('Toutes les catégories', 'vault-child'),
-			'edit_item'         => __('Modifier la catégorie', 'vault-child'),
-			'view_item'         => __('Voir la catégorie', 'vault-child'),
-			'update_item'       => __('Mettre à jour la catégorie', 'vault-child'),
-			'add_new_item'      => __('Ajouter une catégorie', 'vault-child'),
-			'new_item_name'     => __('Nom de la nouvelle catégorie', 'vault-child'),
-			'search_items'      => __('Rechercher une catégorie', 'vault-child'),
-			'not_found'         => __('Aucune catégorie trouvée', 'vault-child'),
-			'parent_item'       => __('Catégorie parente', 'vault-child'),
-			'parent_item_colon' => __('Catégorie parente :', 'vault-child'),
-		),
+		'labels'            => $labels,
 		'hierarchical'      => true,
 		'public'            => true,
 		'show_in_rest'      => true,

@@ -31,10 +31,11 @@ $has_menu = has_nav_menu('rmd_header');
 	<div class="rmd-header-inner">
 		<a href="<?php echo esc_url(home_url('/')); ?>" class="rmd-logo" aria-label="<?php echo esc_attr(get_bloginfo('name')); ?>">
 			<?php
+			// Site Settings logo if uploaded; otherwise the theme's bundled logo.
 			if ($logo) {
 				echo rmd_image($logo, array('size' => 'medium', 'class' => 'rmd-logo-img', 'eager' => true));
 			} else {
-				echo '<span class="rmd-logo-text">' . esc_html(get_bloginfo('name')) . '</span>';
+				echo rmd_logo_img('header');
 			}
 			?>
 		</a>
@@ -75,7 +76,7 @@ $has_menu = has_nav_menu('rmd_header');
 			<?php if ($logo) : ?>
 				<?php echo rmd_image($logo, array('size' => 'medium', 'class' => 'rmd-logo-img')); ?>
 			<?php else : ?>
-				<span class="rmd-mobile-brand"><?php echo esc_html(get_bloginfo('name')); ?></span>
+				<?php echo rmd_logo_img('header'); ?>
 			<?php endif; ?>
 			<button id="mobile-menu-close" type="button" class="rmd-burger" aria-label="<?php esc_attr_e('Fermer le menu', 'vault-child'); ?>">
 				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>

@@ -27,7 +27,9 @@ $rmd_modules = array(
 	'inc/options.php',    // Site Settings options page
 	'inc/seo.php',        // hreflang only — Rank Math owns the rest
 	'inc/admin-ux.php',   // live section preview + field hints (ported AMD)
-	'inc/gallery-viewer.php', // in-field image gallery viewer (§9)
+	// 'inc/gallery-viewer.php', // §9 gallery viewer — OFF: its page-wide observer
+	//   is the prime suspect for breaking ACF row collapse/expand. Re-enable only
+	//   after confirming it doesn't interfere (needs a real WP to test).
 	'inc/seeding.php',    // one-time content seeding (Mariner case study) — load last
 );
 

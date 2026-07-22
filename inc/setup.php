@@ -16,13 +16,19 @@ function rmd_setup() {
 	add_theme_support('title-tag');
 	add_theme_support('post-thumbnails');
 
-	// Nav menu locations for the RMD chrome (managed in Appearance → Menus).
-	// The header nav pulls from these, so editors assign links without code.
-	register_nav_menus(array(
-		'rmd_header' => __('RMD — Menu d’en-tête', 'vault-child'),
-		'rmd_footer' => __('RMD — Menu de pied de page', 'vault-child'),
-	));
-
 	// Image sizes for the section library — tune in W0.5 alongside rmd_image().
 	// add_image_size('rmd-card', 640, 400, true);
+}
+
+/**
+ * Header nav menu location (managed in Appearance → Menus). Registered on `init`,
+ * not after_setup_theme, so get_user_locale() is reliable here — the location's
+ * DISPLAY name adapts to the admin user's language (FR/EN), like the section names.
+ * One location only: the footer has no nav (logo + copyright, like Mariner).
+ */
+add_action('init', 'rmd_register_menus');
+function rmd_register_menus() {
+	register_nav_menus(array(
+		'rmd_header' => rmd_is_fr() ? 'RMD — Menu d’en-tête' : 'RMD — Header menu',
+	));
 }
