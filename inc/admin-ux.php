@@ -26,20 +26,95 @@ defined('ABSPATH') || exit;
  * 1. Layout registry — labels (from the ACF group), descriptions, allowlist.
  * ───────────────────────────────────────────────────────────────────────── */
 
-/** One-line French description per section layout, shown under the preview. */
-function rmd_layout_descriptions() {
-	return array(
-		'hero'               => 'Ouverture de l’étude de cas : titre, tags, badge, ligne contact et carte de stats (bloc navy).',
-		'stats_band'         => 'Bandeau de chiffres clés sur fond navy — en bandeau pleine largeur (KPI) ou en carte arrondie.',
-		'stat_cards'         => 'Grille de cartes chiffres — rouge pour le contexte/problème, vert pour les résultats.',
-		'feature_cards'      => 'Panneau « insight » : cartes approche + tuiles de stats + bandeau preuve.',
-		'numbered_steps'     => 'Méthode en étapes numérotées (01–04), puces une par ligne.',
-		'screenshot_gallery' => 'Galerie de captures — cadre simple ou navigateur, 1 ou 2 colonnes, zoom lightbox.',
-		'table_split'        => 'Tableau de données + colonne compagnon (stats latérales ou capture à gauche).',
-		'line_chart'         => 'Courbe SVG rendue côté serveur à partir de points de données (ex. Domain Rating).',
-		'recap_band'         => 'Bandeau récap sur fond navy avec une rangée de pills.',
-		'cta'                => 'Appel à l’action final centré, avec bouton et ligne contact.',
+/**
+ * Friendly, NON-technical section names + descriptions, in the editor's language.
+ * Bilingual FR/EN, picked from the admin user's locale (get_user_locale) — a
+ * French admin sees French, an English admin sees English, no .mo files needed.
+ */
+function rmd_section_i18n() {
+	$locale = function_exists('get_user_locale') ? get_user_locale() : get_locale();
+	$is_fr  = (0 === strpos((string) $locale, 'fr'));
+
+	// Keep the ORIGINAL technical names (the team knows them); the description
+	// below each carries the plain-language detail. Still bilingual so an English
+	// admin gets the technical name in English too.
+	$labels = $is_fr ? array(
+		'hero'               => 'Hero',
+		'stats_band'         => 'Bandeau de stats (navy)',
+		'stat_cards'         => 'Cartes chiffres',
+		'feature_cards'      => 'Insight (cartes + tuiles + preuve)',
+		'numbered_steps'     => 'Méthode (étapes numérotées)',
+		'screenshot_gallery' => 'Galerie de captures',
+		'table_split'        => 'Tableau + colonne compagnon',
+		'line_chart'         => 'Courbe (SVG)',
+		'recap_band'         => 'Bandeau récap (dégradé)',
+		'cta'                => 'CTA final',
+	) : array(
+		'hero'               => 'Hero',
+		'stats_band'         => 'Stats band (navy)',
+		'stat_cards'         => 'Number cards',
+		'feature_cards'      => 'Insight (cards + tiles + proof)',
+		'numbered_steps'     => 'Method (numbered steps)',
+		'screenshot_gallery' => 'Screenshot gallery',
+		'table_split'        => 'Table + companion column',
+		'line_chart'         => 'Chart (SVG)',
+		'recap_band'         => 'Recap band (gradient)',
+		'cta'                => 'Final CTA',
 	);
+
+	$desc = $is_fr ? array(
+		'hero'               => 'L’ouverture de l’étude : grand titre, étiquettes, badge, ligne contact et une carte de chiffres clés.',
+		'stats_band'         => 'Une bande de chiffres clés sur fond sombre — en pleine largeur ou en carte arrondie.',
+		'stat_cards'         => 'Des cartes de chiffres — en rouge pour le problème de départ, en vert pour les résultats.',
+		'feature_cards'      => 'Votre approche : cartes d’explication, tuiles de chiffres et une phrase de preuve.',
+		'numbered_steps'     => 'Votre méthode présentée en étapes numérotées (1, 2, 3, 4) avec des puces.',
+		'screenshot_gallery' => 'Une galerie de captures d’écran, sur 1 ou 2 colonnes, agrandissables au clic.',
+		'table_split'        => 'Un tableau de données avec, à côté, des chiffres ou une capture et un commentaire.',
+		'line_chart'         => 'Un graphique en courbe tracé à partir de vos points de données (ex. une évolution).',
+		'recap_band'         => 'Un bandeau de synthèse sur fond sombre avec une rangée d’étiquettes.',
+		'cta'                => 'L’appel à l’action final, centré, avec un bouton et vos coordonnées.',
+	) : array(
+		'hero'               => 'The study’s opening: big title, tags, a badge, a contact line and a key-figures card.',
+		'stats_band'         => 'A band of key figures on a dark background — full width or as a rounded card.',
+		'stat_cards'         => 'Number cards — red for the starting problem, green for the results.',
+		'feature_cards'      => 'Your approach: explainer cards, number tiles and a one-line proof.',
+		'numbered_steps'     => 'Your method shown as numbered steps (1, 2, 3, 4) with bullet points.',
+		'screenshot_gallery' => 'A gallery of screenshots, in 1 or 2 columns, click to enlarge.',
+		'table_split'        => 'A data table with figures or a screenshot beside it, plus a comment.',
+		'line_chart'         => 'A line chart drawn from your data points (e.g. growth over time).',
+		'recap_band'         => 'A summary band on a dark background with a row of tags.',
+		'cta'                => 'The final call-to-action, centered, with a button and your contact details.',
+	);
+
+	return array('labels' => $labels, 'desc' => $desc);
+}
+
+/** Descriptions shown on the picker cards + preview modal (localized FR/EN). */
+function rmd_layout_descriptions() {
+	$i18n = rmd_section_i18n();
+	return $i18n['desc'];
+}
+
+/**
+ * Rewrite the flexible-content layout LABELS to the friendly, localized names.
+ * Runs on the `sections` field, so ACF's native picker AND our preview data
+ * (rmd_preview_layouts reads the group via acf_get_fields, which applies this)
+ * both show the detailed FR/EN names instead of the terse JSON labels.
+ */
+add_filter('acf/load_field/key=field_rmd_cs_sections', 'rmd_localize_section_labels');
+function rmd_localize_section_labels($field) {
+	if (!is_admin() || empty($field['layouts']) || !is_array($field['layouts'])) {
+		return $field;
+	}
+	$labels = rmd_section_i18n();
+	$labels = $labels['labels'];
+	foreach ($field['layouts'] as $k => $layout) {
+		$name = isset($layout['name']) ? $layout['name'] : '';
+		if ('' !== $name && isset($labels[$name])) {
+			$field['layouts'][$k]['label'] = $labels[$name];
+		}
+	}
+	return $field;
 }
 
 /**
