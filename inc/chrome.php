@@ -30,19 +30,26 @@ function rmd_render_footer() {
 /**
  * The theme's bundled default logo (committed in assets/img/) — used when no
  * logo is set in Site Settings, so the chrome works out of the box.
- *   'header' → light logo for the white header  ·  'footer' → logo for the navy footer.
+ *   'header' → dark logo for a light background  ·  'footer' → light logo for the navy footer.
  * Intrinsic size 650×166; CSS controls the displayed height.
+ *
+ * $eager: null keeps the per-slot default (header eager as the LCP, footer
+ * lazy). Pass false for reuse away from the header (e.g. archive card
+ * placeholders) so it loads lazily and doesn't claim fetchpriority=high.
  */
-function rmd_logo_img($which = 'header', $class = 'rmd-logo-img') {
+function rmd_logo_img($which = 'header', $class = 'rmd-logo-img', $eager = null) {
 	$footer = ('footer' === $which);
 	$file   = $footer ? 'rmd-logo.png' : 'rmd-logo-light.png';
+	if (null === $eager) {
+		$eager = !$footer; // header is the LCP → eager; footer → lazy (unchanged)
+	}
 	return sprintf(
 		'<img src="%s" alt="%s" class="%s" width="650" height="166" loading="%s" decoding="async"%s>',
 		esc_url(RMD_URI . '/assets/img/' . $file),
 		esc_attr(get_bloginfo('name')),
 		esc_attr($class),
-		$footer ? 'lazy' : 'eager',
-		$footer ? '' : ' fetchpriority="high"'
+		$eager ? 'eager' : 'lazy',
+		$eager ? ' fetchpriority="high"' : ''
 	);
 }
 
