@@ -16,17 +16,37 @@
 defined('ABSPATH') || exit;
 
 /**
- * Path → { flag, label } for each language subsite. Filterable so the mapping
+ * Path → { code, label } for each language subsite. Filterable so the mapping
  * can change without touching code. Keys are site paths as WP stores them
- * (leading + trailing slash; the main site is '/').
+ * (leading + trailing slash; the main site is '/'). `code` selects the inline
+ * SVG flag (see rmd_locale_flag_svg) — SVG, not emoji, so flags render on every
+ * OS (Windows Chrome shows flag emoji as bare letters like "MA").
  */
 function rmd_locale_map() {
 	return apply_filters('rmd_locale_map', array(
-		'/'        => array('flag' => '🇲🇦', 'label' => 'Morocco'),
-		'/fr-fr/'  => array('flag' => '🇫🇷', 'label' => 'France'),
-		'/en-us/'  => array('flag' => '🇺🇸', 'label' => 'US'),
-		'/en-ae/'  => array('flag' => '🇦🇪', 'label' => 'UAE'),
+		'/'        => array('code' => 'ma', 'label' => 'Morocco'),
+		'/fr-fr/'  => array('code' => 'fr', 'label' => 'France'),
+		'/en-us/'  => array('code' => 'us', 'label' => 'US'),
+		'/en-ae/'  => array('code' => 'ae', 'label' => 'UAE'),
 	));
+}
+
+/**
+ * Inline SVG flag for a country code. Self-contained (no external asset), simple
+ * geometry that stays crisp at ~20px. Returns '' for an unknown code.
+ */
+function rmd_locale_flag_svg($code) {
+	$flags = array(
+		'fr' => '<rect width="20" height="14" fill="#fff"/><rect width="6.67" height="14" fill="#0055A4"/><rect x="13.33" width="6.67" height="14" fill="#EF4135"/>',
+		'ae' => '<rect width="20" height="14" fill="#fff"/><rect width="20" height="4.67" fill="#00732F"/><rect y="9.33" width="20" height="4.67" fill="#000"/><rect width="5" height="14" fill="#FF0000"/>',
+		'ma' => '<rect width="20" height="14" fill="#C1272D"/><path d="M10 3.2 12.35 10.24 6.2 5.76H13.8L7.65 10.24Z" fill="none" stroke="#006233" stroke-width="0.7"/>',
+		'us' => '<rect width="20" height="14" fill="#fff"/><g fill="#B22234"><rect width="20" height="1.077"/><rect y="2.154" width="20" height="1.077"/><rect y="4.308" width="20" height="1.077"/><rect y="6.462" width="20" height="1.077"/><rect y="8.615" width="20" height="1.077"/><rect y="10.769" width="20" height="1.077"/><rect y="12.923" width="20" height="1.077"/></g><rect width="8" height="7.54" fill="#3C3B6E"/><g fill="#fff"><circle cx="1.6" cy="1.4" r="0.35"/><circle cx="3.4" cy="1.4" r="0.35"/><circle cx="5.2" cy="1.4" r="0.35"/><circle cx="6.6" cy="1.4" r="0.35"/><circle cx="2.5" cy="2.9" r="0.35"/><circle cx="4.3" cy="2.9" r="0.35"/><circle cx="6.1" cy="2.9" r="0.35"/><circle cx="1.6" cy="4.4" r="0.35"/><circle cx="3.4" cy="4.4" r="0.35"/><circle cx="5.2" cy="4.4" r="0.35"/><circle cx="6.6" cy="4.4" r="0.35"/><circle cx="2.5" cy="5.9" r="0.35"/><circle cx="4.3" cy="5.9" r="0.35"/><circle cx="6.1" cy="5.9" r="0.35"/></g>',
+	);
+	$code = strtolower((string) $code);
+	if (!isset($flags[$code])) {
+		return '';
+	}
+	return '<svg class="rmd-flag" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' . $flags[$code] . '</svg>';
 }
 
 /**
@@ -100,7 +120,7 @@ function rmd_locale_switcher() {
 		}
 		$entries[] = array(
 			'url'    => rmd_locale_target_url((int) $site->blog_id, $context, $slug),
-			'flag'   => $map[$path]['flag'],
+			'code'   => $map[$path]['code'],
 			'label'  => $map[$path]['label'],
 			'active' => ((int) $site->blog_id === (int) $current),
 		);
@@ -110,18 +130,19 @@ function rmd_locale_switcher() {
 		return; // nothing meaningful to switch between
 	}
 
-	// Flag shown on the button = the current site's (globe fallback).
-	$current_flag = '🌐';
+	// Flag shown on the button = the current site's.
+	$current_code = '';
 	foreach ($entries as $e) {
 		if ($e['active']) {
-			$current_flag = $e['flag'];
+			$current_code = $e['code'];
 			break;
 		}
 	}
+	// SVG flags are static, trusted markup built in this file — safe to echo raw.
 	?>
 	<div class="rmd-locale-switch">
 		<button class="rmd-locale-btn" type="button" aria-haspopup="true" aria-expanded="false">
-			<span class="rmd-locale-current" aria-hidden="true"><?php echo esc_html($current_flag); ?></span>
+			<span class="rmd-locale-current" aria-hidden="true"><?php echo rmd_locale_flag_svg($current_code); ?></span>
 			<span class="rmd-locale-arrow" aria-hidden="true">
 				<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="#041135" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
 			</span>
@@ -130,7 +151,7 @@ function rmd_locale_switcher() {
 		<div class="rmd-locale-menu" role="menu">
 			<?php foreach ($entries as $e) : ?>
 				<a href="<?php echo esc_url($e['url']); ?>"<?php echo $e['active'] ? ' class="active" aria-current="true"' : ''; ?> role="menuitem" aria-label="<?php echo esc_attr($e['label']); ?>">
-					<span class="rmd-locale-flag" aria-hidden="true"><?php echo esc_html($e['flag']); ?></span>
+					<span class="rmd-locale-flag" aria-hidden="true"><?php echo rmd_locale_flag_svg($e['code']); ?></span>
 					<span class="rmd-locale-label"><?php echo esc_html($e['label']); ?></span>
 				</a>
 			<?php endforeach; ?>
