@@ -27,6 +27,7 @@ $rmd_modules = array(
 	'inc/seo.php',        // hreflang only — Rank Math owns the rest
 	'inc/admin-ux.php',   // live section preview + field hints (ported AMD)
 	'inc/gallery-viewer.php', // in-field image gallery viewer (§9)
+	'inc/seeding.php',    // one-time content seeding (Mariner case study) — load last
 );
 
 foreach ($rmd_modules as $rmd_module) {
