@@ -500,11 +500,17 @@ function rmd_section_preview_assets($hook) {
 		return;
 	}
 
-	$css = RMD_DIR . '/assets/admin/section-preview.css';
-	$js  = RMD_DIR . '/assets/admin/section-preview.js';
+	$css   = RMD_DIR . '/assets/admin/section-preview.css';
+	$js    = RMD_DIR . '/assets/admin/section-preview.js';
+	$guard = RMD_DIR . '/assets/admin/acf-collapse-guard.js';
 
 	wp_enqueue_style('rmd-section-preview', RMD_URI . '/assets/admin/section-preview.css', array('dashicons'), file_exists($css) ? filemtime($css) : RMD_VERSION);
 	wp_enqueue_script('rmd-section-preview', RMD_URI . '/assets/admin/section-preview.js', array(), file_exists($js) ? filemtime($js) : RMD_VERSION, true);
+
+	// Keeps ACF's row collapse/expand from crashing if another plugin's JS error
+	// interrupts ACF init (see assets/admin/acf-collapse-guard.js). Standalone and
+	// dependency-free so a bug in the preview script can't take the guard down.
+	wp_enqueue_script('rmd-acf-collapse-guard', RMD_URI . '/assets/admin/acf-collapse-guard.js', array(), file_exists($guard) ? filemtime($guard) : RMD_VERSION, true);
 
 	$preview_post_id = get_the_ID();
 	if (!$preview_post_id && isset($_GET['post'])) {
