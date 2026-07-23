@@ -432,6 +432,19 @@ function rmd_render_section_preview() {
 			$GLOBALS['rmd_edit_drafts'] = $row_drafts;
 		}
 		$section_html = rmd_render_saved_section_row($post_id, $row_index, $layout);
+
+		// New/unsaved (or empty) row in edit mode → render editable PLACEHOLDER
+		// (demo content) instead of a blank "not saved" notice, so the editor can
+		// fill the section in place. rmd_edit_map is still set here, so the demo
+		// values get marked editable too (drafts, if any, overlay them).
+		if ($edit_mode && '' === $section_html) {
+			$GLOBALS['rmd_demo'] = rmd_section_demo($layout);
+			ob_start();
+			get_template_part('template-parts/layouts/' . $layout, null, array('index' => $row_index));
+			$section_html = trim(ob_get_clean());
+			unset($GLOBALS['rmd_demo']);
+		}
+
 		if ($edit_mode) {
 			unset($GLOBALS['rmd_edit_map'], $GLOBALS['rmd_edit_drafts']);
 			$section_html = rmd_edit_annotate($section_html, $layout);

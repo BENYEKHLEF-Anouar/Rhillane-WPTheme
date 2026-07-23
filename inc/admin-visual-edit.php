@@ -236,6 +236,8 @@ function rmd_visual_edit_assets($hook) {
 								 : 'Editable preview: click any text or image to change it in place.',
 			'editedHint'  => $fr ? 'Modifications non enregistrées — « Enregistrer » garde un brouillon, « Mettre à jour » publie sur le site.'
 								 : 'Unsaved changes — "Save" keeps a draft, "Update" publishes to the live site.',
+			'newSectionHint' => $fr ? 'Nouvelle section (exemple) : modifiez les textes/images ici, puis « Mettre à jour » pour l’enregistrer. Structure (étapes, cartes…) dans les champs.'
+									: 'New section (example): edit text/images here, then click "Update" to save it. Structure (steps, cards…) is set in the fields.',
 			'imageTitle'  => $fr ? 'Choisir une image' : 'Choose an image',
 			'imageButton' => $fr ? 'Utiliser cette image' : 'Use this image',
 			'save'        => $fr ? 'Enregistrer' : 'Save',
