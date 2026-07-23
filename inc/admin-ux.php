@@ -759,6 +759,36 @@ function rmd_section_demo_en($layout) {
 	return array();
 }
 
+/**
+ * Flatten a layout's demo array into "path" => scalar pairs ('steps.0.heading',
+ * 'background', …) for section-edit.js to copy into a NEW row's empty ACF
+ * fields — including non-editable-in-place values (the `items` textareas, the
+ * background/style selects), so the section the editor publishes with Update is
+ * exactly the section the placeholder preview showed. Image-like arrays are
+ * skipped: demo shots are placeholder URLs with no attachment (ID 0), nothing
+ * real to put in an image field. Booleans become 1/0 (ACF true_false inputs).
+ */
+function rmd_demo_fill($demo, $prefix = '') {
+	$out = array();
+	if (!is_array($demo)) {
+		return $out;
+	}
+	foreach ($demo as $key => $value) {
+		$path = ('' === $prefix) ? (string) $key : $prefix . '.' . $key;
+		if (is_array($value)) {
+			if (isset($value['url']) || isset($value['ID'])) {
+				continue; // image-like array
+			}
+			$out = array_merge($out, rmd_demo_fill($value, $path));
+		} elseif (is_bool($value)) {
+			$out[$path] = $value ? 1 : 0;
+		} elseif (is_scalar($value) && '' !== trim((string) $value)) {
+			$out[$path] = (string) $value;
+		}
+	}
+	return $out;
+}
+
 /* ─────────────────────────────────────────────────────────────────────────
  * 3. Rendering — one saved row, or a demo, into a standalone document.
  * ───────────────────────────────────────────────────────────────────────── */
@@ -835,11 +865,17 @@ function rmd_render_section_preview() {
 		}
 	}
 
-	// Inline edit mode (§ inc/admin-visual-edit.php) — saved rows only. Marks
-	// whitelisted values during render, then annotates them into editable spans.
-	$edit_mode = !empty($_GET['edit']) && $row_index >= 0 && $post_id && function_exists('rmd_edit_map');
+	// A NEW (never-saved) row: the client says so explicitly — this render NEVER
+	// touches saved DB rows, so a mid-list insert can't collide with them.
+	$is_new = !empty($_GET['new']);
 
-	if ($row_index >= 0) {
+	// Inline edit mode (§ inc/admin-visual-edit.php). Marks whitelisted values
+	// during render, then annotates them into editable spans.
+	$edit_mode = !empty($_GET['edit']) && ($row_index >= 0 || $is_new) && $post_id && function_exists('rmd_edit_map');
+
+	$demo_fill = null; // path => scalar demo values, emitted for new rows only
+
+	if ($row_index >= 0 && !$is_new) {
 		if ($edit_mode) {
 			$GLOBALS['rmd_edit_map'] = rmd_edit_map($layout);
 			// Overlay this row's unpublished drafts ("<row>.<path>" → value) so a
@@ -858,10 +894,9 @@ function rmd_render_section_preview() {
 		}
 		$section_html = rmd_render_saved_section_row($post_id, $row_index, $layout);
 
-		// New/unsaved (or empty) row in edit mode → render editable PLACEHOLDER
-		// (demo content) instead of a blank "not saved" notice, so the editor can
-		// fill the section in place. rmd_edit_map is still set here, so the demo
-		// values get marked editable too (drafts, if any, overlay them).
+		// Saved-but-EMPTY row in edit mode → render an editable placeholder (demo
+		// content) instead of a blank "not saved" notice. rmd_edit_map is still
+		// set here, so the demo values get marked editable too.
 		if ($edit_mode && '' === $section_html) {
 			$GLOBALS['rmd_demo'] = rmd_section_demo($layout);
 			ob_start();
@@ -873,6 +908,25 @@ function rmd_render_section_preview() {
 		if ($edit_mode) {
 			unset($GLOBALS['rmd_edit_map'], $GLOBALS['rmd_edit_drafts']);
 			$section_html = rmd_edit_annotate($section_html, $layout);
+		}
+	} elseif ($is_new) {
+		// NEW row placeholder: a marked demo render the editor fills in place.
+		// Its values are also emitted as #rmd-demo-fill (below) so section-edit.js
+		// copies them into the row's empty ACF fields — the preview and the form
+		// always say the same thing, and the normal Update button publishes it.
+		if ($edit_mode) {
+			$GLOBALS['rmd_edit_map']    = rmd_edit_map($layout);
+			$GLOBALS['rmd_edit_drafts'] = array(); // no DB row → no drafts
+		}
+		$GLOBALS['rmd_demo'] = rmd_section_demo($layout);
+		ob_start();
+		get_template_part('template-parts/layouts/' . $layout, null, array('index' => 0));
+		$section_html = trim(ob_get_clean());
+		unset($GLOBALS['rmd_demo']);
+		if ($edit_mode) {
+			unset($GLOBALS['rmd_edit_map'], $GLOBALS['rmd_edit_drafts']);
+			$section_html = rmd_edit_annotate($section_html, $layout);
+			$demo_fill    = rmd_demo_fill(rmd_section_demo($layout));
 		}
 	} else {
 		// Demo: no row exists yet — seed example content through the sub-field
@@ -931,7 +985,10 @@ function rmd_render_section_preview() {
 <?php $fr = rmd_is_fr(); ?>
 <?php if ($has_visible) : ?>
 	<main class="rmd-case"><?php echo $section_html; // phpcs:ignore WordPress.Security.EscapeOutput — theme template output ?></main>
-<?php elseif ($row_index >= 0) : ?>
+	<?php if (is_array($demo_fill)) : // new-row placeholder values, read by section-edit.js to prefill the empty ACF fields ?>
+	<script type="application/json" id="rmd-demo-fill"><?php echo wp_json_encode($demo_fill); ?></script>
+	<?php endif; ?>
+<?php elseif ($row_index >= 0 && !$is_new) : ?>
 	<div class="rmd-preview-empty">
 		<strong><?php echo esc_html($fr ? 'Section non encore enregistrée' : 'Section not saved yet'); ?></strong>
 		<?php echo esc_html($fr ? 'L’aperçu affiche le contenu enregistré. Cliquez sur « Mettre à jour » puis rouvrez l’aperçu.' : 'The preview shows saved content. Click "Update", then reopen the preview.'); ?>
