@@ -23,11 +23,13 @@ defined('ABSPATH') || exit;
  * OS (Windows Chrome shows flag emoji as bare letters like "MA").
  */
 function rmd_locale_map() {
+	// `lang` drives front-end string language (rmd_site_is_fr / rmd_ft): Morocco
+	// and France are French; the English subsites (US, UAE) are English.
 	return apply_filters('rmd_locale_map', array(
-		'/'        => array('code' => 'ma', 'label' => 'Morocco'),
-		'/fr-fr/'  => array('code' => 'fr', 'label' => 'France'),
-		'/en-us/'  => array('code' => 'us', 'label' => 'US'),
-		'/en-ae/'  => array('code' => 'ae', 'label' => 'UAE'),
+		'/'        => array('code' => 'ma', 'label' => 'Morocco', 'lang' => 'fr'),
+		'/fr-fr/'  => array('code' => 'fr', 'label' => 'France',  'lang' => 'fr'),
+		'/en-us/'  => array('code' => 'us', 'label' => 'US',      'lang' => 'en'),
+		'/en-ae/'  => array('code' => 'ae', 'label' => 'UAE',     'lang' => 'en'),
 	));
 }
 
@@ -146,7 +148,7 @@ function rmd_locale_switcher() {
 			<span class="rmd-locale-arrow" aria-hidden="true">
 				<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="#041135" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
 			</span>
-			<span class="rmd-sr-only"><?php esc_html_e('Changer de pays', 'vault-child'); ?></span>
+			<span class="rmd-sr-only"><?php echo esc_html(rmd_ft('Changer de pays', 'Switch country')); ?></span>
 		</button>
 		<div class="rmd-locale-menu" role="menu">
 			<?php foreach ($entries as $e) : ?>

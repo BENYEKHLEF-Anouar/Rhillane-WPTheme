@@ -5,22 +5,28 @@
  * src/tailwind.css (ink #041135, purple #3943FF, red #E4004D).
  */
 
-/* ── "Add Section" popup → card grid ─────────────────────────────────────── */
-/* ACF renders <ul><li><a data-layout>…</a></li></ul>. We turn each <a> into a
-   card. Structural rules carry !important because acf-input.css loads after us
-   and would otherwise collapse the grid to one column.
-   The JS stamps .rmd-sp-grid on the picker's own <ul> only, so these rules never
-   touch ACF 6.5+'s "more layout actions" menu (which reuses .acf-fc-popup). */
+/* ── Calm first paint ────────────────────────────────────────────────────── */
+/* ACF renders every row EXPANDED and collapses the saved ones only at JS
+   init — on a heavy edit screen the fields visibly flash open then snap
+   shut. body.rmd-precollapse (added server-side, inc/admin-ux.php) hides row
+   bodies from the first frame; acf-collapse-guard.js lifts it once ACF has
+   restored the real collapsed state (timer failsafe included). */
+body.rmd-precollapse .acf-flexible-content > .values > .layout > .acf-fields,
+body.rmd-precollapse .acf-flexible-content > .values > .layout > .acf-table {
+	display: none;
+}
 
-/* ACF constrains the popup wrapper (and its .acf-tooltip parent) to a narrow
-   fixed width and nowrap; without this reset our 560px card grid gets clipped to
-   a single narrow column. Adopted from main's port. width:auto / white-space are
-   benign for the "more actions" menu, so this can safely stay unscoped. */
-.acf-fc-popup,
-.acf-tooltip.acf-fc-popup {
-	width: auto !important;
-	max-width: none !important;
-	white-space: normal !important;
+/* ── "Add Section" → our picker modal ────────────────────────────────────── */
+/* ACF's fc-popup tooltip is hidden the instant it appears (the JS stamps
+   .rmd-sp-hijacked on it) and our centered modal takes over. The popup element
+   is KEPT in the DOM while the modal is open — its a[data-layout] anchors are
+   what we click to insert — so hide with visibility, never display:none
+   removal. pointer-events off so the invisible tooltip can't eat clicks;
+   programmatic .click() still works on it. */
+.acf-tooltip.rmd-sp-hijacked,
+.rmd-sp-hijacked {
+	visibility: hidden !important;
+	pointer-events: none !important;
 }
 
 /* ── The "Ajouter une section" button (ACF's native add-row control) ──────── */
@@ -54,81 +60,93 @@
 	vertical-align: middle;
 	align-self: center;
 }
-.acf-fc-popup ul.rmd-sp-grid {
-	display: grid !important;
-	/* minmax(0,1fr) lets columns shrink instead of overflowing — kills the
-	   horizontal scrollbar. box-sizing keeps padding inside the fixed width. */
-	grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-	gap: 10px !important;
-	width: 580px !important;
-	max-width: calc(100vw - 40px) !important;
-	box-sizing: border-box !important;
-	margin: 0 !important;
-	padding: 12px !important;
-	max-height: min(72vh, 660px);
-	overflow-y: auto;
-	overflow-x: hidden !important;
-	background: #fff;
-	border-radius: 12px;
+/* The picker modal itself. Sits under the preview modal (999999) so an eye
+   preview opened from a card naturally covers it. */
+.rmd-sp-picker {
+	position: fixed;
+	inset: 0;
+	z-index: 999990;
+	display: none;
 }
-.acf-fc-popup ul.rmd-sp-grid > li {
-	display: block !important;
-	margin: 0 !important;
-	padding: 0 !important;
-	min-width: 0 !important;
+.rmd-sp-picker.is-open {
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
-.acf-fc-popup a.rmd-sp-card {
-	display: flex !important;
+.rmd-sp-picker-dialog {
+	position: relative;
+	display: flex;
 	flex-direction: column;
+	width: min(720px, 100vw - 32px);
+	max-height: calc(100vh - 64px);
+	background: #fff;
+	border-radius: 14px;
+	box-shadow: 0 30px 80px -20px rgba(4, 17, 53, .5);
+	overflow: hidden;
+}
+.rmd-sp-picker-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+	padding: 14px 16px 16px;
+	overflow-y: auto;
+}
+
+/* One card = the pick button + an absolutely-pinned preview eye. */
+.rmd-sp-pick-wrap {
+	position: relative;
+	min-width: 0;
+}
+.rmd-sp-pick {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	width: 100%;
 	height: 100%;
-	min-height: 82px;
-	gap: 6px;
-	padding: 14px 15px !important;
-	border: 1px solid #E4E6EF !important;
-	border-radius: 10px !important;
-	background: #fff !important;
-	color: #041135 !important;
-	text-decoration: none !important;
-	line-height: 1.5 !important;
-	white-space: normal !important;
-	box-shadow: none !important;
+	min-height: 78px;
+	padding: 13px 44px 13px 15px; /* right padding clears the eye */
+	border: 1px solid #DDE0EC;
+	border-radius: 10px;
+	background: #fff;
+	color: #041135;
+	text-align: left;
+	cursor: pointer;
+	line-height: 1.5;
 	transition: border-color .12s ease, background .12s ease;
 }
-.acf-fc-popup a.rmd-sp-card:hover,
-.acf-fc-popup a.rmd-sp-card:focus-visible {
-	border-color: #3943FF !important;
-	background: #f7f8ff !important;
-	box-shadow: none !important;
+.rmd-sp-pick:hover,
+.rmd-sp-pick:focus-visible {
+	border-color: #3943FF;
+	background: #f7f8ff;
 	outline: none;
 }
-.rmd-sp-card-head {
-	display: flex;
-	align-items: flex-start;
-	gap: 8px;
+.rmd-sp-pick:focus-visible {
+	box-shadow: 0 0 0 2px rgba(57, 67, 255, .25);
 }
-.rmd-sp-card-title {
-	flex: 1 1 auto;
-	min-width: 0;
+.rmd-sp-pick[disabled] {
+	opacity: .45;
+	cursor: not-allowed;
+}
+.rmd-sp-pick-title {
 	font-size: 14px;
 	font-weight: 600;
 	line-height: 1.3;
 	color: #0b1533;
 	letter-spacing: -.01em;
 }
-/* Readable — was too faint to notice, which made the cards look empty. */
-.rmd-sp-card-desc {
+.rmd-sp-pick-desc {
 	font-size: 12px;
 	color: #5b6779;
 	line-height: 1.5;
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
 }
 
-/* The eye button, pinned to the right of the card head. */
+/* The eye button, pinned to the card's top-right corner. */
+.rmd-sp-pick-wrap > .rmd-sp-eye {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+}
 .rmd-sp-eye {
-	margin-left: auto;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -333,33 +351,68 @@ body.rmd-sp-modal-open .acf-fc-popup {
 }
 
 @media (max-width: 620px) {
-	.acf-fc-popup ul.rmd-sp-grid {
-		grid-template-columns: 1fr !important;
-		width: calc(100vw - 40px) !important;
+	.rmd-sp-picker-grid {
+		grid-template-columns: 1fr;
 	}
 }
 
-/* Duplicate-section warning (mirrors AMD; injected in inc/admin-ux.php). */
+/* Duplicate-section notice (injected in inc/admin-ux.php). Styled to match a
+   native WordPress admin notice (.notice.notice-warning): white, thin gray
+   border, 4px amber left rule, 13px admin font, a blue text-link action and a
+   dashicons dismiss — so it reads as part of the editor, not a custom widget.
+   Sits just below the row header (always visible, collapsed or not; that spot
+   is proven safe for ACF rows). Colors are WP admin's own tokens. */
 .rmd-dup-note {
 	display: flex;
-	align-items: flex-start;
-	gap: 10px;
-	margin: 8px 12px;
-	padding: 9px 12px;
-	border-radius: 6px;
-	background: #fef3c7;
-	border: 1px solid #fde68a;
-	color: #92400e;
-	font-size: 12.5px;
-	font-weight: 600;
+	align-items: center;
+	gap: 12px;
+	margin: 6px 12px;
+	padding: 8px 12px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-left: 4px solid #dba617;
+	border-radius: 2px;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, .04);
+	color: #1d2327;
+	font-size: 13px;
 	line-height: 1.5;
 }
-.rmd-dup-note button {
-	border: 0;
-	background: none;
-	color: #92400e;
-	cursor: pointer;
-	font-size: 15px;
-	line-height: 1;
-	padding: 0 2px;
+.rmd-dup-note__text { flex: 1 1 auto; min-width: 0; }
+.rmd-dup-note__locate {
+	flex: 0 0 auto;
+	margin: 0; padding: 0; border: 0; background: none;
+	color: #2271b1; cursor: pointer;
+	font: inherit;
+	text-decoration: underline; text-underline-offset: 2px;
+}
+.rmd-dup-note__locate:hover { color: #135e96; }
+.rmd-dup-note__locate:focus {
+	color: #135e96;
+	outline: 2px solid #2271b1; outline-offset: 1px; border-radius: 2px;
+}
+.rmd-dup-note__x {
+	flex: 0 0 auto;
+	display: inline-flex; align-items: center; justify-content: center;
+	width: 24px; height: 24px; margin: 0; padding: 0;
+	border: 0; background: none; color: #787c82; cursor: pointer;
+}
+.rmd-dup-note__x:hover,
+.rmd-dup-note__x:focus { color: #135e96; }
+.rmd-dup-note__x:focus { outline: 2px solid #2271b1; outline-offset: 1px; border-radius: 2px; }
+.rmd-dup-note__x .dashicons { font-size: 18px; width: 18px; height: 18px; line-height: 1; }
+
+/* Flash the twin row when "Locate" is clicked — a WP-blue ring, box-shadow only
+   so it draws attention without shifting any layout. */
+.rmd-dup-flash {
+	animation: rmdDupFlash 1.8s ease-out;
+	border-radius: 4px;
+	position: relative;
+	z-index: 1;
+}
+@keyframes rmdDupFlash {
+	0%, 35% { box-shadow: 0 0 0 2px #2271b1, 0 0 0 6px rgba(34, 113, 177, .22); }
+	100%    { box-shadow: 0 0 0 2px rgba(34, 113, 177, 0), 0 0 0 6px rgba(34, 113, 177, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+	.rmd-dup-flash { animation: none; box-shadow: 0 0 0 2px #2271b1; }
 }
