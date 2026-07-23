@@ -356,27 +356,62 @@ body.rmd-sp-modal-open .acf-fc-popup {
 	}
 }
 
-/* Duplicate-section warning (mirrors AMD; injected in inc/admin-ux.php). */
+/* Duplicate-section notice (injected in inc/admin-ux.php). A slim, calm,
+   actionable strip — NOT a big alarm block. Sits just below the row header
+   (always visible, collapsed or not; that spot is proven safe for ACF rows). */
 .rmd-dup-note {
 	display: flex;
-	align-items: flex-start;
+	align-items: center;
 	gap: 10px;
-	margin: 8px 12px;
-	padding: 9px 12px;
-	border-radius: 6px;
-	background: #fef3c7;
-	border: 1px solid #fde68a;
-	color: #92400e;
-	font-size: 12.5px;
-	font-weight: 600;
-	line-height: 1.5;
+	margin: 6px 12px;
+	padding: 7px 10px 7px 12px;
+	border-radius: 7px;
+	background: #FEF9EE;
+	border: 1px solid #F3E2B8;
+	border-left: 3px solid #E6B450;
+	color: #7A5A16;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.45;
 }
-.rmd-dup-note button {
-	border: 0;
-	background: none;
-	color: #92400e;
-	cursor: pointer;
-	font-size: 15px;
-	line-height: 1;
-	padding: 0 2px;
+.rmd-dup-note > .dashicons {
+	flex: 0 0 auto;
+	font-size: 15px; width: 15px; height: 15px; line-height: 1;
+	color: #C9971F;
+}
+.rmd-dup-note__text { flex: 1 1 auto; min-width: 0; }
+.rmd-dup-note__locate {
+	flex: 0 0 auto;
+	display: inline-flex; align-items: center; gap: 5px;
+	border: 1px solid #E6B450; background: #fff;
+	color: #7A5A16; border-radius: 999px;
+	font-size: 11.5px; font-weight: 600;
+	padding: 3px 11px; cursor: pointer;
+	transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.rmd-dup-note__locate:hover,
+.rmd-dup-note__locate:focus-visible {
+	background: #E6B450; color: #3d2e08; outline: none;
+}
+.rmd-dup-note__x {
+	flex: 0 0 auto;
+	border: 0; background: none; color: #B08A2E; cursor: pointer;
+	font-size: 15px; line-height: 1; padding: 0 2px;
+}
+.rmd-dup-note__x:hover { color: #7A5A16; }
+
+/* Flash the twin row when "Locate" is clicked — box-shadow only, so it draws
+   attention without shifting any layout. */
+.rmd-dup-flash {
+	animation: rmdDupFlash 1.8s ease-out;
+	border-radius: 8px;
+	position: relative;
+	z-index: 1;
+}
+@keyframes rmdDupFlash {
+	0%, 35% { box-shadow: 0 0 0 2px #E6B450, 0 0 0 7px rgba(230, 180, 80, .28); }
+	100%    { box-shadow: 0 0 0 2px rgba(230, 180, 80, 0), 0 0 0 7px rgba(230, 180, 80, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+	.rmd-dup-flash { animation: none; box-shadow: 0 0 0 2px #E6B450; }
 }
