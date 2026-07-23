@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>RMD Rebuild — CPT Inventory &amp; UI Scope</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --surface-2:#fbfcfd;
+    --ink:#111827; --ink-2:#4b5563; --ink-3:#6b7280;
+    --line:#e4e7ec; --line-2:#eef1f4;
+    --brand:#1c4fd8; --brand-soft:#eef3ff;
+    --new:#6d28d9; --new-soft:#f2ecfd;
+    --ok:#137a4a; --ok-soft:#e6f5ed;
+    --warn:#96590a; --warn-soft:#fdf3e0;
+    --bad:#b0271f; --bad-soft:#fdecea;
+    --neu:#4b5563; --neu-soft:#eef0f3;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06);
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0e1116; --surface:#161a21; --surface-2:#1b2029;
+      --ink:#e8ebef; --ink-2:#aab2bd; --ink-3:#8b95a3;
+      --line:#282e38; --line-2:#222831;
+      --brand:#7ea2ff; --brand-soft:#182240;
+      --new:#c4a8fb; --new-soft:#241a3a;
+      --ok:#5fd39b; --ok-soft:#12291f;
+      --warn:#e5b567; --warn-soft:#2b2313;
+      --bad:#f3877e; --bad-soft:#2e1917;
+      --neu:#aab2bd; --neu-soft:#222831;
+      --shadow:0 1px 2px rgba(0,0,0,.4);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:400 15.5px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:0 24px 96px}
+
+  header.top{
+    background:linear-gradient(160deg,#12213f 0%,#1c3566 55%,#254a8c 100%);
+    color:#fff; padding:52px 0 44px; margin-bottom:36px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  header.top .wrap{padding-bottom:0}
+  .eyebrow{
+    display:inline-block; font-size:11.5px; letter-spacing:.16em; text-transform:uppercase;
+    font-weight:700; color:#a9c2f2; background:rgba(255,255,255,.09);
+    padding:5px 11px; border-radius:99px; margin-bottom:18px;
+  }
+  header.top h1{margin:0 0 12px; font-size:clamp(26px,4.2vw,40px); line-height:1.15; letter-spacing:-.02em; font-weight:700}
+  header.top p.lede{margin:0 0 26px; max-width:62ch; color:#c9d8f2; font-size:16.5px}
+  .meta{display:flex; flex-wrap:wrap; gap:10px}
+  .meta a,.meta span{
+    display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:500;
+    background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.14);
+    color:#e6eefc; padding:7px 13px; border-radius:8px; text-decoration:none;
+  }
+  .meta a:hover{background:rgba(255,255,255,.19)}
+  .meta b{color:#fff; font-weight:600}
+
+  .kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:14px; margin:0 0 40px}
+  .kpi{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow)}
+  .kpi .n{font-size:28px; font-weight:700; letter-spacing:-.02em; line-height:1.1}
+  .kpi .l{font-size:12.5px; color:var(--ink-3); margin-top:4px; font-weight:500}
+  .kpi.accent .n{color:var(--brand)}
+  .kpi.newb .n{color:var(--new)}
+  .kpi.okb .n{color:var(--ok)}
+
+  section{margin:0 0 46px; scroll-margin-top:20px}
+  h2{font-size:12px; letter-spacing:.15em; text-transform:uppercase; font-weight:700; color:var(--brand); margin:0 0 6px}
+  h2 + .h2sub{margin:0 0 22px; font-size:23px; font-weight:650; letter-spacing:-.015em; color:var(--ink); line-height:1.3}
+  h3{font-size:17px; font-weight:650; margin:30px 0 10px; letter-spacing:-.01em}
+  p{margin:0 0 14px; color:var(--ink-2); max-width:80ch}
+  p.tight{margin-bottom:8px}
+  a{color:var(--brand)}
+  code{font-family:var(--mono); font-size:.87em; background:var(--neu-soft); border:1px solid var(--line); padding:1.5px 6px; border-radius:5px; color:var(--ink)}
+
+  .tablecard{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden}
+  .tablecard .cap{padding:14px 18px; border-bottom:1px solid var(--line); background:var(--surface-2); font-size:13.5px; font-weight:600}
+  .tablecard .cap span{font-weight:400; color:var(--ink-3)}
+  .scroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
+  table{border-collapse:collapse; width:100%; min-width:880px; font-size:14px}
+  th,td{padding:12px 14px; text-align:left; vertical-align:top; border-bottom:1px solid var(--line-2)}
+  thead th{
+    background:var(--surface-2); font-size:11.5px; letter-spacing:.07em; text-transform:uppercase;
+    font-weight:700; color:var(--ink-3); white-space:nowrap; border-bottom:1px solid var(--line);
+    position:sticky; top:0; z-index:1;
+  }
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:var(--surface-2)}
+  td.num,th.num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+  td.name{font-weight:600; color:var(--ink); white-space:nowrap}
+  td .slug{display:block; font-family:var(--mono); font-size:11.5px; color:var(--ink-3); font-weight:400; margin-top:3px}
+  tfoot td{background:var(--surface-2); font-weight:650; border-top:1px solid var(--line)}
+  tr.isnew td.name{border-left:3px solid var(--new); padding-left:11px}
+  tr.isdec td.name{border-left:3px solid var(--ok); padding-left:11px}
+  tr.retired td{opacity:.62}
+  tr.retired td.name{text-decoration:line-through; text-decoration-thickness:1px}
+
+  .b{display:inline-block; font-size:11.5px; font-weight:650; padding:3px 9px; border-radius:99px; white-space:nowrap; line-height:1.5}
+  .b-new{background:var(--new-soft); color:var(--new)}
+  .b-ok{background:var(--ok-soft); color:var(--ok)}
+  .b-warn{background:var(--warn-soft); color:var(--warn)}
+  .b-bad{background:var(--bad-soft); color:var(--bad)}
+  .b-neu{background:var(--neu-soft); color:var(--neu)}
+  .b-brand{background:var(--brand-soft); color:var(--brand)}
+  .note{display:block; font-size:12px; color:var(--ink-3); margin-top:5px; line-height:1.5; font-weight:400; white-space:normal}
+  .legacy{font-size:12.5px; color:var(--ink-3); line-height:1.55; white-space:normal}
+  .legacy em{color:var(--ink-2); font-style:normal; font-weight:600}
+  .none{color:var(--ink-3); font-size:12.5px}
+
+  .callout{border:1px solid var(--line); border-left:3px solid var(--brand); background:var(--surface); border-radius:10px; padding:14px 18px; margin:16px 0; box-shadow:var(--shadow)}
+  .callout.rec{border-left-color:var(--ok)}
+  .callout.risk{border-left-color:var(--bad)}
+  .callout.newb{border-left-color:var(--new)}
+  .callout .k{font-size:11px; letter-spacing:.13em; text-transform:uppercase; font-weight:700; color:var(--ink-3); display:block; margin-bottom:5px}
+  .callout.rec .k{color:var(--ok)}
+  .callout.risk .k{color:var(--bad)}
+  .callout.newb .k{color:var(--new)}
+  .callout p{margin:0; color:var(--ink)}
+  .callout p + p{margin-top:9px}
+
+  /* decision block */
+  .decision{
+    background:linear-gradient(180deg,var(--ok-soft),var(--surface) 62%);
+    border:1px solid var(--line); border-left:4px solid var(--ok);
+    border-radius:var(--radius); padding:20px 22px; margin-bottom:16px; box-shadow:var(--shadow);
+  }
+  .decision .dhead{display:flex; align-items:baseline; gap:11px; flex-wrap:wrap; margin-bottom:10px}
+  .did{font-family:var(--mono); font-size:12px; font-weight:700; color:#fff; background:var(--ok); padding:3px 9px; border-radius:6px}
+  .decision .dtitle{font-size:17px; font-weight:650; color:var(--ink); letter-spacing:-.01em}
+  .decision .dmeta{font-size:12.5px; color:var(--ink-3)}
+  .decision p:last-child{margin-bottom:0}
+
+  .finding{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:20px 22px; margin-bottom:16px; box-shadow:var(--shadow)}
+  .finding.settled{border-left:3px solid var(--ok)}
+  .finding > h3{margin:0 0 8px; display:flex; gap:11px; align-items:baseline; flex-wrap:wrap}
+  .fid{font-family:var(--mono); font-size:11.5px; font-weight:700; color:var(--brand); background:var(--brand-soft); padding:3px 8px; border-radius:6px; flex:none}
+  .fid.done{color:#fff; background:var(--ok)}
+  .finding table{min-width:520px; font-size:13.5px; margin-top:12px}
+  .finding ul{margin:0 0 14px; padding-left:20px; color:var(--ink-2)}
+  .finding ul li{margin-bottom:7px}
+  ol.opts{padding-left:20px; margin:0 0 14px; color:var(--ink-2)}
+  ol.opts li{margin-bottom:8px}
+  ol.opts strong{color:var(--ink)}
+
+  ol.order{list-style:none; counter-reset:o; padding:0; margin:0}
+  ol.order li{counter-increment:o; position:relative; padding:14px 0 14px 52px; border-bottom:1px solid var(--line-2)}
+  ol.order li:last-child{border-bottom:0}
+  ol.order li::before{
+    content:counter(o); position:absolute; left:0; top:14px;
+    width:30px; height:30px; border-radius:50%; background:var(--brand-soft); color:var(--brand);
+    font-size:13px; font-weight:700; display:grid; place-items:center;
+  }
+  ol.order strong{color:var(--ink); font-weight:650}
+  ol.order p{margin:3px 0 0; font-size:14px}
+  ol.order li.gate{counter-increment:none; background:var(--warn-soft); border-radius:8px; padding-left:52px; margin:6px 0}
+  ol.order li.gate::before{content:"⏸"; background:transparent; color:var(--warn); font-size:15px; left:8px}
+
+  ol.q{padding-left:20px; margin:0}
+  ol.q li{margin-bottom:10px; color:var(--ink-2)}
+  ol.q li strong{color:var(--ink); font-weight:600}
+  ol.q li a{font-size:12.5px; text-decoration:none; color:var(--ink-3); font-family:var(--mono)}
+
+  .grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:16px}
+  .pill-row{display:flex; flex-wrap:wrap; gap:7px; margin:10px 0 0}
+  .pill{font-family:var(--mono); font-size:11.5px; background:var(--neu-soft); border:1px solid var(--line); color:var(--ink-2); padding:4px 9px; border-radius:6px}
+  hr.sep{border:0; border-top:1px solid var(--line); margin:44px 0}
+  footer.doc{color:var(--ink-3); font-size:13px; border-top:1px solid var(--line); padding-top:20px}
+  .legend{display:flex; flex-wrap:wrap; gap:14px; font-size:12.5px; color:var(--ink-3); margin-top:12px}
+  .legend b{color:var(--ink-2); font-weight:600}
+
+  @media (max-width:640px){
+    .wrap{padding:0 16px 64px}
+    header.top{padding:38px 0 32px}
+    .kpi .n{font-size:23px}
+  }
+  @media print{
+    body{background:#fff; font-size:10.5pt}
+    header.top{background:#12213f !important; -webkit-print-color-adjust:exact; print-color-adjust:exact}
+    .tablecard,.finding,.kpi,.callout,.decision{break-inside:avoid; box-shadow:none}
+    table{min-width:0}
+    .scroll{overflow:visible}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <span class="eyebrow">RMD Website Rebuild · ACF Flexible Content</span>
+    <h1>Custom Post Type Inventory &amp; UI Production Scope</h1>
+    <p class="lede">The authoritative list of every content type on rhillane.com — which templates must be designed, in what order, and which decisions must be settled before design work begins.</p>
+    <div class="meta">
+      <a href="https://app.clickup.com/t/86bb20c9c">ClickUp&nbsp;<b>86bb20c9c</b></a>
+      <span>List:&nbsp;<b>0. Planning Phase</b></span>
+      <span>Verified:&nbsp;<b>23 July 2026</b></span>
+      <span>Owner:&nbsp;<b>Anouar</b></span>
+      <span>Status:&nbsp;<b>For review</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="kpis">
+    <div class="kpi accent"><div class="n">23</div><div class="l">Templates to build</div></div>
+    <div class="kpi newb"><div class="n">21</div><div class="l">Carry new UI design</div></div>
+    <div class="kpi"><div class="n">7</div><div class="l">Custom post types</div></div>
+    <div class="kpi okb"><div class="n">6</div><div class="l">Decisions logged</div></div>
+    <div class="kpi"><div class="n">3</div><div class="l">Waves, by rising risk</div></div>
+    <div class="kpi"><div class="n">14</div><div class="l">Open questions</div></div>
+  </div>
+
+  <!-- ============ DECISIONS ============ -->
+  <section id="decisions">
+    <h2>Section 00</h2>
+    <p class="h2sub">Decisions taken</p>
+    <p>Recorded here as they are made, so the tables below always reflect the current agreed architecture.</p>
+
+    <div class="decision">
+      <div class="dhead">
+        <span class="did">D-01</span>
+        <span class="dtitle">Services are not a custom post type — they stay as Pages</span>
+        <span class="dmeta">23 Jul 2026</span>
+      </div>
+      <p>The services are handled inside the <code>page</code> post type. <strong>Keep the current structure — same URLs, same post type — and redesign the template.</strong></p>
+      <p><strong>Impact:</strong> the <code>services</code> CPT is dropped from scope and its empty registration deleted. A redesigned <strong>service page template</strong> is added to the build. The open question about migrating service pages into a CPT is closed. Full consequences in <a href="#findings">F-01</a>.</p>
+    </div>
+
+    <div class="decision">
+      <div class="dhead">
+        <span class="did">D-02</span>
+        <span class="dtitle">Every author profile gets its own single page</span>
+        <span class="dmeta">23 Jul 2026</span>
+      </div>
+      <p>An author must have a <strong>single post per profile</strong> — not only an archive listing of their articles.</p>
+      <p><strong>Impact:</strong> a dedicated <strong>Author Profiles CPT</strong> is added, with an archive and a single. The core <code>/author/{slug}/</code> archive is retired in its favour. Full architecture in <a href="#findings">F-09</a>.</p>
+    </div>
+
+    <div class="decision">
+      <div class="dhead">
+        <span class="did">D-03</span>
+        <span class="dtitle">Service pages are implemented last</span>
+        <span class="dmeta">23 Jul 2026</span>
+      </div>
+      <p>The page migration completes first — all pages move onto the new stack <strong>unchanged</strong>, inside the <code>page</code> post type — and only then are the services redesigned. The service redesign is the final step of the programme, because it is the <strong>riskiest surface</strong> in it.</p>
+      <p><strong>Impact:</strong> the service page template moves out of wave 1 into a dedicated <strong>wave 3</strong>, executed after the wave-2 page migration completes. Wave 1 drops to <strong>14</strong> templates. Risk evidence and sequencing rationale in <a href="#findings">F-01</a> and <a href="#order">Section 06</a>.</p>
+    </div>
+
+    <div class="decision">
+      <div class="dhead">
+        <span class="did">D-04</span>
+        <span class="dtitle">Services convert in two stages, separated by an SEO observation window</span>
+        <span class="dmeta">23 Jul 2026</span>
+      </div>
+      <p><strong>Stage A</strong> ports the 8 service pages to ACF flexible content with the <strong>current UI reproduced exactly</strong> — no visual change, and no change to any SEO signal. Google behaviour and rankings are then monitored. Only once stability is confirmed does <strong>stage B</strong> apply the new UI and style.</p>
+      <p><strong>Impact:</strong> wave 3 splits into <strong>3a — structural port</strong> and <strong>3b — visual redesign</strong>, with a monitoring gate between them. Adds one build template that carries no new design work. Full staging model in <a href="#findings">F-01</a>.</p>
+    </div>
+
+    <div class="decision">
+      <div class="dhead">
+        <span class="did">D-05</span>
+        <span class="dtitle">Pages are triaged by click volume</span>
+        <span class="dmeta">23 Jul 2026</span>
+      </div>
+      <p>Pages with <strong>zero or minimal clicks</strong> may have their UI changed early — they are the proving ground for the new design system. They may be converted to a CPT, or served by a section library on the <code>page</code> post type.</p>
+      <p><strong>Impact:</strong> adds a <strong>low-click page template</strong> to wave 2, and a triage step that must precede it. Requires a Search Console clicks-per-page export before wave 2 planning can begin. Tiering model in <a href="#findings">F-11</a>.</p>
+    </div>
+
+    <div class="decision">
+      <div class="dhead">
+        <span class="did">D-06</span>
+        <span class="dtitle">Team Members and Author Profiles are two separate content types</span>
+        <span class="dmeta">23 Jul 2026</span>
+      </div>
+      <p>They answer different questions, carry different fields and serve different audiences. They are <strong>not merged into one object</strong>.</p>
+      <p><strong>Impact:</strong> two distinct CPTs — <strong>7 CPTs in scope</strong>, and <strong>four templates</strong> in the people layer instead of three. Wave 1 rises to <strong>15</strong> templates. Comparison and architecture in <a href="#findings">F-09</a>.</p>
+    </div>
+  </section>
+
+  <!-- ============ METHOD ============ -->
+  <section id="method">
+    <h2>Section 01</h2>
+    <p class="h2sub">Purpose &amp; verification method</p>
+    <p>Every row in this document was verified against the <strong>live production site</strong> on 23 July 2026 — not from memory, and not from the brief. Sources checked:</p>
+    <div class="tablecard">
+      <div class="scroll">
+        <table style="min-width:640px">
+          <thead><tr><th style="width:36%">Source</th><th>What was checked</th></tr></thead>
+          <tbody>
+            <tr><td><code>/wp-json/wp/v2/types</code></td><td>Every registered post type, its archive flag and attached taxonomies — on all four market sub-sites</td></tr>
+            <tr><td><code>/wp-json/wp/v2/taxonomies</code></td><td>Every registered taxonomy and its post-type binding</td></tr>
+            <tr><td>REST collection endpoints</td><td>Actual published item counts per post type</td></tr>
+            <tr><td><code>sitemap_index.xml</code> + children</td><td>Indexed URL volume and sitemap coverage per type</td></tr>
+            <tr><td>Rendered archive URLs</td><td>Whether each archive resolves, and what it renders today</td></tr>
+            <tr><td><code>&lt;meta name="robots"&gt;</code></td><td>Index / noindex status of each archive surface</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout newb">
+      <span class="k">Build-type convention</span>
+      <p>A post type existing in the WordPress database does <strong>not</strong> make it an existing asset. Several CPTs are registered but hold no usable content and have no designed UI — an empty archive, or unstyled cards with no titles.</p>
+      <p>These are <strong>planned and costed as net-new builds</strong>. The pre-existing registration is recorded only as a legacy remnant to be resolved at cleanup.</p>
+    </div>
+
+    <div class="tablecard">
+      <div class="scroll">
+        <table style="min-width:560px">
+          <thead><tr><th style="width:26%">Build type</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><span class="b b-new">🆕 New build</span></td><td>Designed and built from scratch. Nothing usable exists today.</td></tr>
+            <tr><td><span class="b b-ok">🔄 Redesign</span></td><td>Real content exists and must be migrated or kept in place, then restyled on the new stack.</td></tr>
+            <tr><td><span class="b b-warn">🔁 Restructure</span></td><td>The concept survives, but as a different object (e.g. CPT → taxonomy).</td></tr>
+            <tr><td><span class="b b-neu">➖ Port as-is</span></td><td>Existing UI carried forward unchanged onto the new stack.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="k">Terminology</span>
+      <p>The brief lists eleven “custom posts”, but several are not custom post types: <strong>Services</strong> (per D-01), <strong>About us</strong>, <strong>Author pages</strong> and <strong>Candidature spontanée</strong> are core WordPress surfaces or a page-plus-form. They all remain in UI scope, so they are inventoried in Table B rather than dropped.</p>
+    </div>
+  </section>
+
+  <!-- ============ TABLE A ============ -->
+  <section id="table-a">
+    <h2>Section 02</h2>
+    <p class="h2sub">Table A — Custom Post Types</p>
+    <div class="tablecard">
+      <div class="cap">The ClickUp deliverable <span>· 7 custom post types in scope · 4 built from scratch · 1 restructured into a taxonomy</span></div>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:26px">#</th><th>Content type</th><th>Build type</th>
+              <th style="width:24%">Legacy on live</th><th>Archive</th><th>Taxonomy</th><th>Wave</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="num">1</td>
+              <td class="name">Case Studies<span class="slug">case-studies</span></td>
+              <td><span class="b b-ok">🔄 Redesign</span></td>
+              <td class="legacy">CPT registered · <em>1 published item</em> (“Mariner”) · archive resolves</td>
+              <td><span class="b b-ok">Yes</span><span class="note">/case-studies/</span></td>
+              <td><span class="b b-neu">None</span></td>
+              <td><span class="b b-brand">1 · pilot</span></td>
+            </tr>
+            <tr>
+              <td class="num">2</td>
+              <td class="name">Portfolio<span class="slug">portfolio</span></td>
+              <td><span class="b b-ok">🔄 Redesign</span></td>
+              <td class="legacy">CPT registered · <em>6 real items</em> · archive is a fully designed page</td>
+              <td><span class="b b-ok">Yes</span><span class="note">/portfolio/</span></td>
+              <td><span class="b b-neu">No</span><span class="note"><code>portfolio_category</code> exists with 0 terms</span></td>
+              <td><span class="b b-brand">1</span></td>
+            </tr>
+            <tr class="isnew">
+              <td class="num">3</td>
+              <td class="name">Reviews<span class="slug">reviews</span></td>
+              <td><span class="b b-new">🆕 New build</span></td>
+              <td class="legacy"><em>Note:</em> a <code>reviews</code> CPT is registered, but its 2 items have <strong>empty titles</strong> and the archive renders unstyled cards — date and button only. No usable content, no usable UI.</td>
+              <td><span class="b b-ok">Yes</span><span class="note">Designed hub — see F-04</span></td>
+              <td><span class="b b-ok">Yes</span><span class="note">By source <strong>and</strong> by service</span></td>
+              <td><span class="b b-brand">1</span></td>
+            </tr>
+            <tr class="isnew">
+              <td class="num">4</td>
+              <td class="name">Job Offers<span class="slug">offres d’emploi · slug TBD</span></td>
+              <td><span class="b b-new">🆕 New build</span></td>
+              <td class="legacy none">None — nothing exists</td>
+              <td><span class="b b-bad">No</span><span class="note">Listings render on the Recrutement hub — see F-05</span></td>
+              <td><span class="b b-ok">Yes</span><span class="note">Department · contract type · location</span></td>
+              <td><span class="b b-brand">1</span></td>
+            </tr>
+            <tr>
+              <td class="num">5</td>
+              <td class="name">Departments<span class="slug">departements</span></td>
+              <td><span class="b b-warn">🔁 Restructure</span><span class="note">Becomes a taxonomy of Job Offers</span></td>
+              <td class="legacy"><em>Note:</em> a <code>departements</code> CPT is registered, but it holds <strong>0 posts</strong> and its archive returns <strong>404</strong>. Registration deleted outright.</td>
+              <td><span class="b b-neu">N/A</span></td>
+              <td><span class="b b-neu">—</span><span class="note">It <em>becomes</em> the taxonomy</span></td>
+              <td><span class="b b-brand">1</span></td>
+            </tr>
+            <tr class="isnew">
+              <td class="num">6</td>
+              <td class="name">Team Members<span class="slug">team · slug TBD</span></td>
+              <td><span class="b b-new">🆕 New build</span></td>
+              <td class="legacy none">None — nothing exists</td>
+              <td><span class="b b-ok">Yes</span><span class="note">/team/</span></td>
+              <td><span class="b b-neu">Optional</span><span class="note">Department</span></td>
+              <td><span class="b b-brand">1</span></td>
+            </tr>
+            <tr class="isnew">
+              <td class="num">7</td>
+              <td class="name">Author Profiles<span class="slug">author-profile · slug TBD</span></td>
+              <td><span class="b b-new">🆕 New build</span><span class="note">Separate from Team Members (D-06)</span></td>
+              <td class="legacy none">None — only the bare core author archive</td>
+              <td><span class="b b-ok">Yes</span><span class="note">/authors/</span></td>
+              <td><span class="b b-neu">No</span></td>
+              <td><span class="b b-brand">1</span></td>
+            </tr>
+            <tr class="retired">
+              <td class="num">—</td>
+              <td class="name">Services<span class="slug">services</span></td>
+              <td><span class="b b-bad">❌ Not a CPT</span><span class="note">Decision <strong>D-01</strong></span></td>
+              <td class="legacy">CPT registered with <strong>0 posts</strong>; registration to be deleted</td>
+              <td>—</td>
+              <td>—</td>
+              <td><span class="note" style="margin:0">Moved to <a href="#table-b">Table B, row 9a</a></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="legend">
+      <span><b>🆕 New build</b> nothing usable exists</span>
+      <span><b>🔄 Redesign</b> real content, kept or migrated</span>
+      <span><b>🔁 Restructure</b> changes object type</span>
+      <span>Purple left border marks a from-scratch build</span>
+    </div>
+    <div class="callout rec">
+      <span class="k">Seven CPTs remain in scope</span>
+      <p>Services was in the brief as a CPT. Decision <strong>D-01</strong> moved it to the <code>page</code> post type, where it is redesigned in place — see Table B, row 9a. Team Members and Author Profiles are two separate types per <strong>D-06</strong> — see <a href="#findings">F-09</a> for why they are not merged.</p>
+    </div>
+
+    <h3>Legacy registrations to resolve</h3>
+    <p class="tight">Four types carry a pre-existing registration that must be deliberately dealt with — not silently inherited. This is the same decision the rebuild plan already flags for Case Studies in <strong>T4</strong>.</p>
+    <div class="tablecard">
+      <div class="scroll">
+        <table style="min-width:640px">
+          <thead><tr><th>Legacy object</th><th>What exists</th><th>Resolution</th></tr></thead>
+          <tbody>
+            <tr><td class="name">case-studies</td><td>1 published item</td><td>Decide <strong>reuse the slug</strong> (register it in child-theme code, drop the old registration at cleanup) or <strong>new slug + migrate the item</strong>. Log the decision.</td></tr>
+            <tr><td class="name">reviews</td><td>2 items, no titles, no usable markup</td><td>Reuse the slug; <strong>discard both items</strong> and re-enter reviews properly in the new ACF model.</td></tr>
+            <tr><td class="name">services</td><td>0 posts</td><td><strong>Delete the registration</strong> (D-01). Decide what happens to the <code>/services/</code> URL — see F-01.</td></tr>
+            <tr><td class="name">departements</td><td>0 posts, archive 404</td><td>Delete the CPT registration entirely; the concept returns as a taxonomy on Job Offers.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout rec">
+      <span class="k">Low risk</span>
+      <p>None of these registrations has indexed, ranking content behind it, so slug reuse and deletion are safe in every case — but each must be <strong>decided and recorded</strong>, not assumed.</p>
+    </div>
+
+    <h3>Post types excluded from scope</h3>
+    <p class="tight">Registered on the site but owned by plugins, not by the brand. These are <strong>retire-list candidates</strong> under the rebuild plan’s P6 cleanup — not UI work.</p>
+    <div class="pill-row">
+      <span class="pill">elementor_library</span><span class="pill">elementor_snippet</span><span class="pill">e-floating-buttons</span>
+      <span class="pill">jet-form-builder</span><span class="pill">jet-engine</span><span class="pill">uicore-cd</span>
+      <span class="pill">uicore-tb</span><span class="pill">rank_math_locations</span>
+    </div>
+  </section>
+
+  <!-- ============ TABLE B ============ -->
+  <section id="table-b">
+    <h2>Section 03</h2>
+    <p class="h2sub">Table B — Core content types &amp; special surfaces</p>
+    <p>Not custom post types, but each needs a template and appears in the brief. Note that the <code>page</code> post type now carries <strong>two distinct templates on two different waves</strong> — a direct consequence of D-01.</p>
+    <div class="tablecard">
+      <div class="cap">Core surfaces <span>· the <code>page</code> post type splits into 9a and 9b</span></div>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:34px">#</th><th>Surface</th><th>Build type</th><th>Live status</th>
+              <th class="num">Items</th><th>Archive</th><th>Taxonomy</th><th>Wave</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="isdec">
+              <td class="num">9a</td>
+              <td class="name">Service pages ⭐<span class="slug">page · core</span></td>
+              <td><span class="b b-ok">🔄 Redesign</span></td>
+              <td>✅ Live — the 8 services in the main navigation<span class="note"><strong>Keep the current structure and URLs</strong> (D-01)</span></td>
+              <td class="num">8</td>
+              <td><span class="b b-neu">N/A</span><span class="note">Nav-driven</span></td>
+              <td><span class="b b-ok">Service family</span><span class="note">See F-02</span></td>
+              <td><span class="b b-warn">3a → ⏸ → 3b</span><span class="note">D-03 · D-04 · last</span></td>
+            </tr>
+            <tr class="isdec">
+              <td class="num">9b</td>
+              <td class="name">Standard pages — tier A<span class="slug">page · core · low-click</span></td>
+              <td><span class="b b-ok">🔄 Redesign</span><span class="note">The proving ground (D-05)</span></td>
+              <td>✅ Live — the low-value end of the SEO landing matrix<span class="note">Set determined by the Search Console export</span></td>
+              <td class="num">TBD</td>
+              <td><span class="b b-warn">Not native</span><span class="note">Requires a custom hub — see F-10</span></td>
+              <td><span class="b b-neu">Optional</span><span class="note"><code>page_cluster</code> — see F-10</span></td>
+              <td><span class="b b-brand">2</span></td>
+            </tr>
+            <tr>
+              <td class="num">9c</td>
+              <td class="name">Standard pages — tiers B &amp; C<span class="slug">page · core</span></td>
+              <td><span class="b b-neu">➖ Port as-is</span></td>
+              <td>✅ Live — legal, contact, city pages, and the trafficked part of the SEO matrix</td>
+              <td class="num">146<span class="note">minus tier A</span></td>
+              <td><span class="b b-warn">Not native</span><span class="note">See F-10</span></td>
+              <td><span class="b b-warn">Not native</span><span class="note">Requires a registered taxonomy</span></td>
+              <td><span class="b b-neu">2</span></td>
+            </tr>
+            <tr>
+              <td class="num">8</td>
+              <td class="name">Blog<span class="slug">post · core</span></td>
+              <td><span class="b b-neu">➖ Port as-is</span></td>
+              <td>✅ Live, highest content volume<span class="note">UI carried forward unchanged, per brief</span></td>
+              <td class="num">193</td>
+              <td><span class="b b-ok">Yes</span></td>
+              <td><span class="b b-warn">Yes · messy</span><span class="note">42 category terms, most duplicated or empty</span></td>
+              <td><span class="b b-neu">2</span></td>
+            </tr>
+            <tr class="isnew">
+              <td class="num">10</td>
+              <td class="name">Core author archive<span class="slug">/author/{slug}/</span></td>
+              <td><span class="b b-bad">❌ Retired</span><span class="note">301 to the Author Profile single — see F-09</span></td>
+              <td>⚠️ Bare post list — no bio, avatar or credentials; <strong>noindex</strong><span class="note">Duplicates what the author profile does properly</span></td>
+              <td class="num">7</td>
+              <td><span class="b b-neu">Redirected</span><span class="note">No template needed</span></td>
+              <td><span class="b b-neu">N/A</span></td>
+              <td><span class="b b-brand">1</span></td>
+            </tr>
+            <tr>
+              <td class="num">11</td>
+              <td class="name">About us<span class="slug">page</span></td>
+              <td><span class="b b-ok">🔄 Redesign</span></td>
+              <td>✅ Live — /agence-de-communication/</td>
+              <td class="num">1</td>
+              <td><span class="b b-neu">N/A</span></td>
+              <td><span class="b b-neu">N/A</span></td>
+              <td><span class="b b-brand">1</span></td>
+            </tr>
+            <tr>
+              <td class="num">12</td>
+              <td class="name">Recrutement hub<span class="slug">page + form · incl. candidature spontanée</span></td>
+              <td><span class="b b-ok">🔄 Redesign</span></td>
+              <td>✅ Live — /recrutement/; form only, <strong>no job listings</strong>; <strong>noindex</strong></td>
+              <td class="num">1</td>
+              <td><span class="b b-neu">N/A</span></td>
+              <td><span class="b b-neu">N/A</span></td>
+              <td><span class="b b-brand">1</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout rec">
+      <span class="k">⭐ Row 9a — the D-01 outcome, sequenced last by D-03</span>
+      <p>Services stay in the <code>page</code> post type at their existing URLs. Because <code>_wp_page_template</code> is assignable per page, the eight service pages can be flipped onto the new template <strong>one at a time</strong> — exactly the per-page flip mechanism the rebuild plan describes in P3. No URL changes, no migration, per-page rollback.</p>
+      <p>Rows 9a, 9b and 9c are the <strong>same post type on different tracks</strong>. In wave 2 all 154 pages — services included — migrate onto the new stack unchanged; the low-click tier A set is then redesigned as the proving ground (D-05); and in wave 3 the eight service pages are flipped, structurally first and visually only after the observation window (D-04).</p>
+    </div>
+
+    <p class="tight"><strong>The 8 service pages:</strong></p>
+    <div class="pill-row">
+      <span class="pill">Sites Web</span><span class="pill">SEO – Référencement naturel</span><span class="pill">Publicité en ligne</span>
+      <span class="pill">Développement d’Application</span><span class="pill">Gestion des réseaux sociaux</span>
+      <span class="pill">Design Graphique</span><span class="pill">Copywriting</span><span class="pill">Photographie</span>
+    </div>
+
+    <div class="callout">
+      <span class="k">Recrutement hub — three jobs, one template</span>
+      <p>The hub absorbs the Job Offers listing (F-05), so it carries employer-brand content, the open-positions list, and the spontaneous application form.</p>
+      <p><strong>Form fields to preserve:</strong> Nom · Adresse e-mail · Téléphone · Profil · CV (file upload) · Vos motivations · consent checkbox.</p>
+    </div>
+  </section>
+
+  <!-- ============ SCOPE ============ -->
+  <section id="scope">
+    <h2>Section 04</h2>
+    <p class="h2sub">UI production scope — 20 templates</p>
+    <p>The brief requires, for every CPT with a taxonomy, <strong>both an archive template and a single template</strong>. Applied to the inventory above, across <strong>three waves ordered by ascending SEO risk</strong> (D-03) — lowest-exposure content first, the commercial core last. Within the page layer, exposure is measured by actual Search Console clicks (D-05), and the final wave separates the structural change from the visual one with a monitoring gate (D-04).</p>
+
+    <div class="tablecard">
+      <div class="cap">Wave 1 — design &amp; build, low risk <span>· 15 templates</span></div>
+      <div class="scroll">
+        <table style="min-width:520px">
+          <thead><tr><th>Content type</th><th class="num">Archive</th><th class="num">Single / page</th><th class="num">Term</th><th class="num">Total</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Case Studies</td><td class="num">1</td><td class="num">1</td><td class="num">—</td><td class="num">2</td></tr>
+            <tr><td class="name">Portfolio</td><td class="num">1</td><td class="num">1</td><td class="num">—</td><td class="num">2</td></tr>
+            <tr class="isnew"><td class="name">Reviews</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">3</td></tr>
+            <tr class="isnew"><td class="name">Job Offers</td><td class="num">—</td><td class="num">1</td><td class="num">1</td><td class="num">2</td></tr>
+            <tr class="isnew"><td class="name">Team Members <span class="slug">D-06</span></td><td class="num">1</td><td class="num">1</td><td class="num">—</td><td class="num">2</td></tr>
+            <tr class="isnew"><td class="name">Author Profiles <span class="slug">D-02 · D-06</span></td><td class="num">1</td><td class="num">1</td><td class="num">—</td><td class="num">2</td></tr>
+            <tr><td class="name">About us</td><td class="num">—</td><td class="num">1</td><td class="num">—</td><td class="num">1</td></tr>
+            <tr><td class="name">Recrutement hub</td><td class="num">—</td><td class="num">1</td><td class="num">—</td><td class="num">1</td></tr>
+          </tbody>
+          <tfoot><tr><td>Wave 1 total</td><td class="num">6</td><td class="num">7</td><td class="num">2</td><td class="num">15</td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="tablecard" style="margin-top:16px">
+      <div class="cap">Wave 2 — migrate the page layer, redesign only what is safe <span>· 6 templates</span></div>
+      <div class="scroll">
+        <table style="min-width:520px">
+          <thead><tr><th>Content type</th><th>Templates</th><th>New design?</th><th class="num">Total</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Blog</td><td>archive · single · category · tag</td><td><span class="b b-neu">Existing UI</span></td><td class="num">4</td></tr>
+            <tr><td class="name">Standard pages — as-is port</td><td>reproduces the current page design on the new stack</td><td><span class="b b-neu">Reproduction</span></td><td class="num">1</td></tr>
+            <tr class="isdec"><td class="name">Low-click pages — new UI <span class="slug">D-05</span></td><td>flexible-content page template + section library</td><td><span class="b b-ok">Yes</span></td><td class="num">1</td></tr>
+          </tbody>
+          <tfoot><tr><td>Wave 2 total</td><td></td><td></td><td class="num">6</td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="k">Wave 2 is the gate on wave 3</span>
+      <p>All 154 pages first move onto the new stack <strong>as they are</strong>, inside the <code>page</code> post type, with no design change. The pages Search Console shows carry <strong>zero or minimal clicks</strong> are then redesigned on the new template — the proving ground for the new design system, on content with nothing to lose. See <a href="#findings">F-11</a>.</p>
+      <p>Wave 2 must complete before wave 3 opens.</p>
+    </div>
+
+    <div class="tablecard" style="margin-top:16px; border-color:var(--warn)">
+      <div class="cap" style="background:var(--warn-soft); color:var(--warn)">⚠️ Wave 3 — the commercial core, highest risk <span style="color:var(--warn)">· 2 templates · D-03 &amp; D-04</span></div>
+      <div class="scroll">
+        <table style="min-width:620px">
+          <thead><tr><th>Stage</th><th>What happens</th><th>New design?</th><th class="num">Templates</th></tr></thead>
+          <tbody>
+            <tr class="isdec">
+              <td class="name">3a — structural port</td>
+              <td>The 8 service pages move to ACF flexible content with the <strong>current UI reproduced exactly</strong>. No visual change, no change to titles, meta, headings, content or internal links.</td>
+              <td><span class="b b-neu">Reproduction</span></td><td class="num">1</td>
+            </tr>
+            <tr>
+              <td class="name" style="color:var(--warn)">⏸ Observation window</td>
+              <td>Monitor Google behaviour, rankings, impressions, clicks and Core Web Vitals across the 8 pages. <strong>No further change until stable.</strong></td>
+              <td>—</td><td class="num">—</td>
+            </tr>
+            <tr class="isdec">
+              <td class="name">3b — visual redesign</td>
+              <td>The new UI and style are applied to the same pages, reusing the section library built in wave 2.</td>
+              <td><span class="b b-ok">Yes</span></td><td class="num">1</td>
+            </tr>
+            <tr>
+              <td class="name"><em>Optional</em></td>
+              <td>Services overview page at <code>/services/</code> — see F-01</td>
+              <td><span class="b b-ok">Yes</span></td><td class="num">+1</td>
+            </tr>
+          </tbody>
+          <tfoot><tr><td>Wave 3 total</td><td></td><td></td><td class="num">2<span style="font-weight:400"> (3)</span></td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout rec">
+      <span class="k">Why two stages</span>
+      <p>Stage A changes the plumbing without changing anything a visitor or a crawler sees; only after the site proves stable does stage B change the design.</p>
+    </div>
+
+    <div class="callout newb">
+      <span class="k">Effort split</span>
+      <p><strong>Nine of the fifteen wave-1 templates are built from scratch</strong> — Reviews ×3, Job Offers ×2, Team Members ×2, Author Profiles ×2. The other six are redesigns of surfaces with real content behind them.</p>
+    </div>
+
+    <div class="callout rec">
+      <span class="k">The people layer is four templates, not three</span>
+      <p>Team Members and Author Profiles are separate content types (D-06), each with an archive and a single. The core <code>/author/{slug}/</code> archive is retired and 301’d to the author profile single, so it needs no template of its own — see <a href="#findings">F-09</a>.</p>
+    </div>
+
+    <div class="callout rec">
+      <span class="k">Scope statement</span>
+      <p><strong>23 templates to build</strong> (24 with the optional services overview), of which <strong>21 carry new UI design work</strong> — the two as-is reproductions (standard pages in wave 2, and stage 3a) replicate designs that already exist rather than creating new ones.</p>
+      <p>Wave 1 and the redesign halves of waves 2 and 3 are design-and-build; the reproductions are ports of the current UI onto the new stack, per the ClickUp instruction: <em>“For the POST CPT: keep the UI the same as it currently is on the RMD website.”</em></p>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============ FINDINGS ============ -->
+  <section id="findings">
+    <h2>Section 05</h2>
+    <p class="h2sub">Findings &amp; decisions required before design starts</p>
+
+    <div class="finding settled">
+      <h3><span class="fid done">F-01</span> ✅ DECIDED — Services stay as Pages (D-01)</h3>
+      <p><strong>Decision:</strong> the services are handled inside the <code>page</code> post type. Keep the current structure; redesign the template.</p>
+      <p>This closes the question the inventory raised. The evidence behind it: <code>services</code> was registered as a CPT with <code>has_archive: true</code> but held <strong>zero</strong> posts — <code>/services/</code> rendered “No posts found”. It was a registration with nothing behind it, while the eight real services already lived as WordPress Pages at established, indexed URLs.</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th style="width:22%">Consequence</th><th>Detail</th></tr></thead>
+          <tbody>
+            <tr><td class="name">CPT dropped</td><td>The empty <code>services</code> registration is deleted at cleanup. Nothing to migrate.</td></tr>
+            <tr><td class="name">URLs untouched</td><td>The 8 service pages keep their exact current URLs — no rewrite rules, no redirects, no ranking risk. <strong>This is the main advantage of the decision.</strong></td></tr>
+            <tr><td class="name">Per-page flip</td><td><code>_wp_page_template</code> is assignable per page, so the services can move onto the new template <strong>one at a time</strong>, with per-page rollback. Matches the rebuild plan’s P3 mechanism exactly.</td></tr>
+            <tr><td class="name">Template count</td><td>Services drop from 3 templates (archive + single + term) to <strong>1</strong> — a redesigned service page template. Wave 1 goes from 18 to 15.</td></tr>
+            <tr><td class="name">Taxonomy still needed</td><td>The service-family taxonomy (F-02, F-03) is still required — it now attaches to <code>page</code> instead of a <code>services</code> CPT.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:22px">Sequencing (D-03) — services go last</h3>
+      <p>The service page redesign is the <strong>final step of the programme</strong>, executed only after the wave-2 page migration has completed and the 154 pages sit on the new stack unchanged. Until then the services are simply migrated as they are, inside the <code>page</code> post type.</p>
+      <p><strong>Why this is the riskiest surface — the evidence behind D-03:</strong></p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th style="width:28%">Risk factor</th><th>Evidence</th></tr></thead>
+          <tbody>
+            <tr><td class="name">They are the commercial core</td><td>The 8 services are the agency’s entire offer and the primary navigation dropdown.</td></tr>
+            <tr><td class="name">Real rankings to lose</td><td>Unlike every other type in this plan — Case Studies (1 item), Portfolio (6), Reviews (2 unusable), Job Offers and Team (nothing exists) — the service pages carry established rankings and revenue-driving traffic.</td></tr>
+            <tr><td class="name">Largest dependency cluster</td><td>Roughly 100 SEO landing pages (city / industry / platform) point at and support them. Any change ripples through that cluster.</td></tr>
+            <tr><td class="name">Google re-evaluates on DOM change</td><td>Rebuild plan risk #9: same content, new markup, forced re-crawl and re-assessment per flipped page.</td></tr>
+            <tr><td class="name">Forms and tracking live on them</td><td>Rebuild plan risk #14: Elementor Pro forms and GTM/GA4 continuity must survive every flip.</td></tr>
+            <tr><td class="name">High blast radius per page</td><td>Eight pages, each individually significant. Losing one matters — unlike a single blog post among 193.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout rec"><span class="k">What going last buys</span><p>By the time these pages are touched, the component library, the ACF field model, the per-page flip procedure and the rollback runbook have all been exercised on six lower-stakes content types.</p></div>
+
+      <h3 style="margin-top:22px">Two stages, one gate (D-04)</h3>
+      <p>Even when the services’ turn comes, the structural change and the visual change are separated:</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th style="width:20%"></th><th>Stage 3a — structural port</th><th style="width:8%">⏸ Gate</th><th>Stage 3b — visual redesign</th></tr></thead>
+          <tbody>
+            <tr><td class="name">What changes</td><td>Content moves from Elementor into ACF flexible content</td><td>—</td><td>The design system is applied</td></tr>
+            <tr><td class="name">What a visitor sees</td><td><strong>Nothing</strong></td><td>—</td><td>The new UI</td></tr>
+            <tr><td class="name">What a crawler sees</td><td><strong>Nothing</strong> — same title, meta, headings, copy, internal links; markup reproduced</td><td>—</td><td>New markup, same content</td></tr>
+            <tr><td class="name">Exit condition</td><td>Rankings, impressions, clicks and CWV stable across all 8 pages over the observation window</td><td>—</td><td>Post-flip monitoring per page</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout rec">
+        <span class="k">Why this makes the sequencing safe rather than merely late</span>
+        <p>If rankings move after 3a, the cause is unambiguous — it is the stack change, not a design change — and the rollback is a template reassignment. Bundling both stages would make any ranking movement impossible to attribute.</p>
+      </div>
+      <div class="callout">
+        <span class="k">Recommended observation window</span>
+        <p>Long enough for Google to re-crawl and re-evaluate all 8 pages, confirmed via Search Console coverage and the rankings baseline captured in the rebuild plan’s T6. The exit criterion is <strong>stability across the full set, not elapsed time</strong> — one page still moving means the window stays open.</p>
+      </div>
+
+      <h3 style="margin-top:22px">Still open — the <code>/services/</code> URL</h3>
+      <p>It currently returns <code>200</code> and is <code>index, follow</code>. Once the CPT registration is deleted, that URL disappears. Two options:</p>
+      <ol class="opts">
+        <li><strong>Build a services overview page</strong> (a Page using the redesigned template) at <code>/services/</code> — gives the nav dropdown a real landing page and a hub for internal linking. <em>(+1 template)</em></li>
+        <li><strong>301 <code>/services/</code></strong> to the About page or the homepage. Cheapest, but loses a natural hub.</li>
+      </ol>
+      <div class="callout rec"><span class="k">Recommendation</span><p>Option 1. Eight service pages with no parent hub is a missed internal-linking opportunity for an SEO agency.</p></div>
+      <div class="callout risk"><span class="k">Also to confirm</span><p>Does the redesigned service page template also cover the <strong>~100 SEO landing pages</strong> (<code>agence-seo-{ville}</code>, <code>agence-seo-{secteur}</code>, <code>creation-site-web-{ville}</code>), or do those keep the current design until wave 2? They are structurally service pages, so the template will likely need a <strong>location/industry variant</strong>. This materially changes wave-1 volume and needs an explicit answer.</p></div>
+    </div>
+
+    <div class="finding">
+      <h3><span class="fid">F-02</span> Service taxonomy: 8 navigation services vs 6 existing terms</h3>
+      <p>The brief specifies “6 services”. The only existing 6-term taxonomy is <code>review-categories</code>, scoped to service families. Mapped against the 8 navigation entries:</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Existing term</th><th>Navigation service(s) it covers</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Website Development</td><td>Sites Web <strong>+ Développement d’Application</strong> <span class="note">two nav items merged into one term</span></td></tr>
+            <tr><td class="name">SEO &amp; Organic Search</td><td>SEO – Référencement naturel</td></tr>
+            <tr><td class="name">Online Advertising</td><td>Publicité en ligne</td></tr>
+            <tr><td class="name">Social Media &amp; Community Mgmt</td><td>Gestion des réseaux sociaux</td></tr>
+            <tr><td class="name">Graphic Design &amp; Branding</td><td>Design Graphique</td></tr>
+            <tr><td class="name">Professional Photo &amp; Video</td><td>Photographie</td></tr>
+            <tr><td class="name" style="color:var(--bad)">— no term —</td><td><strong>Copywriting</strong> <span class="note">unmapped: sold as a service, absent from the taxonomy</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout rec"><span class="k">Recommendation</span><p>Adopt <strong>8 terms</strong> — one per commercial offer, matching the navigation and the 8 service pages confirmed in D-01. A taxonomy that does not mirror what is sold creates permanent mapping friction across service pages, Reviews, Case Studies and Portfolio.</p></div>
+      <div class="callout risk"><span class="k">Still an early blocker despite D-03</span><p>Sequencing the service pages last does <em>not</em> defer this decision. Reviews (step 3), Case Studies and Portfolio all classify against the same taxonomy, so the term list must be fixed before wave 1 gets far — even though the pages it describes are not touched until wave 3. Deciding it late means re-tagging content that has already been entered.</p></div>
+    </div>
+
+    <div class="finding">
+      <h3><span class="fid">F-03</span> One taxonomy must serve four content types</h3>
+      <p>Service pages, Case Studies, Portfolio and Reviews all need to be filterable by service family. Separate taxonomies per type would fragment the data and make cross-linking — “other SEO case studies”, “reviews for this service” — impossible.</p>
+      <div class="callout rec"><span class="k">Recommendation</span><p>Register <strong>one shared <code>service_family</code> taxonomy</strong> attached to <code>page</code>, <code>case-studies</code>, <code>portfolio</code> and <code>reviews</code>.</p></div>
+      <div class="callout risk"><span class="k">D-01 raises the stakes here</span><p>Because service pages are now ordinary Pages, the taxonomy is the <strong>only</strong> structural link between a service and its case studies, portfolio items and reviews. Without it there is nothing tying them together.</p></div>
+    </div>
+
+    <div class="finding">
+      <h3><span class="fid">F-04</span> Reviews is a new build, on two taxonomy axes</h3>
+      <p>The existing <code>reviews</code> CPT holds two items with <strong>empty titles</strong> — the slugs are raw IDs <code>38791</code> and <code>38792</code> — rendering as unstyled cards showing only a date and a button. There is no usable content and no usable UI, so Reviews is planned from scratch; the old registration is a remnant and both items are discarded.</p>
+      <p>On classification: <code>review-categories</code> currently classifies by <em>service</em>. The brief asks for classification by <em>source</em> — Google, Sortlist, Clutch. These are different axes, and both are useful: source drives trust display, service drives placement on service pages.</p>
+      <div class="callout rec">
+        <span class="k">Recommendation</span>
+        <p>Two taxonomies on the new <code>reviews</code> CPT: <code>review_source</code> <em>and</em> the shared <code>service_family</code> from F-03.</p>
+        <p>Build a single designed <em>Avis clients</em> hub at <code>/reviews/</code> — a consolidated review page is a genuine ranking and conversion asset. If it is not wanted, <code>noindex</code> the URL and redirect it. The one option to rule out is leaving the current unstyled archive live.</p>
+      </div>
+    </div>
+
+    <div class="finding">
+      <h3><span class="fid">F-05</span> Job Offers has no archive — the Recrutement hub carries the listing</h3>
+      <p>Job Offers is registered <strong>without an archive</strong>: the open-positions list renders on the redesigned <code>/recrutement/</code> hub instead of at a separate CPT archive URL. This keeps one recruitment landing page rather than splitting authority and traffic across two.</p>
+      <p>Consequences for the build:</p>
+      <ul>
+        <li>Job Offers needs a <strong>single template</strong> and a <strong>department taxonomy-term template</strong> only — no archive template.</li>
+        <li>The Recrutement hub template must render three things: employer-brand content, the open-positions list, and the spontaneous application form.</li>
+        <li><code>/recrutement/</code> is currently <code>noindex</code>. Once real job offers are published, the hub and the single job pages should be <strong>indexable</strong> — job listings attract qualified branded search and support <code>JobPosting</code> structured data.</li>
+        <li>The empty <code>departements</code> CPT is deleted and re-created as the <strong>department taxonomy</strong> on Job Offers.</li>
+      </ul>
+    </div>
+
+    <div class="finding">
+      <h3><span class="fid">F-06</span> Legacy remnants to clean up</h3>
+      <p>Beyond the CPT registrations in Section 02, these live-site artefacts need a cleanup pass. None blocks design work, but each must be scheduled.</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Remnant</th><th>Evidence</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="name">Departments archive 404s</td>
+              <td><code>/departements/</code> → HTTP 404 despite <code>has_archive: true</code></td>
+              <td>Rewrite rules were never flushed. Registration is deleted outright; per sandbox runbook rule 4, re-save Permalinks after any CPT change.</td>
+            </tr>
+            <tr>
+              <td class="name">Dead portfolio taxonomy</td>
+              <td><code>portfolio_category</code> registered with <strong>0 terms</strong></td>
+              <td>Replace with <code>service_family</code> (F-03) or drop it.</td>
+            </tr>
+            <tr>
+              <td class="name">Two titleless review items</td>
+              <td>Slugs are raw IDs: <code>38791</code>, <code>38792</code></td>
+              <td>Discard. Title becomes a required field in the new ACF model.</td>
+            </tr>
+            <tr>
+              <td class="name">Duplicated blog categories</td>
+              <td>42 terms, most with a <code>-default</code> twin; <code>non-classe-default</code> holds <strong>87</strong> posts</td>
+              <td>Polylang/import artefact. Taxonomy cleanup + recategorisation pass before wave 2.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="finding">
+      <h3><span class="fid">F-07</span> CPTs are not consistent across the four market sub-sites</h3>
+      <p>rhillane.com is a subdirectory multisite with four markets. Registered business CPTs per site:</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Sub-site</th><th>Market</th><th>Business CPTs registered</th></tr></thead>
+          <tbody>
+            <tr><td class="name">/</td><td>Morocco (FR)</td><td><span class="pill">portfolio</span> <span class="pill">reviews</span> <span class="pill">case-studies</span> <span class="pill">services</span> <span class="pill">departements</span></td></tr>
+            <tr><td class="name">/fr-fr/</td><td>France</td><td><span class="pill">portfolio</span></td></tr>
+            <tr><td class="name">/en-us/</td><td>United States</td><td><span class="pill">portfolio</span></td></tr>
+            <tr><td class="name">/en-ae/</td><td>UAE</td><td><span class="pill">portfolio</span> <span class="pill">reviews</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout risk"><span class="k">Why it matters</span><p>CPTs are currently registered <strong>per site through a plugin UI</strong>, so every market has drifted. The rebuild plan already fixes this — registering CPTs in <strong>child-theme code</strong> makes them network-consistent by construction. This drift is concrete evidence for that approach, and it means every UI template must be built market-agnostic from day one.</p></div>
+      <div class="callout rec"><span class="k">D-01 reduces the exposure</span><p>Because services are Pages, and Pages exist on every sub-site by definition, the service template works across all four markets with no registration drift to fix.</p></div>
+    </div>
+
+    <div class="finding">
+      <h3><span class="fid">F-08</span> CPT archives are indexable but absent from the XML sitemap</h3>
+      <p><code>/case-studies/</code>, <code>/reviews/</code> and <code>/services/</code> all return <code>index, follow</code> — yet <code>sitemap_index.xml</code> contains only post, page, portfolio and local sitemaps. These types are crawlable but never submitted.</p>
+      <div class="callout rec"><span class="k">Recommendation</span><p>Align both signals per type as part of each wave’s go-live: either indexable <strong>and</strong> in the sitemap, or <code>noindex</code> and excluded. Not the current in-between state. <em>(The <code>/services/</code> half of this is resolved by F-01 either way.)</em></p></div>
+    </div>
+
+    <div class="finding settled">
+      <h3><span class="fid done">F-09</span> ✅ DECIDED — the people layer: two separate content types (D-02, D-06)</h3>
+      <p><strong>Decisions:</strong> every author profile gets its own single page (D-02), and <strong>Team Members and Author Profiles are two separate content types</strong> (D-06). They are not merged into one object.</p>
+      <p><strong>Starting point.</strong> Seven authors, all rendering a bare chronological post list — no bio, no avatar, no credentials, no social links — and all <code>noindex</code>. Nothing exists for team members at all. There is no people UI to redesign, so this whole layer is from-scratch. For an SEO agency publishing 193 articles, author authority is directly on-brand and currently unbuilt.</p>
+
+      <h3 style="margin-top:22px">Why the two are distinct</h3>
+      <p>They answer different questions, carry different fields and serve different audiences:</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th style="width:22%"></th><th>Team Members</th><th>Author Profiles</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Question it answers</td><td>Who works here</td><td>Who wrote this</td></tr>
+            <tr><td class="name">Primary audience</td><td>Prospects and candidates</td><td>Readers and search engines</td></tr>
+            <tr><td class="name">Core fields</td><td>Photo, role, department, short bio</td><td>Photo, credentials, areas of expertise, bio, social links, published work</td></tr>
+            <tr><td class="name">Purpose</td><td>Brand, trust, recruitment</td><td>E-E-A-T, topical authority</td></tr>
+            <tr><td class="name">Membership</td><td>Staff — whether they write or not</td><td>Anyone with a byline — staff or external</td></tr>
+            <tr><td class="name">Linked to a WP user</td><td>Not necessarily</td><td>Yes, via an ACF <code>user</code> field</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout risk">
+        <span class="k">Why merging them fails</span>
+        <p>One field group would have to serve both jobs — and it would become impossible to publish an article by an external contributor without listing them as staff, or to list a non-writing team member without leaving an empty author profile behind.</p>
+      </div>
+      <div class="callout">
+        <span class="k">The problem D-02 solves</span>
+        <p>Core WordPress has no “author profile” object. <code>/author/{slug}/</code> is an <em>archive</em> — a list of posts — with nowhere to store a photo, credentials or social links. A profile that is a real post is the only way to get a proper page per person.</p>
+      </div>
+
+      <h3 style="margin-top:22px">Architecture — four templates</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Surface</th><th>Template</th><th>URL</th><th>What it renders</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Team — archive</td><td><code>archive-team.php</code></td><td><code>/team/</code></td><td>The team grid, optionally grouped by department.</td></tr>
+            <tr><td class="name">Team — single</td><td><code>single-team.php</code></td><td><code>/team/{name}/</code></td><td>Role, department, photo, short bio. Links to the person’s author profile if they write.</td></tr>
+            <tr><td class="name">Author — archive</td><td><code>archive-author-profile.php</code></td><td><code>/authors/</code></td><td>Contributors index — a discoverable hub covering every byline on the site.</td></tr>
+            <tr class="isdec"><td class="name">Author — single</td><td><code>single-author-profile.php</code></td><td><code>/authors/{name}/</code></td><td>The full E-E-A-T profile: photo, credentials, areas of expertise, bio, social links, and a grid of that person’s published articles.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <span class="k">The link mechanism</span>
+        <p>An ACF <code>user</code> field on each <strong>author profile</strong> post stores the WordPress user ID. That single field drives the article grid on the profile and lets every byline resolve to its profile URL. Team member posts carry an optional relationship field pointing at an author profile, for staff who also write.</p>
+      </div>
+
+      <div class="callout rec">
+        <span class="k">Retiring the core author archive</span>
+        <p><code>/author/{slug}/</code> is generated automatically by WordPress and currently renders a bare post list under <code>noindex</code>. It duplicates, badly, what the author profile single will do properly.</p>
+        <p><strong>Recommendation: 301 <code>/author/{slug}/</code> → <code>/authors/{name}/</code>.</strong> No template needed, no duplicate URL for the same person, and every article byline points at one canonical profile. Nothing is indexed at those URLs today, so the redirect costs nothing.</p>
+      </div>
+
+      <div class="callout">
+        <span class="k">People who are both</span>
+        <p>A staff writer legitimately appears in both sets — once as a team member, once as an author. Cross-link the two: the team single links to the author profile, the author profile links back. This is not duplication; the two pages answer different questions and target different queries.</p>
+      </div>
+
+      <div class="callout risk">
+        <span class="k">Indexing</span>
+        <p>The author profile single is the canonical indexable page for a person’s expertise, and every byline should point at it. The team single is indexable as part of the About/team story. Both are thin if under-populated — <strong>do not publish either until the content is real</strong>, and do not lift any <code>noindex</code> before then.</p>
+      </div>
+
+      <div class="callout rec"><span class="k">Slugs</span><p>The existing CPTs use English slugs (<code>case-studies</code>, <code>portfolio</code>, <code>reviews</code>), so <code>team</code> and <code>authors</code> fit the convention better than <code>equipe</code> and <code>auteurs</code>. To confirm.</p></div>
+    </div>
+
+    <div class="finding">
+      <h3><span class="fid">F-10</span> “Pages: archive yes, taxonomy yes” is not natively possible</h3>
+      <p>WordPress Pages have neither an archive nor a taxonomy. The brief’s request is therefore a <strong>custom build</strong>, not a configuration toggle.</p>
+      <p>The underlying need is real and D-01 sharpens it: 154 pages, of which 8 are now confirmed service pages and roughly 100 more are an SEO landing-page matrix — cities, industries and platforms (<code>agence-seo-{ville}</code>, <code>agence-seo-{secteur}</code>, <code>creation-site-web-{ville}</code>). That matrix has no systematic internal-linking structure today, and no structural relationship to the service pages it supports.</p>
+      <div class="callout rec"><span class="k">Recommendation</span><p>Register a <code>page_cluster</code> taxonomy on <code>page</code> (city / industry / platform) alongside <code>service_family</code> from F-03, and build a hub template that renders the matrix. Real SEO upside — but confirm it as <strong>wave 2</strong> scope: it is new architecture, not a template port.</p></div>
+    </div>
+
+    <div class="finding settled">
+      <h3><span class="fid done">F-11</span> ✅ DECIDED — page triage by click volume: the proving ground (D-05)</h3>
+      <p><strong>Decision:</strong> pages with zero or minimal clicks may have their UI changed early. They are the proving ground for the new design system, and may be converted to a CPT or served by a section library on the <code>page</code> post type.</p>
+      <p><strong>Why this matters.</strong> The page layer is not uniform. 154 pages, of which 8 are the commercial core and roughly 100 form an SEO landing matrix built for long-tail capture. Those two groups carry completely different risk. Treating all 154 the same way — either all frozen or all redesigned — either wastes a safe testing opportunity or gambles the money pages. Triage separates them.</p>
+
+      <h3 style="margin-top:22px">Tiers, by Search Console clicks</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th style="width:20%">Tier</th><th style="width:18%">Pages</th><th>Treatment</th><th style="width:16%">Risk</th></tr></thead>
+          <tbody>
+            <tr class="isdec"><td class="name">A — zero / minimal clicks</td><td>From the export</td><td><strong>UI can change freely.</strong> First target for the new page design system. Convert to a CPT, or serve via the page section library.</td><td><span class="b b-ok">Negligible</span><span class="note">Nothing to lose</span></td></tr>
+            <tr><td class="name">B — moderate traffic</td><td>From the export</td><td>Port as-is in wave 2; redesign later, once tier A has validated the design system.</td><td><span class="b b-warn">Low</span></td></tr>
+            <tr><td class="name">C — commercial core</td><td>The 8 service pages, plus any high-traffic landing pages</td><td>Two-stage treatment with the observation gate (D-04).</td><td><span class="b b-bad">High</span><span class="note">See F-01</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout risk">
+        <span class="k">Hard prerequisite</span>
+        <p>None of this triage can be executed without a <strong>Search Console clicks-per-page export</strong> covering the last 12 months, for all four market properties. That export is the input that assigns every page to a tier, and it should be pulled before wave 2 planning begins.</p>
+        <p>Cross-reference it against the impressions column: a page with zero clicks but meaningful impressions is a <strong>tier B</strong> candidate, not tier A — it is ranking, just not yet converting.</p>
+      </div>
+
+      <h3 style="margin-top:22px">CPT vs section library — which of the two options</h3>
+      <p>The decision is not either/or across the board; it depends on whether a page group shares a repeatable structure:</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th style="width:24%">Option</th><th>When it fits</th><th>Caution</th></tr></thead>
+          <tbody>
+            <tr class="isdec"><td class="name">Section library on <code>page</code><span class="note">Default</span></td><td>Any page whose layout is bespoke. Keeps the URL, keeps the post type, requires no migration, and reuses the flexible-content blocks already built for the CPTs in wave 1.</td><td>None material — this is the low-friction path.</td></tr>
+            <tr><td class="name">Convert to a CPT</td><td>Only for a group with genuinely repeatable structure and a shared taxonomy need. The city / industry SEO matrix is the one real candidate — it is templated by nature and would benefit from an archive and a <code>page_cluster</code> taxonomy (F-10).</td><td><strong>Changes the post type of indexed URLs.</strong> Only viable if the exact slugs are preserved via rewrite rules. Do not attempt on any tier B or C page.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout rec"><span class="k">Recommendation</span><p>Default to the section library. Reserve CPT conversion for the city/industry matrix, treat it as a separate scoped decision after tier A has proven the design system, and require URL preservation as a non-negotiable condition.</p></div>
+
+      <div class="callout rec">
+        <span class="k">The strategic value</span>
+        <p>Tier A does more than clear low-value pages off the backlog — it de-risks everything downstream. By the time the service pages reach stage 3b, the new page design system will have been exercised on <strong>real production URLs, on the real multisite, under the real cache and CDN, with real crawler behaviour observed</strong>. That is a far stronger position than flipping the money pages onto a design system whose only proving ground was staging.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============ ORDER ============ -->
+  <section id="order">
+    <h2>Section 06</h2>
+    <p class="h2sub">Recommended execution order</p>
+    <p>Sequenced by <strong>ascending SEO risk</strong> (D-03): prove the stack on content with nothing to lose, then move outward, and touch the money pages only once everything else is stable.</p>
+    <div class="tablecard" style="padding:8px 22px">
+      <ol class="order">
+        <li><strong>Case Studies</strong> <span class="b b-brand" style="margin-left:4px">Wave 1</span><p>Already the approved pilot in the rebuild plan (T4/T5). Lowest risk of anything on the site — 1 item, no taxonomy, nothing indexed to protect. Proves the ACF flexible-content model end to end.</p></li>
+        <li><strong>Portfolio</strong> <span class="b b-brand" style="margin-left:4px">Wave 1</span><p>Same card-grid and single-item pattern as Case Studies, with 6 real items already in place. Highest design reuse for the least new work.</p></li>
+        <li><strong>Reviews</strong> <span class="b b-brand" style="margin-left:4px">Wave 1</span><p>First consumer of the shared <code>service_family</code> taxonomy, plus the new <code>review_source</code>. Feeds trust blocks into every other template. Blocked until F-02 and F-03 are decided.</p></li>
+        <li><strong>Job Offers + Recrutement hub</strong> <span class="b b-brand" style="margin-left:4px">Wave 1</span><p>Net-new, self-contained, zero SEO risk. Can run in parallel with steps 1–3 by a second person.</p></li>
+        <li><strong>About us + the people layer</strong> <span class="b b-ok" style="margin-left:4px">D-02 · D-06</span> <span class="b b-brand">Wave 1</span><p>Brand and E-E-A-T layer — two separate CPTs, four templates — built once the component library from steps 1–4 is stable. Both singles reuse the card grid from steps 1–2.</p></li>
+        <li><strong>Blog + Standard pages — as-is port</strong> <span class="b b-neu" style="margin-left:4px">Wave 2</span><p>Template-level port of the existing UI — no per-item assembly, no design change. All 154 pages move onto the new stack unchanged.</p></li>
+        <li><strong>Low-click pages — new UI</strong> <span class="b b-neu" style="margin-left:4px">Wave 2</span> <span class="b b-ok">D-05</span><p><strong>The proving ground.</strong> Tier A pages get the new design system on real production URLs, real multisite, real cache and CDN, with real crawler behaviour observed — the strongest possible rehearsal for step 9. Requires the Search Console triage export first (F-11). <strong>Must complete before step 8 opens.</strong></p></li>
+        <li><strong>Service pages — structural port</strong> <span class="b b-warn" style="margin-left:4px">Wave 3a</span> <span class="b b-ok">D-04</span><p>The 8 service pages move to ACF flexible content with the <strong>current UI reproduced exactly</strong>. Nothing a visitor or crawler sees changes.</p></li>
+        <li class="gate"><strong>Observation window</strong> <span class="b b-warn" style="margin-left:4px">Gate</span><p>Monitor rankings, impressions, clicks and CWV across all 8 pages. Exit criterion is stability across the full set, not elapsed time. <strong>No further change until clear.</strong></p></li>
+        <li><strong>Service pages — visual redesign</strong> <span class="b b-warn" style="margin-left:4px">Wave 3b · last</span> <span class="b b-ok">D-01 · D-03 · D-04</span><p><strong>Last, deliberately.</strong> The riskiest surface in the programme — see the risk table in F-01. By this point the component library, the ACF model, the flip procedure and the rollback runbook have been exercised on six lower-stakes content types, the design system has been proven on live tier A pages, and the stack change on these very pages has already been isolated and cleared.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ QUESTIONS ============ -->
+  <section id="questions">
+    <h2>Section 07</h2>
+    <p class="h2sub">Open questions for sign-off</p>
+    <div class="tablecard" style="padding:20px 24px 22px">
+      <ol class="q">
+        <li>Service taxonomy: <strong>6 terms or 8</strong>? <a href="#findings">F-02</a></li>
+        <li>Approve a <strong>single shared <code>service_family</code> taxonomy</strong> across <code>page</code>, Case Studies, Portfolio and Reviews? <a href="#findings">F-03</a></li>
+        <li><code>/services/</code> — build a services overview page, or 301 it? <a href="#findings">F-01</a></li>
+        <li>Does the redesigned service page template also cover the <strong>~100 SEO location/industry landing pages</strong>, or do they wait for wave 2? <a href="#findings">F-01</a></li>
+        <li>Reviews: build a designed <code>/reviews/</code> hub, or <code>noindex</code> + redirect it? <a href="#findings">F-04</a></li>
+        <li>Job Offers taxonomies: department only, or department + contract type + location? <a href="#findings">F-05</a></li>
+        <li>Should the Recrutement hub and single job pages become <strong>indexable</strong> once real offers are published? <a href="#findings">F-05</a></li>
+        <li>Confirm the slugs for the two people CPTs — <code>team</code> and <code>authors</code>, or French equivalents? <a href="#findings">F-09</a></li>
+        <li>Confirm <strong>301’ing <code>/author/{slug}/</code> → <code>/authors/{name}/</code></strong>, so each person has one canonical profile URL and every byline points at it? <a href="#findings">F-09</a></li>
+        <li>Is the <code>page_cluster</code> taxonomy and SEO-matrix hub in scope for wave 2? <a href="#findings">F-10</a></li>
+        <li>Slug reuse confirmed for the legacy <code>case-studies</code> and <code>reviews</code> registrations? <a href="#table-a">Section 02</a></li>
+        <li><strong>Who pulls the Search Console clicks-per-page export</strong>, for all four market properties, and by when? Wave 2 planning is blocked on it. <a href="#findings">F-11</a></li>
+        <li>What click threshold separates <strong>tier A from tier B</strong> — strictly zero clicks, or below a set floor over 12 months? <a href="#findings">F-11</a></li>
+        <li>Confirm the <strong>exit criterion for the observation window</strong> — which metrics, whose sign-off, and what constitutes “stable”? <a href="#findings">F-01</a></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ APPENDIX ============ -->
+  <section id="appendix">
+    <h2>Section 08</h2>
+    <p class="h2sub">Verified data appendix</p>
+
+    <div class="tablecard">
+      <div class="cap">Content volumes <span>· 23 July 2026</span></div>
+      <div class="scroll">
+        <table style="min-width:560px">
+          <thead><tr><th>Type</th><th class="num">Published / indexed</th><th>Usable for the rebuild</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Blog posts</td><td class="num">193</td><td><span class="b b-ok">All</span> <span class="note">Ported to wave 2</span></td></tr>
+            <tr class="isdec"><td class="name">Pages — service pages</td><td class="num">8</td><td><span class="b b-ok">Kept in place, redesigned</span> <span class="note">D-01</span></td></tr>
+            <tr><td class="name">Pages — standard</td><td class="num">146</td><td><span class="b b-ok">All</span> <span class="note">Ported to wave 2</span></td></tr>
+            <tr><td class="name">Portfolio</td><td class="num">6</td><td><span class="b b-ok">Migrate</span></td></tr>
+            <tr><td class="name">Reviews</td><td class="num">2</td><td><span class="b b-bad">Discard</span> <span class="note">No titles, no content</span></td></tr>
+            <tr><td class="name">Case Studies</td><td class="num">1</td><td><span class="b b-ok">Migrate</span></td></tr>
+            <tr><td class="name">Services (CPT)</td><td class="num">0</td><td><span class="b b-bad">Registration deleted</span> <span class="note">D-01</span></td></tr>
+            <tr><td class="name">Departments</td><td class="num">0</td><td><span class="b b-new">Nothing exists</span></td></tr>
+            <tr><td class="name">Authors</td><td class="num">7</td><td><span class="b b-ok">Profiles to be written</span></td></tr>
+            <tr><td class="name">Blog categories</td><td class="num">42</td><td><span class="b b-warn">Cleanup required</span> <span class="note">Duplicated terms</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tablecard" style="margin-top:16px">
+      <div class="cap">Archive resolution &amp; robots directives</div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>URL</th><th>HTTP</th><th>Robots</th><th>What it renders</th></tr></thead>
+          <tbody>
+            <tr><td class="name">/case-studies/</td><td><span class="b b-ok">200</span></td><td>index, follow</td><td>1 item</td></tr>
+            <tr><td class="name">/portfolio/</td><td><span class="b b-ok">200</span></td><td>index, follow</td><td>Hero + 6-card grid + FAQ + trust badges; no filter, no pagination</td></tr>
+            <tr><td class="name">/reviews/</td><td><span class="b b-ok">200</span></td><td>index, follow</td><td>2 unstyled cards — date and “En Savoir Plus” only</td></tr>
+            <tr><td class="name">/services/</td><td><span class="b b-ok">200</span></td><td>index, follow</td><td>“No posts found” — resolved by D-01 / F-01</td></tr>
+            <tr><td class="name">/departements/</td><td><span class="b b-bad">404</span></td><td>—</td><td>—</td></tr>
+            <tr><td class="name">/author/seo-manager/</td><td><span class="b b-ok">200</span></td><td><span class="b b-warn">noindex</span>, follow</td><td>Bare post list, no author data</td></tr>
+            <tr><td class="name">/recrutement/</td><td><span class="b b-ok">200</span></td><td><span class="b b-warn">noindex</span>, follow</td><td>Spontaneous application form; no job listings</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tablecard" style="margin-top:16px">
+      <div class="cap">Sitemap coverage <span>· URLs per file</span></div>
+      <div class="scroll">
+        <table style="min-width:400px">
+          <thead><tr><th>Sitemap</th><th class="num">URLs</th></tr></thead>
+          <tbody>
+            <tr><td class="name">post-sitemap1</td><td class="num">100</td></tr>
+            <tr><td class="name">post-sitemap2</td><td class="num">93</td></tr>
+            <tr><td class="name">page-sitemap1</td><td class="num">99</td></tr>
+            <tr><td class="name">page-sitemap2</td><td class="num">55</td></tr>
+            <tr><td class="name">portfolio-sitemap</td><td class="num">7</td></tr>
+            <tr><td class="name">local-sitemap</td><td class="num">—</td></tr>
+            <tr><td class="name" style="color:var(--bad)">case-studies · reviews · services</td><td class="num" style="color:var(--bad)">absent</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <footer class="doc">
+    <p style="margin:0">Prepared for ClickUp task <a href="https://app.clickup.com/t/86bb20c9c">86bb20c9c — Prepare UI Plan (HTML) for all CPTs</a> · RMD website rebuild (ACF Flexible content) · 0. Planning Phase.<br>
+    Companion documents: <code>plan-draft-inplace-child-theme.md</code> · <code>sandbox-findings-uicore-child-theme.md</code> · <code>cpt-inventory-ui-scope-2026-07-23.md</code></p>
+  </footer>
+
+</div>
+</body>
+</html>
