@@ -1,12 +1,20 @@
 /**
  * Visual inline editing inside the section preview.
  * Progressive enhancement over section-preview.js: listens for its
- * 'rmd:preview-loaded' event and — for SAVED-row previews only — makes the
+ * 'rmd:preview-loaded' event and, on editable row previews, makes the
  * server-annotated .rmd-edit spans contenteditable and mirrors every change
  * into the real ACF inputs behind the modal. Images open the media library.
- * Saving stays 100% native: the user clicks « Mettre à jour ». Demo previews
- * carry no annotations and are untouched. If this file fails to load, the
- * preview simply stays read-only.
+ *
+ * Identity: values are written into the row ELEMENT handed over by the event
+ * (detail.rowEl) — never into "the row at index N", which points at the wrong
+ * section as soon as an unsaved row is inserted above. detail.rowIndex is the
+ * row's true DB index and is used ONLY for the draft save (-1 for new rows).
+ *
+ * NEW rows preview as an editable demo placeholder; its values (#rmd-demo-fill)
+ * are copied once into the row's empty fields so the form matches the preview
+ * and the normal « Mettre à jour » button publishes exactly what's on screen.
+ * Picker demos carry no annotations and are untouched. If this file fails to
+ * load, the preview simply stays read-only.
  */
 (function () {
 	'use strict';
@@ -14,8 +22,9 @@
 	var cfg = window.rmdSectionEdit || {};
 	var i18n = cfg.i18n || {};
 
-	// Per-preview edit state: which row, and the values changed since load/save.
-	var state = { rowIndex: -1, dirty: {}, saveBtn: null, isNew: false };
+	// Per-preview edit state: the row element being edited, its DB index (for
+	// the draft save only), and the values changed since load/save.
+	var state = { rowEl: null, dbRow: -1, dirty: {}, saveBtn: null, isNew: false };
 
 	// Parent-page style: the preview modal steps fully aside while the media
 	// library is open (our modal is z-index 999999, above WP media's 160000).
@@ -51,17 +60,6 @@
 			document.querySelector('.acf-field-flexible-content');
 	}
 
-	/** A row whose index is beyond the last SAVED row = added but not saved yet.
-	    Its fields only exist in the form (not the DB), so it publishes via the
-	    normal Update button, not the per-section draft save. */
-	function isNewRow(rowIndex) {
-		var field = sectionsField();
-		if (!field) return false;
-		var saved = field.getAttribute('data-rmd-saved-rows');
-		if (saved === null) return false;
-		return rowIndex >= parseInt(saved, 10);
-	}
-
 	/** Top-level section rows of the flexible field (never nested, never clones). */
 	function sectionRows(field) {
 		var out = [];
@@ -94,14 +92,13 @@
 	}
 
 	/**
-	 * Walk 'tags.2.label' from a section row down to the concrete ACF input.
-	 * Name segment → sub-field; numeric segment → repeater row.
+	 * Walk 'tags.2.label' from the section row ELEMENT down to the concrete ACF
+	 * input. Name segment → sub-field; numeric segment → repeater row. The row
+	 * element (not an index) is the identity — an unsaved insert or reorder
+	 * elsewhere in the list can never point this at another section's fields.
 	 */
-	function resolveInput(rowIndex, path) {
-		var field = sectionsField();
-		if (!field) return null;
-		var rowEl = sectionRows(field)[rowIndex];
-		if (!rowEl) return null;
+	function resolveInput(rowEl, path) {
+		if (!rowEl || !document.body.contains(rowEl)) return null;
 
 		var ctx = rowEl;        // current row context (.layout or .acf-row)
 		var cur = null;         // current .acf-field
@@ -117,17 +114,67 @@
 			}
 		}
 		if (!cur) return null;
-		return cur.querySelector('input[type="text"], textarea, input[type="hidden"], input[type="number"], input[type="url"], input[type="email"]');
+		// Two passes so an ACF true_false resolves to its CHECKBOX, not the
+		// hidden "0" input rendered before it; image fields still fall back to
+		// their hidden attachment-ID input.
+		var input = cur.querySelector('input[type="text"], textarea, select, input[type="checkbox"], input[type="radio"], input[type="number"], input[type="url"], input[type="email"]');
+		return input || cur.querySelector('input[type="hidden"]');
 	}
 
-	function writeBack(rowIndex, path, value) {
-		var input = resolveInput(rowIndex, path);
+	function writeBack(rowEl, path, value) {
+		var input = resolveInput(rowEl, path);
 		if (!input) return false;
-		input.value = value;
+		if ('checkbox' === input.type) {
+			input.checked = !!parseInt(value, 10);
+		} else if ('radio' === input.type) {
+			var group = input.closest('.acf-input') || input.parentNode;
+			var match = null;
+			group.querySelectorAll('input[type="radio"]').forEach(function (r) {
+				if (String(r.value) === String(value)) match = r;
+			});
+			if (!match) return false;
+			input = match;
+			input.checked = true;
+		} else {
+			input.value = value;
+		}
 		// Native bubbling events: ACF (jQuery-delegated) sees them and marks dirty.
 		input.dispatchEvent(new Event('input', { bubbles: true }));
 		input.dispatchEvent(new Event('change', { bubbles: true }));
 		return true;
+	}
+
+	/** Create missing repeater rows along 'steps.2.heading' by clicking ACF's
+	    own footer add-row button — min/max rules and row init all apply. Gives
+	    up quietly at the max or if the structure doesn't match. */
+	function ensureRepeaterRows(rowEl, path) {
+		var ctx = rowEl;
+		var cur = null;
+		var segs = String(path).split('.');
+		for (var i = 0; i < segs.length; i++) {
+			if (/^\d+$/.test(segs[i])) {
+				if (!cur) return;
+				var want = parseInt(segs[i], 10);
+				var guard = 30;
+				while (repeaterRows(cur).length <= want && guard-- > 0) {
+					var added = false;
+					var buttons = cur.querySelectorAll('.acf-actions [data-event="add-row"]');
+					for (var b = 0; b < buttons.length; b++) {
+						if (buttons[b].closest('.acf-field') !== cur) continue; // nested repeater's button
+						var before = repeaterRows(cur).length;
+						buttons[b].click();
+						added = repeaterRows(cur).length > before;
+						break;
+					}
+					if (!added) return;
+				}
+				ctx = repeaterRows(cur)[want];
+				if (!ctx) return;
+			} else {
+				cur = subFieldIn(ctx, segs[i]);
+				if (!cur) return;
+			}
+		}
 	}
 
 	// ── Modal messaging (reuses the preview modal's own slots) ───────────────
@@ -181,7 +228,9 @@
 	function doSave() {
 		var btn = state.saveBtn;
 		var paths = Object.keys(state.dirty);
-		if (!btn || !paths.length || state.rowIndex < 0) return;
+		// dbRow is the row's TRUE index among saved rows — never its on-screen
+		// position — so the draft can't land on another section's row.
+		if (!btn || !paths.length || state.dbRow < 0) return;
 
 		var postId = currentPostId();
 		if (!postId) return;
@@ -193,7 +242,7 @@
 			action: 'rmd_section_save',
 			_wpnonce: cfg.nonce || '',
 			post_id: String(postId),
-			row: String(state.rowIndex),
+			row: String(state.dbRow),
 			changes: JSON.stringify(state.dirty)
 		});
 
@@ -263,7 +312,7 @@
 
 		var sync = function () {
 			var value = mode === 'html' ? span.innerHTML : span.textContent;
-			writeBack(ctx.rowIndex, path, value);
+			writeBack(ctx.rowEl, path, value);
 			markDirty(path, value);
 			mirror(ctx.doc, span);
 			showEditedHint();
@@ -326,7 +375,7 @@
 			var att = picker.state().get('selection').first();
 			if (!att) return;
 			var a = att.toJSON();
-			if (!writeBack(ctx.rowIndex, img.getAttribute('data-rmd-path'), String(a.id))) return;
+			if (!writeBack(ctx.rowEl, img.getAttribute('data-rmd-path'), String(a.id))) return;
 			markDirty(img.getAttribute('data-rmd-path'), String(a.id));
 
 			// Live-swap the preview image (saved render still holds the old one).
@@ -347,16 +396,20 @@
 	// ── Prefill the ACF form with unpublished drafts on page load ────────────
 	// « Enregistrer » stores drafts server-side ("row.path" → value). Filling
 	// the real fields with them means the normal Update button publishes them —
-	// no separate publish path. Guarded per entry: a missing field is skipped.
+	// no separate publish path. At page load the DOM order IS the DB order, so
+	// the draft's row index maps safely to a row element here (and only here).
 	function prefillDrafts() {
 		var drafts = cfg.drafts || {};
+		var field = sectionsField();
+		if (!field) return;
+		var rows = sectionRows(field);
 		Object.keys(drafts).forEach(function (key) {
 			var dot = key.indexOf('.');
 			if (dot < 1) return;
 			var row = parseInt(key.slice(0, dot), 10);
 			var path = key.slice(dot + 1);
-			if (isNaN(row) || !path) return;
-			try { writeBack(row, path, String(drafts[key])); } catch (err) { /* field gone — skip */ }
+			if (isNaN(row) || !path || !rows[row]) return;
+			try { writeBack(rows[row], path, String(drafts[key])); } catch (err) { /* field gone — skip */ }
 		});
 	}
 	if (document.readyState === 'loading') {
@@ -365,15 +418,109 @@
 		prefillDrafts();
 	}
 
+	// ── New-row placeholder → real field values ──────────────────────────────
+	// The server emits #rmd-demo-fill ("path" → value) with the SAME values the
+	// placeholder preview rendered — including the ones not editable in place
+	// (bullet-list textareas, background/style selects) — so what the editor
+	// sees is exactly what « Mettre à jour » will save. Runs ONCE per row: after
+	// that the form is the source of truth and syncPreviewFromForm() pushes it
+	// back into every reopened preview.
+	function prefillDemo(doc, rowEl) {
+		var holder = doc.getElementById('rmd-demo-fill');
+		if (!holder) return;
+		var map;
+		try { map = JSON.parse(holder.textContent || '{}'); } catch (err) { return; }
+		if (!map || 'object' !== typeof map) return;
+
+		// Sorted keys create repeater rows in order (demo repeaters stay < 10).
+		Object.keys(map).sort().forEach(function (path) {
+			try {
+				ensureRepeaterRows(rowEl, path);
+				var input = resolveInput(rowEl, path);
+				if (!input) return;
+				var typed = 'checkbox' !== input.type && 'radio' !== input.type &&
+					'' !== String(input.value || '').trim();
+				if (typed) return; // the editor already wrote something — theirs wins
+				writeBack(rowEl, path, String(map[path]));
+			} catch (err) { /* one odd field must never break the rest */ }
+		});
+	}
+
+	/** Client-side mirror of rmd_inline_html(): keep only <b> <strong> <br>
+	    <span class="…">, everything else becomes plain text. Field values may
+	    have been typed by ANOTHER author — they must never execute here. */
+	function sanitizeInline(html) {
+		var tpl = document.createElement('template');
+		tpl.innerHTML = String(html);
+		var ALLOWED = { B: 1, STRONG: 1, BR: 1, SPAN: 1 };
+		(function walk(node) {
+			Array.prototype.slice.call(node.childNodes).forEach(function (child) {
+				if (child.nodeType === 3) return;
+				if (child.nodeType !== 1 || !ALLOWED[child.tagName]) {
+					child.replaceWith(document.createTextNode(child.textContent || ''));
+					return;
+				}
+				Array.prototype.slice.call(child.attributes).forEach(function (attr) {
+					if (!('SPAN' === child.tagName && 'class' === attr.name)) child.removeAttribute(attr.name);
+				});
+				walk(child);
+			});
+		})(tpl.content);
+		var div = document.createElement('div');
+		div.appendChild(tpl.content);
+		return div.innerHTML;
+	}
+
+	/** Push the row's CURRENT form values into the freshly loaded preview, so
+	    the frame always reflects the form: typed edits, drafts prefilled at
+	    load, a new row's placeholder after the editor changed some fields. */
+	function syncPreviewFromForm(doc, rowEl) {
+		doc.querySelectorAll('.rmd-edit').forEach(function (span) {
+			var input = resolveInput(rowEl, span.getAttribute('data-rmd-path') || '');
+			if (!input || 'checkbox' === input.type || 'radio' === input.type) return;
+			var value = String(input.value || '');
+			if ('' === value.trim()) return;
+			if ('html' === span.getAttribute('data-rmd-mode')) {
+				var clean = sanitizeInline(value);
+				if (clean !== span.innerHTML) span.innerHTML = clean;
+			} else if (value !== span.textContent) {
+				span.textContent = value;
+			}
+		});
+		doc.querySelectorAll('img[data-rmd-mode="image"]').forEach(function (img) {
+			var input = resolveInput(rowEl, img.getAttribute('data-rmd-path') || '');
+			if (!input) return;
+			var id = parseInt(input.value, 10) || 0;
+			if (!id || String(id) === img.getAttribute('data-rmd-id')) return;
+			img.setAttribute('data-rmd-id', String(id));
+			if (window.wp && wp.media && wp.media.attachment) {
+				try {
+					var att = wp.media.attachment(id);
+					att.fetch().then(function () {
+						var sizes = att.get('sizes');
+						var size = sizes && (sizes.large || sizes.medium_large || sizes.full);
+						var url = (size && size.url) || att.get('url');
+						if (url) {
+							img.removeAttribute('srcset');
+							img.removeAttribute('sizes');
+							img.src = url;
+						}
+					});
+				} catch (err) { /* preview keeps the rendered image */ }
+			}
+		});
+	}
+
 	// ── Wire-up per preview load ─────────────────────────────────────────────
 	document.addEventListener('rmd:preview-loaded', function (e) {
 		var d = e.detail || {};
 
 		// Every load resets the edit state; the save button only shows once this
-		// load proves editable below (so demo previews never show it).
-		state.rowIndex = typeof d.rowIndex === 'number' ? d.rowIndex : -1;
+		// load proves editable AND mapped to a real DB row.
+		state.rowEl = d.rowEl || null;
+		state.dbRow = typeof d.rowIndex === 'number' ? d.rowIndex : -1;
 		state.dirty = {};
-		state.isNew = false;
+		state.isNew = !!d.isNewRow;
 		var saveBtn = ensureSaveButton();
 		if (saveBtn) {
 			saveBtn.style.display = 'none';
@@ -381,7 +528,7 @@
 			saveBtn.textContent = i18n.save || 'Save';
 		}
 
-		if (!d.isRow || !d.frame) return;
+		if (!d.isRow || !d.frame || !d.editable || !state.rowEl) return;
 
 		var doc;
 		try { doc = d.frame.contentDocument; } catch (err) { doc = null; }
@@ -389,11 +536,17 @@
 		if (doc.getElementById('rmd-edit-style')) return; // this load is already wired
 		if (!doc.querySelector('.rmd-edit, img[data-rmd-mode="image"]')) return;
 
-		state.isNew = isNewRow(state.rowIndex);
+		// New row: copy the placeholder into its empty fields (once), so the
+		// preview and the form agree and Update publishes what's on screen.
+		if (state.isNew && !state.rowEl.dataset.rmdPrefilled) {
+			prefillDemo(doc, state.rowEl);
+			state.rowEl.dataset.rmdPrefilled = '1';
+		}
+		syncPreviewFromForm(doc, state.rowEl);
 
-		// Draft-save button is only for SAVED rows (its fields exist in the DB).
-		// A new/unsaved section is edited inline then published with Update.
-		if (saveBtn) saveBtn.style.display = state.isNew ? 'none' : '';
+		// Draft-save button only for rows with a real DB index; a new/unsaved
+		// section is edited inline then published with the normal Update button.
+		if (saveBtn) saveBtn.style.display = (state.isNew || state.dbRow < 0) ? 'none' : '';
 		if (state.isNew) setHintText(i18n.newSectionHint || '');
 
 		var style = doc.createElement('style');
@@ -403,7 +556,7 @@
 
 		showEditNote();
 
-		var ctx = { doc: doc, rowIndex: d.rowIndex };
+		var ctx = { doc: doc, rowEl: state.rowEl };
 		// Capture phase: beat the theme's own lightbox/zoom handlers in main.js.
 		doc.addEventListener('click', function (ev) {
 			var span = ev.target.closest ? ev.target.closest('.rmd-edit') : null;

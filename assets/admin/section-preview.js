@@ -5,8 +5,13 @@
  *
  *  1. "Add Section" popup — an eye on each layout card previews it as a generic
  *     DEMO (no ACF row exists yet → the server seeds example content). "Insérer".
- *  2. An existing row's toolbar — an eye previews THAT row with its SAVED values.
- *     Unsaved / never-saved rows show an amber warning, never stale content.
+ *  2. An existing row's toolbar — an eye previews THAT row. Identity is the row
+ *     ELEMENT, never its on-screen position: rows present at load / after a save
+ *     are stamped data-rmd-saved, and a saved row is addressed by its index among
+ *     stamped rows only — so an unsaved insert above shifts nothing. A row without
+ *     the stamp is NEW: it gets an editable demo placeholder (new=1) and never
+ *     maps to a DB row. After an unsaved reorder/delete the mapping is unknowable →
+ *     saved rows preview read-only with the amber "save first" hint.
  *
  * Sections are designed around 1280px, so the iframe renders at that width and
  * is transform:scale()d down to the modal. Config: window.rmdSectionPreview
@@ -24,7 +29,7 @@
 	var modal = null;
 	var frame = null;
 	var stage = null;
-	var current = null;      // { layout, anchor, rowIndex, isRow, hint }
+	var current = null;      // { layout, anchor, rowIndex (DB), rowEl, isRow, isNewRow, editable, hint }
 	var lastFocused = null;
 	var lastFieldKey = '';
 
@@ -70,7 +75,8 @@
 		return 0;
 	}
 
-	function previewUrl(layoutName, rowIndex) {
+	function previewUrl(layoutName, opts) {
+		opts = opts || {};
 		var params = new URLSearchParams({
 			action: 'rmd_section_preview',
 			layout: layoutName,
@@ -78,9 +84,13 @@
 		});
 		var postId = currentPostId();
 		if (postId) params.set('post_id', postId);
-		if (typeof rowIndex === 'number' && rowIndex >= 0) {
-			params.set('row', String(rowIndex));
-			params.set('edit', '1'); // saved-row previews are inline-editable (section-edit.js)
+		if (opts.isNewRow) {
+			// New/unsaved row: editable demo placeholder — never touches DB rows.
+			params.set('new', '1');
+			if (opts.editable) params.set('edit', '1');
+		} else if (typeof opts.rowIndex === 'number' && opts.rowIndex >= 0) {
+			params.set('row', String(opts.rowIndex));
+			if (opts.editable) params.set('edit', '1'); // inline-editable (section-edit.js)
 		}
 		params.set('_ts', String(Date.now())); // cache-bust so Rafraîchir refetches
 		return (cfg.ajaxUrl || '') + '?' + params.toString();
@@ -94,34 +104,37 @@
 			!(row.closest && row.closest('.clones'));
 	}
 
-	function rowsIn(container) {
-		if (!container) return [];
-		return Array.prototype.filter.call(container.children, isRealRow);
+	/** Rows present at load / after a save came from the server → stamp them as
+	    SAVED. A row added later simply lacks the stamp — that's how a new row is
+	    recognised at ANY position (counting rows could not tell a mid-list insert
+	    from a saved row, and previewed the wrong DB row). */
+	function stampSavedRows(root) {
+		(root && root.querySelectorAll ? root : document)
+			.querySelectorAll('.acf-field-flexible-content .layout')
+			.forEach(function (row) {
+				if (isRealRow(row)) row.setAttribute('data-rmd-saved', '1');
+			});
 	}
 
-	function rowContainerOf(field) {
-		var all = field.querySelectorAll('.layout');
-		for (var i = 0; i < all.length; i++) {
-			var el = all[i];
-			if (!isRealRow(el)) continue;
-			if (el.closest('.acf-field-flexible-content') !== field) continue; // skip nested
-			return el.parentNode;
+	/** True DB index of a SAVED row = its position among STAMPED siblings only —
+	    exact even with unsaved new rows inserted above it. -1 if unstamped. */
+	function savedIndexOf(row) {
+		if (!row || !row.parentNode || !row.hasAttribute('data-rmd-saved')) return -1;
+		var idx = 0;
+		var kids = row.parentNode.children;
+		for (var i = 0; i < kids.length; i++) {
+			if (!isRealRow(kids[i]) || !kids[i].hasAttribute('data-rmd-saved')) continue;
+			if (kids[i] === row) return idx;
+			idx++;
 		}
-		return null;
+		return -1;
 	}
 
-	function rowsOf(field) {
-		return rowsIn(rowContainerOf(field));
-	}
-
-	/** A row's index = its position among its OWN sibling rows (never -1). */
-	function rowIndexOf(row) {
-		return rowsIn(row.parentNode).indexOf(row);
-	}
-
-	function savedRowCount(field) {
-		var n = field.getAttribute('data-rmd-saved-rows');
-		return n === null ? null : parseInt(n, 10);
+	/** Set when saved rows were reordered or deleted without saving: the DOM↔DB
+	    mapping is unknowable until the next save (inserts do NOT set this —
+	    savedIndexOf stays exact through them). */
+	function isStructureDirty(field) {
+		return !!(field && field.hasAttribute('data-rmd-structure-dirty'));
 	}
 
 	/** Unsaved edits? Read the block editor's own dirty flag — no heuristics. */
@@ -254,12 +267,17 @@
 		setTimeout(measure, 1200);
 
 		// Let the inline editor (section-edit.js) wire itself into this document.
+		// rowEl is the SOURCE OF TRUTH for writing values back (never an index);
+		// rowIndex is the row's true DB index (for the draft save), -1 for new rows.
 		document.dispatchEvent(new CustomEvent('rmd:preview-loaded', {
 			detail: {
 				frame: frame,
 				layout: current ? current.layout : '',
 				rowIndex: current ? current.rowIndex : -1,
-				isRow: !!(current && current.isRow)
+				rowEl: current ? current.rowEl : null,
+				isRow: !!(current && current.isRow),
+				isNewRow: !!(current && current.isNewRow),
+				editable: !!(current && current.editable)
 			}
 		}));
 	}
@@ -268,7 +286,7 @@
 		if (!current) return;
 		frame.dataset.contentHeight = '';
 		setStatus(i18n.loading || 'Chargement…');
-		frame.src = previewUrl(current.layout, current.rowIndex);
+		frame.src = previewUrl(current.layout, current);
 	}
 
 	function openModal(opts) {
@@ -282,7 +300,10 @@
 			layout: opts.layout,
 			anchor: opts.anchor || null,
 			rowIndex: rowIndex,
+			rowEl: opts.rowEl || null,
 			isRow: isRow,
+			isNewRow: !!opts.isNewRow,
+			editable: !!opts.editable,
 			hint: opts.hint || ''
 		};
 		lastFocused = document.activeElement;
@@ -308,9 +329,10 @@
 
 		modal.querySelector('.rmd-sp-close').focus();
 
-		// A row preview needs a valid index; if we couldn't locate it, say so
-		// plainly rather than loading a misleading demo.
-		if (isRow && rowIndex < 0) {
+		// A SAVED row preview needs a valid DB index; if we couldn't locate it,
+		// say so plainly rather than loading a misleading demo. (A NEW row has no
+		// DB index by design — it loads the editable placeholder instead.)
+		if (isRow && rowIndex < 0 && !current.isNewRow) {
 			setStatus((i18n.error || 'Erreur') + ' — position introuvable (index -1)', true);
 			return;
 		}
@@ -318,7 +340,7 @@
 		frame.dataset.contentHeight = '';
 		frame.style.height = '400px';
 		setStatus(i18n.loading || 'Chargement…');
-		frame.src = previewUrl(current.layout, rowIndex);
+		frame.src = previewUrl(current.layout, current);
 	}
 
 	function closeModal(opts) {
@@ -449,32 +471,52 @@
 				e.preventDefault();
 				e.stopPropagation();
 
-				var index = rowIndexOf(row);
+				// Identity, not position: a saved row is addressed by its index
+				// among SAVED rows only, so unsaved inserts above shift nothing;
+				// a NEW (unstamped) row never maps to a DB row — it opens the
+				// editable demo placeholder instead.
 				var field = row.closest('.acf-field-flexible-content');
-				var saved = field ? savedRowCount(field) : null;
+				var isNew = !row.hasAttribute('data-rmd-saved');
 
 				var hint = '';
-				if (saved !== null && index >= saved) {
-					hint = i18n.newRowHint || '';   // row added, never saved
-				} else if (postIsDirty()) {
-					hint = i18n.dirtyHint || '';    // page has unsaved edits
+				var editable = true;
+				var dbRow = -1;
+				if (isNew) {
+					hint = i18n.newRowHint || '';
+				} else if (isStructureDirty(field)) {
+					// Reordered/deleted without saving → the mapping is unknowable:
+					// show this row's saved content read-only, ask for a save.
+					dbRow = savedIndexOf(row);
+					editable = false;
+					hint = i18n.dirtyHint || '';
+				} else {
+					dbRow = savedIndexOf(row);
+					if (postIsDirty()) hint = i18n.dirtyHint || '';
 				}
 
-				openModal({ layout: name, rowIndex: index, hint: hint, isRow: true });
+				openModal({ layout: name, rowIndex: dbRow, rowEl: row, isRow: true, isNewRow: isNew, editable: editable, hint: hint });
 			});
 
 			controls.insertBefore(btn, controls.firstChild);
 		} catch (err) { /* never let row decoration break the editor */ }
 	}
 
-	/** The post was saved: re-baseline the saved-row count and refresh an open
-	    row preview so the warning clears and the frame shows what was saved. */
+	/** The post was saved: everything on screen is now the saved truth — re-stamp
+	    the rows, clear the structure-dirty flags, and refresh an open row preview
+	    so the warning clears and the frame shows what was saved. */
 	function onPostSaved() {
 		document.querySelectorAll('.acf-field-flexible-content').forEach(function (field) {
-			field.setAttribute('data-rmd-saved-rows', String(rowsOf(field).length));
+			field.removeAttribute('data-rmd-structure-dirty');
 		});
+		stampSavedRows(document);
 
-		if (modal && modal.classList.contains('is-open') && current && current.rowIndex >= 0) {
+		if (modal && modal.classList.contains('is-open') && current && current.isRow &&
+			current.rowEl && document.body.contains(current.rowEl)) {
+			// The open row (possibly new until a second ago) is saved now:
+			// rebase its identity on the fresh stamps and reload the frame.
+			current.isNewRow = false;
+			current.editable = true;
+			current.rowIndex = savedIndexOf(current.rowEl);
 			current.hint = '';
 			var hint = modal.querySelector('.rmd-sp-hint');
 			hint.querySelector('.rmd-sp-hint-text').textContent = '';
@@ -507,19 +549,61 @@
 	}
 
 	function init() {
-		document.querySelectorAll('.acf-field-flexible-content').forEach(function (field) {
-			if (!field.hasAttribute('data-rmd-saved-rows')) {
-				field.setAttribute('data-rmd-saved-rows', String(rowsOf(field).length));
-			}
-		});
+		stampSavedRows(document);
 
 		scan(document);
 		watchSaves();
 
 		new MutationObserver(function (mutations) {
+			// A stamped row DETACHED on its own is a reorder or a delete (a whole
+			// metabox/field teardown — block editor refresh — never matches a bare
+			// .layout node, so it can't false-positive here). Whole FIELDS seen
+			// leaving are remembered too: if the same element comes back in this
+			// batch it was only MOVED (metabox drag), not re-rendered.
+			var detached = [];
+			var movedFields = [];
+			mutations.forEach(function (m) {
+				m.removedNodes.forEach(function (node) {
+					if (node.nodeType !== 1) return;
+					if (node.matches && node.matches('.layout[data-rmd-saved]')) detached.push(node);
+					if (node.matches && node.matches('.acf-field-flexible-content')) movedFields.push(node);
+					else if (node.querySelectorAll) node.querySelectorAll('.acf-field-flexible-content').forEach(function (f) { movedFields.push(f); });
+				});
+			});
+
 			mutations.forEach(function (m) {
 				m.addedNodes.forEach(function (node) {
 					if (node.nodeType !== 1) return;
+
+					var fields = [];
+					if (node.matches && node.matches('.acf-field-flexible-content')) fields.push(node);
+					else if (node.querySelectorAll) node.querySelectorAll('.acf-field-flexible-content').forEach(function (f) { fields.push(f); });
+
+					if (fields.length) {
+						// A field element NOT seen leaving in this same batch is a
+						// fresh server render (metabox refresh after save): its rows
+						// ARE the saved truth. A moved field keeps its stamps as-is.
+						fields.forEach(function (f) {
+							if (movedFields.indexOf(f) === -1) stampSavedRows(f);
+						});
+					} else if (node.querySelectorAll) {
+						// A stamped row ARRIVING without having been detached in this
+						// same batch is a DUPLICATE (cloned attributes): it's really a
+						// new, unsaved row — unstamp it, and rebuild its eye (the
+						// clone carried the button but not its click listener).
+						var stamped = [];
+						if (node.matches && node.matches('.layout[data-rmd-saved]')) stamped.push(node);
+						node.querySelectorAll('.layout[data-rmd-saved]').forEach(function (r) { stamped.push(r); });
+						stamped.forEach(function (r) {
+							if (detached.indexOf(r) !== -1) return; // a MOVE keeps its stamp
+							r.removeAttribute('data-rmd-saved');
+							r.removeAttribute('data-rmd-preview');
+							var oldEye = r.querySelector('.rmd-sp-eye--row');
+							if (oldEye) oldEye.remove();
+							decorateRow(r);
+						});
+					}
+
 					if (node.classList && node.classList.contains('acf-fc-popup')) {
 						decoratePopup(node);
 					} else if (node.classList && node.classList.contains('layout')) {
@@ -529,6 +613,12 @@
 					}
 				});
 			});
+
+			if (detached.length) {
+				document.querySelectorAll('.acf-field-flexible-content').forEach(function (field) {
+					field.setAttribute('data-rmd-structure-dirty', '1');
+				});
+			}
 		}).observe(document.body, { childList: true, subtree: true });
 	}
 
