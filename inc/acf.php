@@ -32,7 +32,16 @@ function rmd_get_sub_field($name, $format = true) {
 	if (isset($GLOBALS['rmd_demo']) && is_array($GLOBALS['rmd_demo']) && array_key_exists($name, $GLOBALS['rmd_demo'])) {
 		return $GLOBALS['rmd_demo'][$name];
 	}
-	return RMD_ACF_ACTIVE ? get_sub_field($name, $format) : null;
+
+	$value = RMD_ACF_ACTIVE ? get_sub_field($name, $format) : null;
+
+	// Preview EDIT mode (§ inc/admin-visual-edit.php): the saved-row preview with
+	// edit=1 marks whitelisted values so they become editable in the iframe. Like
+	// rmd_demo, this global is only ever set inside the admin preview endpoint.
+	if (isset($GLOBALS['rmd_edit_map']) && is_array($GLOBALS['rmd_edit_map']) && function_exists('rmd_edit_mark_value')) {
+		return rmd_edit_mark_value($value, (string) $name, $GLOBALS['rmd_edit_map']);
+	}
+	return $value;
 }
 function rmd_have_rows($name, $post_id = false) {
 	return RMD_ACF_ACTIVE ? have_rows($name, $post_id) : false;

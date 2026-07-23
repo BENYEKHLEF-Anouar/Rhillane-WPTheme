@@ -78,7 +78,10 @@
 		});
 		var postId = currentPostId();
 		if (postId) params.set('post_id', postId);
-		if (typeof rowIndex === 'number' && rowIndex >= 0) params.set('row', String(rowIndex));
+		if (typeof rowIndex === 'number' && rowIndex >= 0) {
+			params.set('row', String(rowIndex));
+			params.set('edit', '1'); // saved-row previews are inline-editable (section-edit.js)
+		}
 		params.set('_ts', String(Date.now())); // cache-bust so Rafraîchir refetches
 		return (cfg.ajaxUrl || '') + '?' + params.toString();
 	}
@@ -249,6 +252,16 @@
 		}
 		setTimeout(measure, 350);
 		setTimeout(measure, 1200);
+
+		// Let the inline editor (section-edit.js) wire itself into this document.
+		document.dispatchEvent(new CustomEvent('rmd:preview-loaded', {
+			detail: {
+				frame: frame,
+				layout: current ? current.layout : '',
+				rowIndex: current ? current.rowIndex : -1,
+				isRow: !!(current && current.isRow)
+			}
+		}));
 	}
 
 	function reload() {

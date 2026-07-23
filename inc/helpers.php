@@ -58,14 +58,25 @@ function rmd_image($image, $args = array()) {
 		'class' => '',
 	));
 
+	// Preview edit mode (§ inc/admin-visual-edit.php): a whitelisted image array
+	// carries `_rmd_edit_path` — surface it as data attributes so the inline
+	// editor can target this <img>. Never set outside the admin preview endpoint.
+	$edit_attrs = array();
+	if (is_array($image) && !empty($image['_rmd_edit_path'])) {
+		$edit_attrs = array(
+			'data-rmd-path' => $image['_rmd_edit_path'],
+			'data-rmd-mode' => 'image',
+		);
+	}
+
 	$id = is_array($image) ? (int) ($image['ID'] ?? 0) : (int) $image;
 	if ($id) {
-		return wp_get_attachment_image($id, $args['size'], false, array(
+		return wp_get_attachment_image($id, $args['size'], false, array_merge(array(
 			'class'         => $args['class'],
 			'loading'       => $args['eager'] ? 'eager' : 'lazy',
 			'decoding'      => 'async',
 			'fetchpriority' => $args['eager'] ? 'high' : 'auto',
-		));
+		), $edit_attrs));
 	}
 
 	// No attachment ID: fall back to a bare URL if one is present (a demo/preview
