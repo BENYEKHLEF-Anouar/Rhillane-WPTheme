@@ -5,12 +5,14 @@
  */
 defined('ABSPATH') || exit;
 
-add_action('init', 'rmd_register_post_types');
-function rmd_register_post_types() {
-
-	// Labels adapt to the admin user's language (get_user_locale via rmd_is_fr):
-	// French admin → French, English admin → English. No .mo files needed.
-	$labels = rmd_is_fr() ? array(
+/**
+ * case_study labels — adapt to the admin user's language (get_user_locale via
+ * rmd_is_fr): French admin → French, English admin → English. No .mo files.
+ * Applied to whichever registrar runs (ACF Pro's Post Types UI OR the PHP
+ * fallback) through rmd_case_study_pin_args() below.
+ */
+function rmd_case_study_labels() {
+	return rmd_is_fr() ? array(
 		'name'               => 'Études de cas',
 		'singular_name'      => 'Étude de cas',
 		'menu_name'          => 'Études de cas',
@@ -51,19 +53,58 @@ function rmd_register_post_types() {
 		'item_published'     => 'Case study published.',
 		'item_updated'       => 'Case study updated.',
 	);
+}
 
-	register_post_type('case_study', array(
-		'labels'        => $labels,
-		'public'        => true,
-		'has_archive'   => true,
-		'menu_icon'     => 'dashicons-analytics',
-		'menu_position' => 21,
-		'show_in_rest'  => true,
-		// Confirmed 21/07: French slug. Flush permalinks after deploy.
-		'rewrite'       => array('slug' => 'etudes-de-cas', 'with_front' => false),
-		// No 'editor': all content comes from the sections field.
-		'supports'      => array('title', 'excerpt', 'thumbnail', 'page-attributes'),
-	));
+/**
+ * The behaviourally-critical case_study args — the single source of truth for
+ * how the type behaves, kept in code so it can't drift. `supports` has no
+ * 'editor' (content comes from the `sections` field).
+ */
+function rmd_case_study_core_args() {
+	return array(
+		'labels'       => rmd_case_study_labels(),
+		'public'       => true,
+		'show_in_rest' => true,
+		'has_archive'  => true,
+		// Confirmed 21/07: French slug — locked for SEO.
+		'rewrite'      => array('slug' => 'etudes-de-cas', 'with_front' => false),
+		'supports'     => array('title', 'excerpt', 'thumbnail', 'page-attributes'),
+	);
+}
+
+/**
+ * Pin the core definition onto WHOEVER registers case_study. register_post_type()
+ * fires this filter for the theme's own fallback AND for a type registered via
+ * ACF Pro's Post Types UI (ACF registers through register_post_type internally).
+ * So the CPT can live in ACF Pro — visible in its UI, syncable through Local
+ * JSON like the field groups — while code still guarantees the bilingual labels,
+ * the /etudes-de-cas/ SEO slug, the archive, REST and field support. An ACF UI
+ * change can tweak cosmetics (menu icon/position) but can never break the site.
+ */
+add_filter('register_post_type_args', 'rmd_case_study_pin_args', 20, 2);
+function rmd_case_study_pin_args($args, $post_type) {
+	if ('case_study' === $post_type) {
+		$args = array_merge($args, rmd_case_study_core_args());
+	}
+	return $args;
+}
+
+/**
+ * PHP registration is now a FALLBACK. When ACF Pro is active AND case_study is
+ * defined in its Post Types UI, ACF registers the type; this then sees it exists
+ * and defers. When ACF is absent — or the type isn't defined there yet — this
+ * registers it, so the post type NEVER disappears (the "works even if ACF is
+ * off" safeguard). No double registration, no gap. Priority 10 keeps it ahead of
+ * the taxonomy association, exactly as before.
+ */
+add_action('init', 'rmd_register_post_types');
+function rmd_register_post_types() {
+	if (!post_type_exists('case_study')) {
+		register_post_type('case_study', array_merge(
+			rmd_case_study_core_args(),
+			array('menu_icon' => 'dashicons-analytics', 'menu_position' => 21)
+		));
+	}
 
 	// W2 — register the `service` CPT here (six services confirmed).
 	// Not earlier: every public CPT adds admin UI + rewrite rules network-wide.
