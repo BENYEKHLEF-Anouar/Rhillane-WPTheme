@@ -505,6 +505,11 @@
 	    popup deliberately kept behind the preview modal is left alone. */
 	function closeStalePopups(target) {
 		document.querySelectorAll('.acf-fc-popup').forEach(function (popup) {
+			// ONLY the section-picker popup (has a[data-layout]) is ours to sweep.
+			// ACF's "more actions" kebab menu (Rename/Disable) is also .acf-fc-popup
+			// but has NO data-layout — leave it entirely to ACF, or clicking the
+			// kebab schedules its own removal and the menu flashes open then closes.
+			if (!popup.querySelector('a[data-layout]')) return;
 			var pos = (popup.closest && popup.closest('.acf-tooltip')) || popup;
 			// A hijacked popup backs our open picker/preview — never sweep it here.
 			if (popup === pickerPopup) return;
