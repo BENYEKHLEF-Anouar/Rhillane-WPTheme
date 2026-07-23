@@ -835,8 +835,19 @@ function rmd_render_section_preview() {
 		}
 	}
 
+	// Inline edit mode (§ inc/admin-visual-edit.php) — saved rows only. Marks
+	// whitelisted values during render, then annotates them into editable spans.
+	$edit_mode = !empty($_GET['edit']) && $row_index >= 0 && $post_id && function_exists('rmd_edit_map');
+
 	if ($row_index >= 0) {
+		if ($edit_mode) {
+			$GLOBALS['rmd_edit_map'] = rmd_edit_map($layout);
+		}
 		$section_html = rmd_render_saved_section_row($post_id, $row_index, $layout);
+		if ($edit_mode) {
+			unset($GLOBALS['rmd_edit_map']);
+			$section_html = rmd_edit_annotate($section_html, $layout);
+		}
 	} else {
 		// Demo: no row exists yet — seed example content through the sub-field
 		// wrapper so the real template renders a filled example.

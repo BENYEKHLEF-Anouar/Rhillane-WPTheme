@@ -1,0 +1,203 @@
+<?php
+/**
+ * Visual inline editing for the section preview (admin-only).
+ *
+ * Lets the editor click text/images INSIDE the saved-row preview iframe and
+ * edit them in place; every change is mirrored into the real ACF inputs behind
+ * the modal and saved by the normal « Mettre à jour » button. No custom save
+ * path — WordPress/ACF save exactly as if the fields were typed by hand.
+ *
+ * How: when the preview endpoint runs with edit=1 (saved-row mode only), the
+ * rmd_get_sub_field() wrapper (inc/acf.php) marks WHITELISTED string values
+ * with invisible Unicode markers that survive esc_html()/rmd_inline_html().
+ * rmd_edit_annotate() then converts the markers into
+ * <span class="rmd-edit" data-rmd-path data-rmd-mode> wrappers (and strips any
+ * marker that landed inside a tag attribute). Whitelisted image arrays get an
+ * `_rmd_edit_path` key that rmd_image() turns into data attributes on the <img>.
+ *
+ * ZERO front-end impact: the whitelist global is only ever set inside the
+ * admin-ajax preview endpoint (nonce + edit_post capability), and this module
+ * enqueues assets on post-edit screens only.
+ */
+defined('ABSPATH') || exit;
+
+/** Marker delimiters — U+27E6/U+27E7 pass through esc_html() untouched. */
+define('RMD_EDIT_MARK_OPEN', "\u{27E6}rmd:");   // ⟦rmd:PATH⟧value
+define('RMD_EDIT_MARK_MID', "\u{27E7}");
+define('RMD_EDIT_MARK_CLOSE', "\u{27E6}/rmd\u{27E7}");
+
+/**
+ * Editable fields per layout — the single source of truth.
+ * path pattern => mode. `*` matches one repeater row index.
+ *   'text'  → edited as plain text (template escapes with esc_html)
+ *   'html'  → light inline HTML allowed (template renders via rmd_inline_html,
+ *             which re-sanitizes on output — nothing unsafe can ever render)
+ *   'image' → ACF image array; swapped via the media library
+ * Fields used in template LOGIC (background, style, columns, accent, anchor…),
+ * SVG icons, chart data points and the `steps.*.items` line-split textareas are
+ * deliberately absent — they can never be marked, so nothing can break.
+ */
+function rmd_edit_map($layout) {
+	static $maps = null;
+	if (null === $maps) {
+		$maps = array(
+			'hero' => array(
+				'eyebrow' => 'text', 'kicker' => 'text', 'heading' => 'text',
+				'heading_accent' => 'text', 'heading_after' => 'text',
+				'subheading' => 'html', 'badge' => 'text',
+				'tags.*.label' => 'text',
+				'stats.*.value' => 'html', 'stats.*.label' => 'text',
+			),
+			'stats_band' => array(
+				'eyebrow' => 'text', 'heading' => 'html', 'subheading' => 'html',
+				'items.*.tag' => 'text', 'items.*.value' => 'text',
+				'items.*.value_note' => 'text', 'items.*.label' => 'text',
+			),
+			'stat_cards' => array(
+				'eyebrow' => 'text', 'heading' => 'html', 'subheading' => 'html',
+				'cards.*.value' => 'text', 'cards.*.label' => 'text', 'cards.*.body' => 'html',
+			),
+			'feature_cards' => array(
+				'eyebrow' => 'text', 'heading' => 'html', 'subheading' => 'html',
+				'cards_kicker' => 'text', 'cards.*.heading' => 'text', 'cards.*.body' => 'html',
+				'tiles_kicker' => 'text', 'tiles.*.value' => 'text', 'tiles.*.label' => 'text',
+				'highlight' => 'html',
+			),
+			'numbered_steps' => array(
+				'eyebrow' => 'text', 'heading' => 'html', 'subheading' => 'html',
+				'steps.*.heading' => 'text',
+			),
+			'screenshot_gallery' => array(
+				'eyebrow' => 'text', 'heading' => 'html', 'subheading' => 'html',
+				'items.*.label' => 'text', 'items.*.caption' => 'html',
+				'items.*.source' => 'text', 'items.*.image' => 'image',
+			),
+			'line_chart' => array(
+				'chart_title' => 'text', 'chart_note' => 'text',
+			),
+			'table_split' => array(
+				'eyebrow' => 'text', 'heading' => 'html', 'subheading' => 'html',
+				'comment' => 'html', 'table_columns.*.label' => 'text',
+				'table_rows.*.cells.*.content' => 'html',
+				'side_stats.*.tag' => 'text', 'side_stats.*.value' => 'text', 'side_stats.*.label' => 'text',
+				'media_caption' => 'html', 'media_source' => 'text', 'media_image' => 'image',
+			),
+			'recap_band' => array(
+				'heading' => 'text', 'pills.*.text' => 'html',
+			),
+			'cta' => array(
+				'eyebrow' => 'text', 'heading' => 'text', 'heading_accent' => 'text',
+				'heading_after' => 'text', 'subheading' => 'html',
+				'button_label' => 'text', 'contact_line' => 'text',
+			),
+		);
+	}
+	return isset($maps[$layout]) ? $maps[$layout] : array();
+}
+
+/** Mode for one concrete path ('tags.2.label') against a layout map, or ''. */
+function rmd_edit_path_mode($path, $map) {
+	foreach ($map as $pattern => $mode) {
+		$regex = '/^' . str_replace(array('\*', '\.'), array('\d+', '\.'), preg_quote($pattern, '/')) . '$/';
+		if (preg_match($regex, $path)) {
+			return $mode;
+		}
+	}
+	return '';
+}
+
+/**
+ * Mark a value fetched by rmd_get_sub_field() in edit mode. Strings matching a
+ * text/html pattern get wrapped in markers; image arrays matching an image
+ * pattern get an `_rmd_edit_path` key; repeater arrays are walked recursively.
+ * Anything not whitelisted passes through UNTOUCHED (so template logic on
+ * background/style/columns etc. can never break).
+ */
+function rmd_edit_mark_value($value, $path, $map) {
+	if (is_string($value)) {
+		$mode = rmd_edit_path_mode($path, $map);
+		if (('text' === $mode || 'html' === $mode) && '' !== trim($value)) {
+			return RMD_EDIT_MARK_OPEN . $path . RMD_EDIT_MARK_MID . $value . RMD_EDIT_MARK_CLOSE;
+		}
+		return $value;
+	}
+	if (is_array($value)) {
+		if ('image' === rmd_edit_path_mode($path, $map) && isset($value['ID'])) {
+			$value['_rmd_edit_path'] = $path;
+			return $value;
+		}
+		foreach ($value as $k => $v) {
+			$value[$k] = rmd_edit_mark_value($v, $path . '.' . $k, $map);
+		}
+		return $value;
+	}
+	return $value;
+}
+
+/**
+ * Convert markers in the rendered section HTML into editable spans.
+ * Pass 1 strips any marker that landed inside a tag's ATTRIBUTES (alt, aria…)
+ * so markup can never be corrupted; pass 2 wraps the remaining marked values;
+ * pass 3 removes any stray marker as a belt-and-braces cleanup.
+ */
+function rmd_edit_annotate($html, $layout) {
+	if (false === strpos($html, RMD_EDIT_MARK_OPEN)) {
+		return $html;
+	}
+	$map = rmd_edit_map($layout);
+
+	$o = preg_quote(RMD_EDIT_MARK_OPEN, '/');
+	$m = preg_quote(RMD_EDIT_MARK_MID, '/');
+	$c = preg_quote(RMD_EDIT_MARK_CLOSE, '/');
+
+	// 1 · markers inside tags → keep the value text, drop the markers.
+	$html = preg_replace_callback('/<[^>]+>/su', function ($tag) use ($o, $m, $c) {
+		return preg_replace('/' . $o . '[^' . $m . ']*' . $m . '|' . $c . '/u', '', $tag[0]);
+	}, $html);
+
+	// 2 · marked text nodes → editable spans.
+	$html = preg_replace_callback(
+		'/' . $o . '([^' . $m . ']+)' . $m . '(.*?)' . $c . '/su',
+		function ($hit) use ($map) {
+			$mode = rmd_edit_path_mode($hit[1], $map);
+			return '<span class="rmd-edit" data-rmd-path="' . esc_attr($hit[1]) . '" data-rmd-mode="' . esc_attr($mode ?: 'text') . '">' . $hit[2] . '</span>';
+		},
+		$html
+	);
+
+	// 3 · anything left over (unbalanced edge case) → plain text again.
+	return preg_replace('/' . $o . '[^' . $m . ']*' . $m . '|' . $c . '/u', '', $html);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Enqueue the inline editor — after the preview UI, same screens.
+ * ───────────────────────────────────────────────────────────────────────── */
+function rmd_visual_edit_assets($hook) {
+	if ('post.php' !== $hook && 'post-new.php' !== $hook) {
+		return;
+	}
+	if (!defined('RMD_ACF_ACTIVE') || !RMD_ACF_ACTIVE) {
+		return;
+	}
+
+	wp_enqueue_media(); // media picker for image swaps
+
+	$js = RMD_DIR . '/assets/admin/section-edit.js';
+	wp_enqueue_script(
+		'rmd-section-edit',
+		RMD_URI . '/assets/admin/section-edit.js',
+		array('rmd-section-preview'),
+		file_exists($js) ? filemtime($js) : RMD_VERSION,
+		true
+	);
+
+	wp_localize_script('rmd-section-edit', 'rmdSectionEdit', array(
+		'i18n' => array(
+			'editNote'    => __('Aperçu modifiable : cliquez sur un texte ou une image pour le modifier directement.', 'vault-child'),
+			'editedHint'  => __('Modifications reportées dans les champs — cliquez sur « Mettre à jour » pour enregistrer.', 'vault-child'),
+			'imageTitle'  => __('Choisir une image', 'vault-child'),
+			'imageButton' => __('Utiliser cette image', 'vault-child'),
+		),
+	));
+}
+add_action('admin_enqueue_scripts', 'rmd_visual_edit_assets', 20);
