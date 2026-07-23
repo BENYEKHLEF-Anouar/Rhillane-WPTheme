@@ -1018,10 +1018,12 @@ function rmd_section_duplicate_notice() {
 		$rmd_variants[$rmd_layout_name] = $rmd_variant['key'];
 	}
 	$rmd_dup_i18n = rmd_is_fr() ? array(
-		'text'    => '⚠ La section « %s » est déjà utilisée sur cette page avec le même style. Vous pouvez continuer, mais vérifiez que c’est intentionnel.',
+		'text'    => 'La section « %s » est déjà utilisée sur cette page avec le même style.',
+		'locate'  => 'Localiser',
 		'dismiss' => 'Ignorer',
 	) : array(
-		'text'    => '⚠ The “%s” section is already used on this page with the same style. You can continue, but make sure it’s intentional.',
+		'text'    => 'The “%s” section is already used on this page with the same style.',
+		'locate'  => 'Locate',
 		'dismiss' => 'Dismiss',
 	);
 	?>
@@ -1031,6 +1033,29 @@ function rmd_section_duplicate_notice() {
 
 		var variants = <?php echo wp_json_encode($rmd_variants); ?>;
 		var dupI18n = <?php echo wp_json_encode($rmd_dup_i18n); ?>;
+
+		// Dismissals persist per post (localStorage), keyed by layout+variant, so
+		// an acknowledged duplicate stops nagging on reload. All storage access is
+		// guarded — a blocked localStorage must never break the editor.
+		var postId = <?php echo (int) get_the_ID(); ?> || (document.getElementById('post_ID') || {}).value || 'new';
+		var storeKey = 'rmd_dup_dismissed_' + postId;
+		function loadDismissed() {
+			try { var a = JSON.parse(window.localStorage.getItem(storeKey) || '[]'); return Array.isArray(a) ? a : []; }
+			catch (e) { return []; }
+		}
+		function saveDismissed(a) {
+			try { window.localStorage.setItem(storeKey, JSON.stringify(a)); } catch (e) {}
+		}
+		var dismissed = loadDismissed();
+
+		/** Scroll to and briefly ring the twin row — box-shadow only, no shift. */
+		function flashRow($row) {
+			var el = $row && $row.get(0);
+			if (!el) return;
+			if (el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			$row.addClass('rmd-dup-flash');
+			setTimeout(function () { $row.removeClass('rmd-dup-flash'); }, 1800);
+		}
 
 		/** The row's variant value ('' when the layout has no variant field). */
 		function variantOf($row) {
@@ -1043,21 +1068,32 @@ function rmd_section_duplicate_notice() {
 			return v == null ? '' : String(v);
 		}
 
-		function addNote($row, label) {
-			var $note = $('<div class="rmd-dup-note" style="display:flex;align-items:flex-start;gap:10px;margin:8px 12px;padding:9px 12px;border-radius:6px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;font-size:12.5px;font-weight:600;line-height:1.5;">' +
-				'<span style="flex:1;"></span>' +
-				'<button type="button" class="rmd-dup-dismiss" aria-label="' + dupI18n.dismiss + '" style="border:0;background:none;color:#92400e;cursor:pointer;font-size:15px;line-height:1;padding:0 2px;">&times;</button>' +
-				'</div>');
-			$note.children('span').text(dupI18n.text.replace('%s', label));
+		function addNote($row, label, $twin, sig, field) {
+			var $note = $(
+				'<div class="rmd-dup-note">' +
+				'<span class="dashicons dashicons-info-outline" aria-hidden="true"></span>' +
+				'<span class="rmd-dup-note__text"></span>' +
+				'<button type="button" class="rmd-dup-note__locate"></button>' +
+				'<button type="button" class="rmd-dup-note__x" aria-label="' + dupI18n.dismiss + '">&times;</button>' +
+				'</div>'
+			);
+			$note.find('.rmd-dup-note__text').text(dupI18n.text.replace('%s', label));
+			$note.find('.rmd-dup-note__locate').text(dupI18n.locate);
 
-			$note.find('.rmd-dup-dismiss').on('click', function () {
-				$row.attr('data-rmd-dup-dismissed', '1');
-				$note.remove();
+			// ACF-inert: plain buttons, own handlers with stopPropagation — they
+			// never touch row collapse/drag (same rule as the row eye).
+			$note.find('.rmd-dup-note__locate').on('click', function (e) {
+				e.preventDefault(); e.stopPropagation();
+				flashRow($twin);
+			});
+			$note.find('.rmd-dup-note__x').on('click', function (e) {
+				e.preventDefault(); e.stopPropagation();
+				if (dismissed.indexOf(sig) === -1) { dismissed.push(sig); saveDismissed(dismissed); }
+				scan(field); // re-render; the now-dismissed sig is skipped
 			});
 
 			// BELOW this row's title bar (ACF <=6.4 uses .acf-fc-layout-handle,
-			// 6.5+ .acf-fc-layout-actions-wrap) so the band unambiguously belongs
-			// to THIS row — never floating above its header like a stray banner.
+			// 6.5+ .acf-fc-layout-actions-wrap) so the strip belongs to THIS row.
 			var $header = $row.children('.acf-fc-layout-handle, .acf-fc-layout-actions-wrap').last();
 			if ($header.length) { $header.after($note); } else { $row.prepend($note); }
 		}
@@ -1083,11 +1119,16 @@ function rmd_section_duplicate_notice() {
 
 			$.each(groups, function (sig, list) {
 				if (list.length < 2) return;
+				if (dismissed.indexOf(sig) !== -1) return; // acknowledged for this post
 				var flagged = list.filter(function ($r) { return $r.attr('data-rmd-new') === '1'; });
 				if (!flagged.length) flagged = list.slice(1);
 				flagged.forEach(function ($r) {
-					if ($r.attr('data-rmd-dup-dismissed') === '1') return;
-					addNote($r, $r.attr('data-label') || sig.split('|')[0]);
+					// The twin to jump to = the nearest OTHER instance in this group.
+					var $twin = null;
+					for (var i = 0; i < list.length; i++) {
+						if (list[i].get(0) !== $r.get(0)) { $twin = list[i]; break; }
+					}
+					addNote($r, $r.attr('data-label') || sig.split('|')[0], $twin, sig, field);
 				});
 			});
 		}
