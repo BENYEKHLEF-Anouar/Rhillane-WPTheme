@@ -79,10 +79,10 @@ function rmd_case_study_cat_pin_args($args, $taxonomy) {
  * PHP registration — a guarded fallback. When ACF Pro owns the taxonomy (defined
  * in its UI / Local JSON) it registers first and this defers; when ACF is absent
  * this registers it, so the taxonomy never disappears. No double registration.
- * Priority 10 (default), after the CPT (also 10, loaded first), so the object
- * association resolves cleanly.
+ * Priority 20 runs after ACF's registration; the CPT (also 20, loaded first)
+ * registers ahead of it, so the object association resolves cleanly.
  */
-add_action('init', 'rmd_register_taxonomies');
+add_action('init', 'rmd_register_taxonomies', 20);
 function rmd_register_taxonomies() {
 	if (!taxonomy_exists('case_study_cat')) {
 		register_taxonomy('case_study_cat', array('case_study'), rmd_case_study_cat_core_args());
