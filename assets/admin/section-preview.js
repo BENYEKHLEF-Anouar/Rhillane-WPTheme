@@ -352,6 +352,14 @@
 
 	function closeModal(opts) {
 		if (!modal || !modal.classList.contains('is-open')) return;
+
+		// Closing is a CANCEL. The inline editor (section-edit.js) wrote its edits
+		// straight into the ACF fields, so it gets a veto here: it asks the editor
+		// and either rolls the fields back (close proceeds) or keeps the preview
+		// open. No listener / no unsaved edits → the event is never cancelled.
+		var ask = new CustomEvent('rmd:preview-close', { cancelable: true });
+		if (!document.dispatchEvent(ask)) return;
+
 		modal.classList.remove('is-open');
 		modal.setAttribute('aria-hidden', 'true');
 		document.body.classList.remove('rmd-sp-modal-open');

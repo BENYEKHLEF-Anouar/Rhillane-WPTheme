@@ -234,8 +234,10 @@ function rmd_visual_edit_assets($hook) {
 		'i18n' => array(
 			'editNote'    => $fr ? 'Aperçu modifiable : cliquez sur un texte ou une image pour le modifier directement.'
 								 : 'Editable preview: click any text or image to change it in place.',
-			'editedHint'  => $fr ? 'Modifications non enregistrées — « Enregistrer » garde un brouillon, « Mettre à jour » publie sur le site.'
-								 : 'Unsaved changes — "Save" keeps a draft, "Update" publishes to the live site.',
+			'editedHint'  => $fr ? 'Modifications non enregistrées — « Enregistrer » garde un brouillon, « Mettre à jour » publie sur le site. Fermer l’aperçu annule ces modifications.'
+								 : 'Unsaved changes — "Save" keeps a draft, "Update" publishes to the live site. Closing the preview discards them.',
+			'discardConfirm' => $fr ? "Cet aperçu contient des modifications non enregistrées.\n\nOK : fermer et annuler ces modifications.\nAnnuler : revenir à l’aperçu (puis cliquez sur « Enregistrer »)."
+									: "This preview has unsaved changes.\n\nOK: close and discard them.\nCancel: go back to the preview (then click \"Save\").",
 			'newSectionHint' => $fr ? 'Nouvelle section : le contenu d’exemple est déjà rempli — modifiez-le, puis « Enregistrer » l’ajoute à la page. Ensuite elle se modifie comme les autres sections.'
 									: 'New section: the example content is already filled in — edit it, then "Save" adds it to the page. After that it edits like your other sections.',
 			'savingSection' => $fr ? 'Ajout de la section à la page…' : 'Adding the section to the page…',

@@ -10,6 +10,10 @@
  * section as soon as an unsaved row is inserted above. detail.rowIndex is the
  * row's true DB index and is used ONLY for the draft save (-1 for new rows).
  *
+ * Closing the modal is a CANCEL: values written into the fields since the last
+ * save are rolled back (after a confirm), so an Update clicked later can never
+ * publish an edit the editor didn't keep. « Enregistrer » sets the new baseline.
+ *
  * NEW rows preview as an editable demo placeholder; its values (#rmd-demo-fill)
  * are copied once into the row's empty fields so the form matches the preview
  * and the normal « Mettre à jour » button publishes exactly what's on screen.
@@ -23,8 +27,10 @@
 	var i18n = cfg.i18n || {};
 
 	// Per-preview edit state: the row element being edited, its DB index (for
-	// the draft save only), and the values changed since load/save.
-	var state = { rowEl: null, dbRow: -1, dirty: {}, saveBtn: null, isNew: false };
+	// the draft save only), the values changed since load/save (dirty) and what
+	// those fields held BEFORE the first edit (before) — closing the preview
+	// without saving restores them.
+	var state = { rowEl: null, dbRow: -1, dirty: {}, before: {}, saveBtn: null, isNew: false };
 
 	// Parent-page style: the preview modal steps fully aside while the media
 	// library is open (our modal is z-index 999999, above WP media's 160000).
@@ -212,6 +218,33 @@
 		return el && el.value ? (parseInt(el.value, 10) || 0) : 0;
 	}
 
+	/** Remember a field's value the FIRST time this preview touches it, so the
+	    edit can be undone. Later edits of the same path keep the original. */
+	function rememberOriginal(rowEl, path) {
+		if (!path || Object.prototype.hasOwnProperty.call(state.before, path)) return;
+		var input = resolveInput(rowEl, path);
+		if (!input) return;
+		state.before[path] = ('checkbox' === input.type)
+			? (input.checked ? '1' : '0')
+			: String(null == input.value ? '' : input.value);
+	}
+
+	/** Undo every edit made since the preview opened (or since the last save):
+	    the ACF fields go back to what they held, so nothing reaches the site. */
+	function revertEdits() {
+		if (state.rowEl && document.body.contains(state.rowEl)) {
+			Object.keys(state.before).forEach(function (path) {
+				try { writeBack(state.rowEl, path, state.before[path]); } catch (err) { /* field gone — skip */ }
+			});
+		}
+		state.before = {};
+		state.dirty = {};
+		if (state.saveBtn) {
+			state.saveBtn.disabled = true;
+			state.saveBtn.textContent = i18n.save || 'Enregistrer';
+		}
+	}
+
 	function markDirty(path, value) {
 		state.dirty[path] = value;
 		if (state.saveBtn) {
@@ -298,9 +331,9 @@
 			}
 			watchSaveResult(function (ok) {
 				// On success section-preview.js re-baselines the row and reloads the
-				// preview → this handler re-runs and resets the button. Only handle
-				// failure here.
-				if (ok) return;
+				// preview → this handler re-runs and resets the button. The edits are
+				// published now, so there is nothing left to undo.
+				if (ok) { state.dirty = {}; state.before = {}; return; }
 				btn.disabled = false;
 				btn.textContent = i18n.save || 'Enregistrer';
 				setHintText(i18n.saveError || '');
@@ -328,7 +361,9 @@
 			.then(function (r) { return r.json(); })
 			.then(function (res) {
 				if (res && res.success && res.data && res.data.saved > 0) {
+					// Kept as a draft → this is the new baseline; nothing to undo.
 					state.dirty = {};
+					state.before = {};
 					btn.textContent = i18n.saved || 'OK';
 					btn.disabled = true;
 					setHintText(i18n.draftSaved || '');
@@ -384,6 +419,7 @@
 		var mode = span.getAttribute('data-rmd-mode') || 'text';
 		var path = span.getAttribute('data-rmd-path') || '';
 
+		rememberOriginal(ctx.rowEl, path); // before anything is typed — for the undo
 		span.setAttribute('contenteditable', 'true');
 		span.classList.add('is-editing');
 		span.focus();
@@ -453,6 +489,7 @@
 			var att = picker.state().get('selection').first();
 			if (!att) return;
 			var a = att.toJSON();
+			rememberOriginal(ctx.rowEl, img.getAttribute('data-rmd-path'));
 			if (!writeBack(ctx.rowEl, img.getAttribute('data-rmd-path'), String(a.id))) return;
 			markDirty(img.getAttribute('data-rmd-path'), String(a.id));
 
@@ -596,16 +633,22 @@
 	document.addEventListener('rmd:preview-loaded', function (e) {
 		var d = e.detail || {};
 
-		// Every load resets the edit state; the save button only shows once this
-		// load proves editable AND mapped to a real DB row.
+		// A load of ANOTHER row resets the edit state. Reloading the SAME row
+		// (« Rafraîchir ») keeps it: those edits are still pending in the fields,
+		// so they must stay undoable — and the save button must stay live.
+		var sameRow = !!(state.rowEl && d.rowEl === state.rowEl);
 		state.rowEl = d.rowEl || null;
 		state.dbRow = typeof d.rowIndex === 'number' ? d.rowIndex : -1;
-		state.dirty = {};
+		if (!sameRow) {
+			state.dirty = {};
+			state.before = {};
+		}
 		state.isNew = !!d.isNewRow;
+		var hasEdits = Object.keys(state.dirty).length > 0;
 		var saveBtn = ensureSaveButton();
 		if (saveBtn) {
 			saveBtn.style.display = 'none';
-			saveBtn.disabled = true;
+			saveBtn.disabled = !hasEdits;
 			saveBtn.textContent = i18n.save || 'Save';
 		}
 
@@ -638,6 +681,7 @@
 				setHintText(i18n.newSectionHint || '');
 			} else {
 				saveBtn.style.display = state.dbRow < 0 ? 'none' : '';
+				if (hasEdits) { saveBtn.disabled = false; showEditedHint(); }
 			}
 		}
 
@@ -665,5 +709,21 @@
 				pickImage(img, ctx);
 			}
 		}, true);
+	});
+
+	// ── Closing the preview = cancel ─────────────────────────────────────────
+	// Edits land in the ACF fields as you type (that's what makes « Mettre à
+	// jour » publish exactly what the preview shows) — so closing without saving
+	// has to put those fields BACK, or an unrelated Update later would publish
+	// changes the editor never confirmed. section-preview.js fires this event
+	// before it closes and honours preventDefault().
+	document.addEventListener('rmd:preview-close', function (e) {
+		if (!state.rowEl || !Object.keys(state.dirty).length) return;
+		if (!window.confirm(i18n.discardConfirm || 'Discard your unsaved changes?')) {
+			e.preventDefault(); // stay open — the editor wants to save first
+			return;
+		}
+		revertEdits();
+		setHintText('');
 	});
 })();
