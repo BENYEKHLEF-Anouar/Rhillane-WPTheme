@@ -10,7 +10,7 @@ defined('ABSPATH') || exit;
 $terms = get_the_terms(get_the_ID(), 'case_study_cat');
 $chip  = (is_array($terms) && !empty($terms) && !is_wp_error($terms))
 	? $terms[0]->name
-	: __('Étude de cas', 'vault-child');
+	: rmd_ft('Étude de cas', 'Case study');
 ?>
 <article <?php post_class('rmd-cscard'); ?>>
 	<a class="rmd-cscard__link" href="<?php the_permalink(); ?>">
@@ -34,7 +34,7 @@ $chip  = (is_array($terms) && !empty($terms) && !is_wp_error($terms))
 				<p class="rmd-cscard__excerpt"><?php echo esc_html(get_the_excerpt()); ?></p>
 			<?php endif; ?>
 			<span class="rmd-cscard__more">
-				<?php esc_html_e("Lire l'étude", 'vault-child'); ?>
+				<?php echo esc_html(rmd_ft("Lire l'étude", 'Read the study')); ?>
 				<svg width="18" height="11" viewBox="0 0 30 18" fill="none" aria-hidden="true"><path d="M2 9h24m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
 			</span>
 		</div>

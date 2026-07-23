@@ -41,7 +41,10 @@ function rmd_seed_header_menus() {
 	$locations = get_theme_mod('nav_menu_locations');
 	$locations = is_array($locations) ? $locations : array();
 	if (empty($locations['rmd_header'])) {
-		$menu_id = (0 === strpos((string) get_locale(), 'fr')) ? $fr : $en;
+		// Assign by the SITE's language (locale map), not get_locale(), so an
+		// English subsite gets the English menu even if its WP Site Language
+		// setting was never switched from French.
+		$menu_id = (function_exists('rmd_site_is_fr') && rmd_site_is_fr()) ? $fr : $en;
 		if ($menu_id) {
 			$locations['rmd_header'] = $menu_id;
 			set_theme_mod('nav_menu_locations', $locations);
