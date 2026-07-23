@@ -1071,10 +1071,10 @@ function rmd_section_duplicate_notice() {
 		function addNote($row, label, $twin, sig, field) {
 			var $note = $(
 				'<div class="rmd-dup-note">' +
-				'<span class="dashicons dashicons-info-outline" aria-hidden="true"></span>' +
 				'<span class="rmd-dup-note__text"></span>' +
 				'<button type="button" class="rmd-dup-note__locate"></button>' +
-				'<button type="button" class="rmd-dup-note__x" aria-label="' + dupI18n.dismiss + '">&times;</button>' +
+				'<button type="button" class="rmd-dup-note__x" aria-label="' + dupI18n.dismiss + '">' +
+				'<span class="dashicons dashicons-no-alt" aria-hidden="true"></span></button>' +
 				'</div>'
 			);
 			$note.find('.rmd-dup-note__text').text(dupI18n.text.replace('%s', label));
