@@ -185,7 +185,7 @@
 					state.dirty = {};
 					btn.textContent = i18n.saved || 'OK';
 					btn.disabled = true;
-					setHintText('');
+					setHintText(i18n.draftSaved || '');
 				} else {
 					btn.textContent = i18n.save || 'Enregistrer';
 					btn.disabled = false;
@@ -294,6 +294,27 @@
 			showEditedHint();
 		});
 		picker.open();
+	}
+
+	// ── Prefill the ACF form with unpublished drafts on page load ────────────
+	// « Enregistrer » stores drafts server-side ("row.path" → value). Filling
+	// the real fields with them means the normal Update button publishes them —
+	// no separate publish path. Guarded per entry: a missing field is skipped.
+	function prefillDrafts() {
+		var drafts = cfg.drafts || {};
+		Object.keys(drafts).forEach(function (key) {
+			var dot = key.indexOf('.');
+			if (dot < 1) return;
+			var row = parseInt(key.slice(0, dot), 10);
+			var path = key.slice(dot + 1);
+			if (isNaN(row) || !path) return;
+			try { writeBack(row, path, String(drafts[key])); } catch (err) { /* field gone — skip */ }
+		});
+	}
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', prefillDrafts);
+	} else {
+		prefillDrafts();
 	}
 
 	// ── Wire-up per preview load ─────────────────────────────────────────────
