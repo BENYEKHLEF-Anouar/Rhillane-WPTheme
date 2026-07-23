@@ -66,6 +66,7 @@ function rmd_image($image, $args = array()) {
 		$edit_attrs = array(
 			'data-rmd-path' => $image['_rmd_edit_path'],
 			'data-rmd-mode' => 'image',
+			'data-rmd-id'   => (int) ($image['ID'] ?? 0), // preselect in the media picker
 		);
 	}
 

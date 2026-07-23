@@ -17,6 +17,16 @@
 	// Per-preview edit state: which row, and the values changed since load/save.
 	var state = { rowIndex: -1, dirty: {}, saveBtn: null };
 
+	// Parent-page style: the preview modal steps fully aside while the media
+	// library is open (our modal is z-index 999999, above WP media's 160000).
+	(function injectParentStyle() {
+		if (document.getElementById('rmd-edit-parent-style')) return;
+		var s = document.createElement('style');
+		s.id = 'rmd-edit-parent-style';
+		s.textContent = '.rmd-sp-modal.rmd-sp-picking{display:none!important;}';
+		(document.head || document.documentElement).appendChild(s);
+	})();
+
 	// Styles injected INTO the preview iframe (never the parent page).
 	var IFRAME_STYLE = [
 		/* the preview disables links (a{pointer-events:none}) — editable spans
@@ -270,12 +280,34 @@
 	// ── Image swapping ───────────────────────────────────────────────────────
 	function pickImage(img, ctx) {
 		if (!window.wp || !wp.media) return;
+
+		// Our modal sits at z-index 999999 — above WP's media library (160000).
+		// Rather than fight z-index, the preview steps aside while you pick, then
+		// comes back with the new image. Clean, focused, no stacking surprises.
+		var spModal = document.querySelector('.rmd-sp-modal');
+		var stepAside = function () { if (spModal) spModal.classList.add('rmd-sp-picking'); };
+		var comeBack = function () { if (spModal) spModal.classList.remove('rmd-sp-picking'); };
+
 		var picker = wp.media({
 			title: i18n.imageTitle || 'Image',
 			button: { text: i18n.imageButton || 'OK' },
 			library: { type: 'image' },
 			multiple: false
 		});
+
+		// Preselect the current image so the library opens on it (a real workflow).
+		picker.on('open', function () {
+			stepAside();
+			var currentId = parseInt(img.getAttribute('data-rmd-id') || '0', 10);
+			if (currentId && wp.media.attachment) {
+				var sel = picker.state().get('selection');
+				var att = wp.media.attachment(currentId);
+				att.fetch();
+				sel.reset(att ? [att] : []);
+			}
+		});
+		picker.on('close', comeBack);
+
 		picker.on('select', function () {
 			var att = picker.state().get('selection').first();
 			if (!att) return;
@@ -291,8 +323,10 @@
 				img.removeAttribute('sizes');
 				img.src = url;
 			}
+			img.setAttribute('data-rmd-id', String(a.id)); // remember for next open
 			showEditedHint();
 		});
+
 		picker.open();
 	}
 
