@@ -144,9 +144,28 @@
 		return true;
 	}
 
-	/** Create missing repeater rows along 'steps.2.heading' by clicking ACF's
-	    own footer add-row button — min/max rules and row init all apply. Gives
-	    up quietly at the max or if the structure doesn't match. */
+	/** Add ONE row to a repeater field element. Prefers ACF's own JS API
+	    (acf.getField(...).add() — reliable naming/init and honours min/max);
+	    falls back to clicking the footer "add row" button. Returns true if it
+	    attempted an add. */
+	function addRepeaterRow(repeaterFieldEl) {
+		if (window.acf && window.jQuery && typeof acf.getField === 'function') {
+			try {
+				var f = acf.getField(window.jQuery(repeaterFieldEl));
+				if (f && typeof f.add === 'function') { f.add(); return true; }
+			} catch (e) { /* fall through to the button */ }
+		}
+		var buttons = repeaterFieldEl.querySelectorAll('.acf-actions [data-event="add-row"]');
+		for (var b = 0; b < buttons.length; b++) {
+			if (buttons[b].closest('.acf-field') === repeaterFieldEl) { buttons[b].click(); return true; }
+		}
+		return false;
+	}
+
+	/** Create missing repeater rows along 'steps.2.heading' so a demo with 4
+	    steps fills all four (a fresh section starts at the field's min — often
+	    0 or 1 row). Min/max rules and row init come from ACF. Gives up quietly
+	    at the max or if a click made no progress. */
 	function ensureRepeaterRows(rowEl, path) {
 		var ctx = rowEl;
 		var cur = null;
@@ -157,16 +176,9 @@
 				var want = parseInt(segs[i], 10);
 				var guard = 30;
 				while (repeaterRows(cur).length <= want && guard-- > 0) {
-					var added = false;
-					var buttons = cur.querySelectorAll('.acf-actions [data-event="add-row"]');
-					for (var b = 0; b < buttons.length; b++) {
-						if (buttons[b].closest('.acf-field') !== cur) continue; // nested repeater's button
-						var before = repeaterRows(cur).length;
-						buttons[b].click();
-						added = repeaterRows(cur).length > before;
-						break;
-					}
-					if (!added) return;
+					var before = repeaterRows(cur).length;
+					if (!addRepeaterRow(cur)) return;          // no add mechanism
+					if (repeaterRows(cur).length <= before) return; // hit max / no progress
 				}
 				ctx = repeaterRows(cur)[want];
 				if (!ctx) return;
@@ -225,15 +237,81 @@
 		return btn;
 	}
 
+	/** Save the whole post (block editor — case_study is show_in_rest). Classic
+	    editor: click the real Publish/Update button. Returns true if triggered. */
+	function savePostFromModal() {
+		try {
+			var d = window.wp && wp.data && wp.data.dispatch('core/editor');
+			if (d && typeof d.savePost === 'function') { d.savePost(); return true; }
+		} catch (e) { /* not the block editor */ }
+		var btn = document.getElementById('publish') || document.getElementById('save-post');
+		if (btn) { btn.click(); return true; }
+		return false;
+	}
+
+	/** Call cb(true) once the post — AND its ACF metaboxes — finish saving, or
+	    cb(false) if the save request failed. Falls back to cb(true) when the
+	    block-editor store isn't present. */
+	function watchSaveResult(cb) {
+		if (!(window.wp && wp.data && typeof wp.data.subscribe === 'function')) { cb(true); return; }
+		var ed = wp.data.select('core/editor');
+		if (!ed || typeof ed.isSavingPost !== 'function') { cb(true); return; }
+		var was = false, unsub;
+		var busy = function () {
+			var e = wp.data.select('core/editor');
+			var post = e.isSavingPost() && !e.isAutosavingPost();
+			var ep = wp.data.select('core/edit-post');
+			var meta = ep && typeof ep.isSavingMetaBoxes === 'function' && ep.isSavingMetaBoxes();
+			return !!(post || meta);
+		};
+		unsub = wp.data.subscribe(function () {
+			var now = busy();
+			if (was && !now) {
+				var e = wp.data.select('core/editor');
+				var failed = typeof e.didPostSaveRequestFail === 'function' && e.didPostSaveRequestFail();
+				if (unsub) unsub();
+				cb(!failed);
+			}
+			was = now;
+		});
+	}
+
 	function doSave() {
 		var btn = state.saveBtn;
+		if (!btn) return;
+		var postId = currentPostId();
+		if (!postId) return;
+
+		// A NEW section isn't in the database yet and vanishes on reload unless
+		// the page is saved — so "Save" here saves the page (the only way to keep
+		// a new section; same as clicking Update). Once saved it becomes a normal
+		// section: the per-section draft save below takes over on the next open.
+		if (state.isNew) {
+			btn.disabled = true;
+			btn.textContent = i18n.saving || '…';
+			setHintText(i18n.savingSection || i18n.saving || '');
+			if (!savePostFromModal()) {
+				btn.disabled = false;
+				btn.textContent = i18n.save || 'Enregistrer';
+				setHintText(i18n.saveError || '');
+				return;
+			}
+			watchSaveResult(function (ok) {
+				// On success section-preview.js re-baselines the row and reloads the
+				// preview → this handler re-runs and resets the button. Only handle
+				// failure here.
+				if (ok) return;
+				btn.disabled = false;
+				btn.textContent = i18n.save || 'Enregistrer';
+				setHintText(i18n.saveError || '');
+			});
+			return;
+		}
+
 		var paths = Object.keys(state.dirty);
 		// dbRow is the row's TRUE index among saved rows — never its on-screen
 		// position — so the draft can't land on another section's row.
-		if (!btn || !paths.length || state.dbRow < 0) return;
-
-		var postId = currentPostId();
-		if (!postId) return;
+		if (!paths.length || state.dbRow < 0) return;
 
 		btn.disabled = true;
 		btn.textContent = i18n.saving || '…';
@@ -438,9 +516,12 @@
 				ensureRepeaterRows(rowEl, path);
 				var input = resolveInput(rowEl, path);
 				if (!input) return;
-				var typed = 'checkbox' !== input.type && 'radio' !== input.type &&
-					'' !== String(input.value || '').trim();
-				if (typed) return; // the editor already wrote something — theirs wins
+				// Styling/logic choices (select, true_false, radio) only ever hold
+				// an ACF default here, so the demo's value always applies — that's
+				// what makes the saved section match the preview (background=light,
+				// columns=2…). A text field the editor already typed into wins.
+				var isChoice = 'checkbox' === input.type || 'radio' === input.type || 'SELECT' === input.tagName;
+				if (!isChoice && '' !== String(input.value || '').trim()) return;
 				writeBack(rowEl, path, String(map[path]));
 			} catch (err) { /* one odd field must never break the rest */ }
 		});
@@ -544,10 +625,21 @@
 		}
 		syncPreviewFromForm(doc, state.rowEl);
 
-		// Draft-save button only for rows with a real DB index; a new/unsaved
-		// section is edited inline then published with the normal Update button.
-		if (saveBtn) saveBtn.style.display = (state.isNew || state.dbRow < 0) ? 'none' : '';
-		if (state.isNew) setHintText(i18n.newSectionHint || '');
+		// Save button:
+		//  • NEW row  → shown and ENABLED (the prefilled demo is ready to save;
+		//    "Save" saves the page, which is the only way to keep a new section).
+		//  • saved row → shown, enabled on the first edit (markDirty).
+		//  • no DB index & not new (shouldn't happen) → hidden.
+		if (saveBtn) {
+			if (state.isNew) {
+				saveBtn.style.display = '';
+				saveBtn.disabled = false;
+				saveBtn.textContent = i18n.save || 'Enregistrer';
+				setHintText(i18n.newSectionHint || '');
+			} else {
+				saveBtn.style.display = state.dbRow < 0 ? 'none' : '';
+			}
+		}
 
 		var style = doc.createElement('style');
 		style.id = 'rmd-edit-style';
