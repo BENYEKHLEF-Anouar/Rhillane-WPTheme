@@ -192,12 +192,94 @@ function rmd_visual_edit_assets($hook) {
 	);
 
 	wp_localize_script('rmd-section-edit', 'rmdSectionEdit', array(
+		'ajaxUrl' => admin_url('admin-ajax.php'),
+		'nonce'   => wp_create_nonce('rmd_section_save'),
 		'i18n' => array(
 			'editNote'    => __('Aperçu modifiable : cliquez sur un texte ou une image pour le modifier directement.', 'vault-child'),
-			'editedHint'  => __('Modifications reportées dans les champs — cliquez sur « Mettre à jour » pour enregistrer.', 'vault-child'),
+			'editedHint'  => __('Modifications non enregistrées — cliquez sur « Enregistrer » (cette section) ou « Mettre à jour » (toute la page).', 'vault-child'),
 			'imageTitle'  => __('Choisir une image', 'vault-child'),
 			'imageButton' => __('Utiliser cette image', 'vault-child'),
+			'save'        => __('Enregistrer', 'vault-child'),
+			'saving'      => __('Enregistrement…', 'vault-child'),
+			'saved'       => __('Enregistré ✓', 'vault-child'),
+			'saveError'   => __('Échec de l’enregistrement — réessayez ou utilisez « Mettre à jour ».', 'vault-child'),
 		),
 	));
 }
 add_action('admin_enqueue_scripts', 'rmd_visual_edit_assets', 20);
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * AJAX: save the edited fields of ONE section row.
+ *
+ * Writes ACF's flattened meta keys directly (sections_<row>_<path>), which is
+ * exactly where a normal « Mettre à jour » stores them. Three locks make this
+ * safe: (1) nonce + edit_post capability; (2) the path must be whitelisted in
+ * rmd_edit_map() for the row's REAL layout (read from the saved sections meta,
+ * never from the client); (3) only fields whose ACF key reference already
+ * exists are updated — so it can only ever touch fields the row already has.
+ * Values are sanitized by mode (text → tags stripped, html → the same kses
+ * allowlist the front end renders with, image → attachment ID).
+ * ───────────────────────────────────────────────────────────────────────── */
+function rmd_section_save() {
+	check_ajax_referer('rmd_section_save');
+
+	$post_id = isset($_POST['post_id']) ? absint($_POST['post_id']) : 0;
+	$row     = isset($_POST['row']) ? (int) $_POST['row'] : -1;
+	if (!$post_id || $row < 0 || !current_user_can('edit_post', $post_id)) {
+		wp_send_json_error(array('message' => 'forbidden'), 403);
+	}
+	if (!defined('RMD_ACF_ACTIVE') || !RMD_ACF_ACTIVE) {
+		wp_send_json_error(array('message' => 'acf-off'), 400);
+	}
+
+	$changes = json_decode(wp_unslash(isset($_POST['changes']) ? $_POST['changes'] : ''), true);
+	if (!is_array($changes) || !$changes) {
+		wp_send_json_error(array('message' => 'no-changes'), 400);
+	}
+
+	// The row's real layout comes from the saved sections meta — never the client.
+	$layouts = get_post_meta($post_id, 'sections', true);
+	if (!is_array($layouts) || !array_key_exists($row, array_values($layouts))) {
+		wp_send_json_error(array('message' => 'row-not-found'), 400);
+	}
+	$layouts = array_values($layouts);
+	$map     = rmd_edit_map((string) $layouts[$row]);
+
+	$saved = 0;
+	foreach ($changes as $path => $value) {
+		$path = (string) $path;
+		if (!preg_match('/^[a-z0-9_]+(?:\.[a-z0-9_]+)*$/', $path)) {
+			continue;
+		}
+		$mode = rmd_edit_path_mode($path, $map);
+		if ('' === $mode) {
+			continue; // not editable for this layout
+		}
+		if ('image' === $mode) {
+			$value = absint($value);
+			if (!$value || 'attachment' !== get_post_type($value)) {
+				continue;
+			}
+		} elseif ('html' === $mode) {
+			$value = function_exists('rmd_inline_html') ? rmd_inline_html((string) $value) : wp_kses((string) $value, array('b' => array(), 'strong' => array(), 'br' => array(), 'span' => array('class' => true)));
+		} else {
+			$value = wp_strip_all_tags((string) $value);
+		}
+
+		$meta_key = 'sections_' . $row . '_' . str_replace('.', '_', $path);
+		// Lock 3: the field must already exist on this row (its ACF key reference
+		// is saved). Prevents writing orphan meta for rows/fields that don't exist.
+		if ('' === (string) get_post_meta($post_id, '_' . $meta_key, true)) {
+			continue;
+		}
+		update_post_meta($post_id, $meta_key, $value);
+		$saved++;
+	}
+
+	if ($saved) {
+		// The public page holds the old values in cache — purge this post.
+		do_action('litespeed_purge_post', $post_id);
+	}
+	wp_send_json_success(array('saved' => $saved));
+}
+add_action('wp_ajax_rmd_section_save', 'rmd_section_save');

@@ -14,6 +14,9 @@
 	var cfg = window.rmdSectionEdit || {};
 	var i18n = cfg.i18n || {};
 
+	// Per-preview edit state: which row, and the values changed since load/save.
+	var state = { rowIndex: -1, dirty: {}, saveBtn: null };
+
 	// Styles injected INTO the preview iframe (never the parent page).
 	var IFRAME_STYLE = [
 		/* the preview disables links (a{pointer-events:none}) — editable spans
@@ -115,6 +118,87 @@
 		hint.style.display = 'flex';
 	}
 
+	function setHintText(text) {
+		var hint = document.querySelector('.rmd-sp-modal .rmd-sp-hint');
+		if (!hint) return;
+		var t = hint.querySelector('.rmd-sp-hint-text');
+		if (t) t.textContent = text || '';
+		hint.style.display = text ? 'flex' : 'none';
+	}
+
+	// ── Per-section save button (next to Fermer / Rafraîchir) ────────────────
+	function currentPostId() {
+		var sp = window.rmdSectionPreview || {};
+		if (sp.postId) return sp.postId;
+		var el = document.getElementById('post_ID');
+		return el && el.value ? (parseInt(el.value, 10) || 0) : 0;
+	}
+
+	function markDirty(path, value) {
+		state.dirty[path] = value;
+		if (state.saveBtn) {
+			state.saveBtn.disabled = false;
+			state.saveBtn.textContent = i18n.save || 'Enregistrer';
+		}
+	}
+
+	function ensureSaveButton() {
+		if (state.saveBtn && document.body.contains(state.saveBtn)) return state.saveBtn;
+		var foot = document.querySelector('.rmd-sp-modal .rmd-sp-foot');
+		if (!foot) return null;
+		var btn = document.createElement('button');
+		btn.type = 'button';
+		btn.className = 'button button-primary rmd-sp-save';
+		btn.textContent = i18n.save || 'Enregistrer';
+		btn.disabled = true;
+		btn.style.display = 'none';
+		btn.addEventListener('click', doSave);
+		// Between « Rafraîchir » and « Insérer » (the latter is hidden on rows).
+		foot.insertBefore(btn, foot.querySelector('[data-insert]'));
+		state.saveBtn = btn;
+		return btn;
+	}
+
+	function doSave() {
+		var btn = state.saveBtn;
+		var paths = Object.keys(state.dirty);
+		if (!btn || !paths.length || state.rowIndex < 0) return;
+
+		var postId = currentPostId();
+		if (!postId) return;
+
+		btn.disabled = true;
+		btn.textContent = i18n.saving || '…';
+
+		var body = new URLSearchParams({
+			action: 'rmd_section_save',
+			_wpnonce: cfg.nonce || '',
+			post_id: String(postId),
+			row: String(state.rowIndex),
+			changes: JSON.stringify(state.dirty)
+		});
+
+		fetch(cfg.ajaxUrl || window.ajaxurl || '', { method: 'POST', credentials: 'same-origin', body: body })
+			.then(function (r) { return r.json(); })
+			.then(function (res) {
+				if (res && res.success) {
+					state.dirty = {};
+					btn.textContent = i18n.saved || 'OK';
+					btn.disabled = true;
+					setHintText('');
+				} else {
+					btn.textContent = i18n.save || 'Enregistrer';
+					btn.disabled = false;
+					setHintText(i18n.saveError || 'Erreur');
+				}
+			})
+			.catch(function () {
+				btn.textContent = i18n.save || 'Enregistrer';
+				btn.disabled = false;
+				setHintText(i18n.saveError || 'Erreur');
+			});
+	}
+
 	function showEditNote() {
 		var note = document.querySelector('.rmd-sp-modal .rmd-sp-note');
 		if (note && i18n.editNote) note.textContent = i18n.editNote;
@@ -156,6 +240,7 @@
 		var sync = function () {
 			var value = mode === 'html' ? span.innerHTML : span.textContent;
 			writeBack(ctx.rowIndex, path, value);
+			markDirty(path, value);
 			mirror(ctx.doc, span);
 			showEditedHint();
 		};
@@ -196,6 +281,7 @@
 			if (!att) return;
 			var a = att.toJSON();
 			if (!writeBack(ctx.rowIndex, img.getAttribute('data-rmd-path'), String(a.id))) return;
+			markDirty(img.getAttribute('data-rmd-path'), String(a.id));
 
 			// Live-swap the preview image (saved render still holds the old one).
 			var size = a.sizes && (a.sizes.large || a.sizes.medium_large || a.sizes.full);
@@ -213,6 +299,18 @@
 	// ── Wire-up per preview load ─────────────────────────────────────────────
 	document.addEventListener('rmd:preview-loaded', function (e) {
 		var d = e.detail || {};
+
+		// Every load resets the edit state; the save button only shows once this
+		// load proves editable below (so demo previews never show it).
+		state.rowIndex = typeof d.rowIndex === 'number' ? d.rowIndex : -1;
+		state.dirty = {};
+		var saveBtn = ensureSaveButton();
+		if (saveBtn) {
+			saveBtn.style.display = 'none';
+			saveBtn.disabled = true;
+			saveBtn.textContent = i18n.save || 'Enregistrer';
+		}
+
 		if (!d.isRow || !d.frame) return;
 
 		var doc;
@@ -220,6 +318,8 @@
 		if (!doc || !doc.body) return;
 		if (doc.getElementById('rmd-edit-style')) return; // this load is already wired
 		if (!doc.querySelector('.rmd-edit, img[data-rmd-mode="image"]')) return;
+
+		if (saveBtn) saveBtn.style.display = '';
 
 		var style = doc.createElement('style');
 		style.id = 'rmd-edit-style';
