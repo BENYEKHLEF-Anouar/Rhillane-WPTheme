@@ -647,7 +647,13 @@
 				var editor = wp.data.select('core/editor');
 				if (!editor || typeof editor.isSavingPost !== 'function') return;
 
-				var saving = editor.isSavingPost() && !editor.isAutosavingPost();
+				// Wait for the ACF metaboxes too, not just the REST save — else a
+				// newly-saved section would be re-previewed before ACF has written
+				// its row to the DB (stale/empty frame).
+				var editPost = wp.data.select('core/edit-post');
+				var savingMeta = editPost && typeof editPost.isSavingMetaBoxes === 'function' && editPost.isSavingMetaBoxes();
+				var saving = (editor.isSavingPost() && !editor.isAutosavingPost()) || savingMeta;
+
 				if (wasSaving && !saving) {
 					var failed = typeof editor.didPostSaveRequestFail === 'function' && editor.didPostSaveRequestFail();
 					if (!failed) onPostSaved();
