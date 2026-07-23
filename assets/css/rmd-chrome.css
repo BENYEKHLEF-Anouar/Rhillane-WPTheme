@@ -53,6 +53,9 @@ body.admin-bar .rmd-site-header.is-sticky { top: 32px; }
 @media (min-width: 768px) {
 	.rmd-header-inner { padding: 20px 24px; }
 }
+/* Right-hand cluster: switcher + CTA (+ burger on mobile). Grouping keeps it
+   pinned right whether or not the center nav is present (e.g. the archive). */
+.rmd-header-actions { display: flex; align-items: center; gap: 12px; }
 .rmd-site-header.is-sticky.scrolled {
 	padding-top: .625rem;
 	padding-bottom: .625rem;
