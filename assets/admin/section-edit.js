@@ -15,7 +15,7 @@
 	var i18n = cfg.i18n || {};
 
 	// Per-preview edit state: which row, and the values changed since load/save.
-	var state = { rowIndex: -1, dirty: {}, saveBtn: null };
+	var state = { rowIndex: -1, dirty: {}, saveBtn: null, isNew: false };
 
 	// Parent-page style: the preview modal steps fully aside while the media
 	// library is open (our modal is z-index 999999, above WP media's 160000).
@@ -49,6 +49,17 @@
 	function sectionsField() {
 		return document.querySelector('.acf-field-flexible-content[data-name="sections"]') ||
 			document.querySelector('.acf-field-flexible-content');
+	}
+
+	/** A row whose index is beyond the last SAVED row = added but not saved yet.
+	    Its fields only exist in the form (not the DB), so it publishes via the
+	    normal Update button, not the per-section draft save. */
+	function isNewRow(rowIndex) {
+		var field = sectionsField();
+		if (!field) return false;
+		var saved = field.getAttribute('data-rmd-saved-rows');
+		if (saved === null) return false;
+		return rowIndex >= parseInt(saved, 10);
 	}
 
 	/** Top-level section rows of the flexible field (never nested, never clones). */
@@ -121,11 +132,9 @@
 
 	// ── Modal messaging (reuses the preview modal's own slots) ───────────────
 	function showEditedHint() {
-		var hint = document.querySelector('.rmd-sp-modal .rmd-sp-hint');
-		if (!hint) return;
-		var t = hint.querySelector('.rmd-sp-hint-text');
-		if (t && i18n.editedHint) t.textContent = i18n.editedHint;
-		hint.style.display = 'flex';
+		// A new section publishes via Update (its fields aren't in the DB yet, so
+		// the per-section draft save can't target them); a saved row can draft.
+		setHintText(state.isNew ? (i18n.newSectionHint || '') : (i18n.editedHint || ''));
 	}
 
 	function setHintText(text) {
@@ -191,11 +200,16 @@
 		fetch(cfg.ajaxUrl || window.ajaxurl || '', { method: 'POST', credentials: 'same-origin', body: body })
 			.then(function (r) { return r.json(); })
 			.then(function (res) {
-				if (res && res.success) {
+				if (res && res.success && res.data && res.data.saved > 0) {
 					state.dirty = {};
 					btn.textContent = i18n.saved || 'OK';
 					btn.disabled = true;
 					setHintText(i18n.draftSaved || '');
+				} else if (res && res.success) {
+					// Nothing drafted (e.g. fields not in the DB yet) → use Update.
+					btn.textContent = i18n.save || 'Save';
+					btn.disabled = false;
+					setHintText(i18n.newSectionHint || i18n.saveError || '');
 				} else {
 					btn.textContent = i18n.save || 'Enregistrer';
 					btn.disabled = false;
@@ -359,11 +373,12 @@
 		// load proves editable below (so demo previews never show it).
 		state.rowIndex = typeof d.rowIndex === 'number' ? d.rowIndex : -1;
 		state.dirty = {};
+		state.isNew = false;
 		var saveBtn = ensureSaveButton();
 		if (saveBtn) {
 			saveBtn.style.display = 'none';
 			saveBtn.disabled = true;
-			saveBtn.textContent = i18n.save || 'Enregistrer';
+			saveBtn.textContent = i18n.save || 'Save';
 		}
 
 		if (!d.isRow || !d.frame) return;
@@ -374,7 +389,12 @@
 		if (doc.getElementById('rmd-edit-style')) return; // this load is already wired
 		if (!doc.querySelector('.rmd-edit, img[data-rmd-mode="image"]')) return;
 
-		if (saveBtn) saveBtn.style.display = '';
+		state.isNew = isNewRow(state.rowIndex);
+
+		// Draft-save button is only for SAVED rows (its fields exist in the DB).
+		// A new/unsaved section is edited inline then published with Update.
+		if (saveBtn) saveBtn.style.display = state.isNew ? 'none' : '';
+		if (state.isNew) setHintText(i18n.newSectionHint || '');
 
 		var style = doc.createElement('style');
 		style.id = 'rmd-edit-style';
