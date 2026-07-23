@@ -10,7 +10,7 @@
 defined('ABSPATH') || exit;
 
 $logo      = rmd_get_field('rmd_header_logo', 'option');
-$cta_label = rmd_get_field('rmd_header_cta_label', 'option') ?: 'Audit web gratuit';
+$cta_label = rmd_get_field('rmd_header_cta_label', 'option') ?: rmd_ft('Audit web gratuit', 'Free website audit');
 $cta_url   = rmd_get_field('rmd_header_cta_url', 'option') ?: '#contact';
 $sticky    = rmd_get_field('rmd_header_sticky', 'option');
 $sticky    = (null === $sticky) ? true : (bool) $sticky; // default on
@@ -21,6 +21,13 @@ $has_menu = has_nav_menu('rmd_header');
 // fallback only there. A real menu (once assigned) shows on every chrome page.
 $show_fallback_nav = !$has_menu && is_singular('case_study');
 $show_nav          = $has_menu || $show_fallback_nav;
+
+// Fallback nav labels in the site's language (used by both desktop + mobile).
+$fallback_nav = array(
+	'#resultats' => rmd_ft('Résultats', 'Results'),
+	'#methode'   => rmd_ft('Notre méthode', 'Our method'),
+	'#contact'   => rmd_ft('Contact', 'Contact'),
+);
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -46,7 +53,7 @@ $show_nav          = $has_menu || $show_fallback_nav;
 		</a>
 
 		<?php if ($show_nav) : ?>
-		<nav class="rmd-nav" aria-label="<?php esc_attr_e('Navigation principale', 'vault-child'); ?>">
+		<nav class="rmd-nav" aria-label="<?php echo esc_attr(rmd_ft('Navigation principale', 'Main navigation')); ?>">
 			<?php if ($has_menu) : ?>
 				<?php wp_nav_menu(array(
 					'theme_location' => 'rmd_header',
@@ -57,9 +64,9 @@ $show_nav          = $has_menu || $show_fallback_nav;
 				)); ?>
 			<?php else : // Mariner-style default until a menu is assigned in Appearance → Menus ?>
 				<ul class="rmd-nav-list">
-					<li><a href="#resultats"><?php esc_html_e('Résultats', 'vault-child'); ?></a></li>
-					<li><a href="#methode"><?php esc_html_e('Notre méthode', 'vault-child'); ?></a></li>
-					<li><a href="#contact"><?php esc_html_e('Contact', 'vault-child'); ?></a></li>
+					<?php foreach ($fallback_nav as $href => $text) : ?>
+						<li><a href="<?php echo esc_url($href); ?>"><?php echo esc_html($text); ?></a></li>
+					<?php endforeach; ?>
 				</ul>
 			<?php endif; ?>
 		</nav>
@@ -71,7 +78,7 @@ $show_nav          = $has_menu || $show_fallback_nav;
 			<a href="<?php echo esc_url($cta_url); ?>" class="rmd-cta"><?php echo esc_html($cta_label); ?></a>
 		<?php endif; ?>
 
-		<button id="mobile-menu-btn" type="button" class="rmd-burger" aria-label="<?php esc_attr_e('Ouvrir le menu', 'vault-child'); ?>" aria-controls="mobile-menu-panel" aria-expanded="false">
+		<button id="mobile-menu-btn" type="button" class="rmd-burger" aria-label="<?php echo esc_attr(rmd_ft('Ouvrir le menu', 'Open menu')); ?>" aria-controls="mobile-menu-panel" aria-expanded="false">
 			<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
 		</button>
 	</div>
@@ -85,12 +92,12 @@ $show_nav          = $has_menu || $show_fallback_nav;
 			<?php else : ?>
 				<?php echo rmd_logo_img('header'); ?>
 			<?php endif; ?>
-			<button id="mobile-menu-close" type="button" class="rmd-burger" aria-label="<?php esc_attr_e('Fermer le menu', 'vault-child'); ?>">
+			<button id="mobile-menu-close" type="button" class="rmd-burger" aria-label="<?php echo esc_attr(rmd_ft('Fermer le menu', 'Close menu')); ?>">
 				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 			</button>
 		</div>
 		<?php if ($show_nav) : ?>
-		<nav aria-label="<?php esc_attr_e('Navigation mobile', 'vault-child'); ?>">
+		<nav aria-label="<?php echo esc_attr(rmd_ft('Navigation mobile', 'Mobile navigation')); ?>">
 			<?php if ($has_menu) : ?>
 				<?php wp_nav_menu(array(
 					'theme_location' => 'rmd_header',
@@ -101,9 +108,9 @@ $show_nav          = $has_menu || $show_fallback_nav;
 				)); ?>
 			<?php else : ?>
 				<ul class="rmd-mobile-list">
-					<li><a href="#resultats"><?php esc_html_e('Résultats', 'vault-child'); ?></a></li>
-					<li><a href="#methode"><?php esc_html_e('Notre méthode', 'vault-child'); ?></a></li>
-					<li><a href="#contact"><?php esc_html_e('Contact', 'vault-child'); ?></a></li>
+					<?php foreach ($fallback_nav as $href => $text) : ?>
+						<li><a href="<?php echo esc_url($href); ?>"><?php echo esc_html($text); ?></a></li>
+					<?php endforeach; ?>
 				</ul>
 			<?php endif; ?>
 		</nav>

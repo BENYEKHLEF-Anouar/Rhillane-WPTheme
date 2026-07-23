@@ -9,9 +9,9 @@ rmd_render_header();
 ?>
 <main class="rmd-archive rmd-archive--case-study">
 	<header class="rmd-archive__head">
-		<span class="rmd-arch-eyebrow"><?php esc_html_e('SEO · Résultats clients', 'vault-child'); ?></span>
-		<h1 class="rmd-arch-title"><?php post_type_archive_title(); ?></h1>
-		<p class="rmd-arch-sub"><?php esc_html_e("Des marques hissées en première page de Google — résultats réels, chiffres à l'appui.", 'vault-child'); ?></p>
+		<span class="rmd-arch-eyebrow"><?php echo esc_html(rmd_ft('SEO · Résultats clients', 'SEO · Client results')); ?></span>
+		<h1 class="rmd-arch-title"><?php echo esc_html(rmd_ft('Études de cas', 'Case Studies')); ?></h1>
+		<p class="rmd-arch-sub"><?php echo esc_html(rmd_ft("Des marques hissées en première page de Google — résultats réels, chiffres à l'appui.", 'Brands lifted to Google’s first page — real results, backed by the numbers.')); ?></p>
 	</header>
 
 	<?php if (have_posts()) : ?>
@@ -29,7 +29,7 @@ rmd_render_header();
 			'next_text' => '→',
 		)); ?>
 	<?php else : ?>
-		<p class="rmd-arch-empty"><?php esc_html_e('Aucune étude de cas pour le moment.', 'vault-child'); ?></p>
+		<p class="rmd-arch-empty"><?php echo esc_html(rmd_ft('Aucune étude de cas pour le moment.', 'No case studies yet.')); ?></p>
 	<?php endif; ?>
 </main>
 <?php

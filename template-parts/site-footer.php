@@ -22,7 +22,7 @@ $copy  = rmd_get_field('rmd_footer_copyright', 'option');
 			} else {
 				printf(
 					/* translators: 1: year, 2: site name */
-					esc_html__('© %1$s %2$s. Tous droits réservés.', 'vault-child'),
+					esc_html(rmd_ft('© %1$s %2$s. Tous droits réservés.', '© %1$s %2$s. All rights reserved.')),
 					esc_html(date_i18n('Y')),
 					esc_html(get_bloginfo('name'))
 				);

@@ -17,6 +17,40 @@ function rmd_is_fr() {
 }
 
 /**
+ * Front-end language of the CURRENT SITE (not the viewer). Public page text must
+ * follow the SITE, so a logged-in admin's own profile language never flips what
+ * visitors read — unlike rmd_is_fr(), which is admin-user-locale for editor UI.
+ *
+ * Source of truth: the multisite locale map (inc/locale.php), which tags each
+ * subsite with a `lang`. Morocco (/) + France are French; the English subsites
+ * (US /en-us/, UAE /en-ae/) are English. Robust even if a subsite's WordPress
+ * "Site Language" setting was never configured. Off-network, or for an unmapped
+ * subsite, falls back to the WP locale.
+ */
+function rmd_site_is_fr() {
+	if (is_multisite() && function_exists('get_blog_details') && function_exists('rmd_locale_map')) {
+		$details = get_blog_details();
+		if ($details) {
+			$path = untrailingslashit((string) $details->path) . '/';
+			$map  = rmd_locale_map();
+			if (isset($map[$path]['lang'])) {
+				return 'fr' === $map[$path]['lang'];
+			}
+		}
+	}
+	return 0 === strpos((string) get_locale(), 'fr');
+}
+
+/**
+ * Pick a front-end string by site language: rmd_ft('Résultats', 'Results').
+ * Returns the English variant on every non-French site. Not escaped — the caller
+ * still escapes for its context (esc_html / esc_attr).
+ */
+function rmd_ft($fr, $en) {
+	return rmd_site_is_fr() ? $fr : $en;
+}
+
+/**
  * Render all sections of a post.
  * Each template-part receives its index via $args — section 0 is above
  * the fold, so its imagery loads eager; everything below loads lazy.
