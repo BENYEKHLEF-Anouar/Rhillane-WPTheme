@@ -11,3 +11,7 @@ node_modules/
 # Logs & local env
 *.log
 .env
+
+# Local audit / analysis scratch — never deployed, never reviewed
+SYSTEM-AUDIT-REPORT.md
+PREVIEW-EDIT-ANALYSIS.md

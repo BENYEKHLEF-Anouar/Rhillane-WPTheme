@@ -180,8 +180,17 @@ function rmd_edit_annotate($html, $layout) {
 	}, $html);
 
 	// 2 · marked text nodes → editable spans.
+	// The value may carry INLINE tags (<b>, <span class="thin">, <br />), but it
+	// must never span a BLOCK boundary. A component that splits ONE field across
+	// several blocks — comment-box.php turns a blank line into </p><p> — would
+	// otherwise yield a <span> straddling that boundary; the browser repairs the
+	// invalid nesting by closing the span early, and writeBack() would then save
+	// only the first block, SILENTLY TRUNCATING the field. Refusing to match here
+	// leaves the markers to pass 3: the value still renders correctly, it just
+	// isn't inline-editable (edit it in the normal ACF field instead).
+	$block = '<\/?(?:p|div|section|article|ul|ol|li|table|thead|tbody|tr|td|th|h[1-6]|blockquote|figure|figcaption)\b';
 	$html = preg_replace_callback(
-		'/' . $o . '([^' . $m . ']+)' . $m . '(.*?)' . $c . '/su',
+		'/' . $o . '([^' . $m . ']+)' . $m . '((?:(?!' . $block . ').)*?)' . $c . '/su',
 		function ($hit) use ($map) {
 			$mode = rmd_edit_path_mode($hit[1], $map);
 			return '<span class="rmd-edit" data-rmd-path="' . esc_attr($hit[1]) . '" data-rmd-mode="' . esc_attr($mode ?: 'text') . '">' . $hit[2] . '</span>';
@@ -265,11 +274,40 @@ add_action('admin_enqueue_scripts', 'rmd_visual_edit_assets', 20);
  *
  * Three locks: (1) nonce + edit_post capability; (2) the path must be
  * whitelisted in rmd_edit_map() for the row's REAL layout (read from the saved
- * sections meta, never from the client); (3) only fields whose ACF key
- * reference already exists can be drafted. Values are sanitized by mode
+ * sections meta, never from the client); (3) every repeater index in the path
+ * must exist in the saved data. Values are sanitized by mode
  * (text → tags stripped, html → the same kses allowlist the front end renders
  * with, image → attachment ID).
  * ───────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Lock 3: does this concrete path address data that really exists on the row?
+ *
+ * The path's validity is already proven by Lock 2 (rmd_edit_path_mode against
+ * the layout map, whose layout came from the DB), so all that is left to check
+ * is that each repeater index is within the saved row count — `stats.2.value`
+ * needs `stats` to hold at least 3 rows. A leaf sub-field is deliberately NOT
+ * required to have a meta row of its own: ACF writes none for a sub-field added
+ * to the field group after the post's last save, and the editor must still be
+ * able to fill that field inline instead of hitting a silent dead end.
+ *
+ * Walk the segments building the ACF meta key; at every numeric segment the key
+ * built so far IS the repeater, and its meta value is the saved row count. A
+ * repeater that was never saved returns '' → count 0 → every index rejected.
+ */
+function rmd_edit_path_row_exists($post_id, $row, $path) {
+	$prefix = 'sections_' . $row;
+	foreach (explode('.', $path) as $segment) {
+		if (preg_match('/^\d+$/', $segment)) {
+			if ((int) $segment >= (int) get_post_meta($post_id, $prefix, true)) {
+				return false;
+			}
+		}
+		$prefix .= '_' . $segment;
+	}
+	return true;
+}
+
 function rmd_section_save() {
 	check_ajax_referer('rmd_section_save');
 
@@ -319,10 +357,9 @@ function rmd_section_save() {
 			$value = wp_strip_all_tags((string) $value);
 		}
 
-		// Lock 3: the field must already exist on this row (its ACF key reference
-		// is saved) — a draft can never point at a field the row doesn't have.
-		$meta_key = 'sections_' . $row . '_' . str_replace('.', '_', $path);
-		if ('' === (string) get_post_meta($post_id, '_' . $meta_key, true)) {
+		// Lock 3: every repeater index in the path must exist on this row — a
+		// draft can never point at a repeater item the row doesn't have.
+		if (!rmd_edit_path_row_exists($post_id, $row, $path)) {
 			continue;
 		}
 
