@@ -325,20 +325,33 @@ body.rmd-sp-modal-open .acf-fc-popup {
 .rmd-sp-note {
 	margin: 4px 0 0;
 }
+/* Info/warning hint — same look as the duplicate-section notice below
+   (.rmd-dup-note): a native WordPress admin notice, white with a thin gray
+   border and a 4px amber left rule, so every amber message in the editor reads
+   as one consistent element. */
 .rmd-sp-hint {
 	display: none;
 	align-items: flex-start;
-	gap: 8px;
+	gap: 10px;
 	margin: 8px 0 0;
-	padding: 9px 12px;
-	border-radius: 8px;
-	background: #fef3c7;
-	border: 1px solid #fde68a;
-	color: #92400e;
-	font-weight: 600;
+	padding: 8px 12px;
+	border-radius: 2px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-left: 4px solid #dba617;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, .04);
+	color: #1d2327;
+	font-size: 13px;
+	line-height: 1.5;
+	font-weight: 400;
 }
 .rmd-sp-hint .dashicons {
 	flex: 0 0 auto;
+	color: #dba617;
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+	line-height: 1.5;
 }
 
 .rmd-sp-foot {
