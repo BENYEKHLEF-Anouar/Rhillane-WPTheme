@@ -94,10 +94,11 @@ function rmd_case_study_pin_args($args, $post_type) {
  * defined in its Post Types UI, ACF registers the type; this then sees it exists
  * and defers. When ACF is absent — or the type isn't defined there yet — this
  * registers it, so the post type NEVER disappears (the "works even if ACF is
- * off" safeguard). No double registration, no gap. Priority 10 keeps it ahead of
- * the taxonomy association, exactly as before.
+ * off" safeguard). No double registration, no gap. Priority 20 runs AFTER ACF's
+ * own content-type registration, so post_type_exists() reliably reflects it
+ * (cpt.php still loads before taxonomies.php, so the CPT registers first).
  */
-add_action('init', 'rmd_register_post_types');
+add_action('init', 'rmd_register_post_types', 20);
 function rmd_register_post_types() {
 	if (!post_type_exists('case_study')) {
 		register_post_type('case_study', array_merge(

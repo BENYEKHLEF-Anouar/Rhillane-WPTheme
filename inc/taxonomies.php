@@ -1,14 +1,20 @@
 <?php
 /**
  * Taxonomies. W0: case_study_cat.
+ *
+ * Mirrors the CPT (inc/cpt.php): the taxonomy can be owned by ACF Pro's
+ * Taxonomies UI (Local JSON — acf-json/taxonomy_case_study_cat.json) OR by the
+ * PHP fallback below when ACF is off. rmd_case_study_cat_pin_args() forces the
+ * bilingual labels + the case-study-category slug onto whichever registrar runs.
  */
 defined('ABSPATH') || exit;
 
-add_action('init', 'rmd_register_taxonomies');
-function rmd_register_taxonomies() {
-
-	// Labels adapt to the admin user's language (rmd_is_fr), like the CPT.
-	$labels = rmd_is_fr() ? array(
+/**
+ * case_study_cat labels — adapt to the admin user's language (rmd_is_fr), like
+ * the CPT. Applied to whichever registrar runs via rmd_case_study_cat_pin_args().
+ */
+function rmd_case_study_cat_labels() {
+	return rmd_is_fr() ? array(
 		'name'              => 'Catégories d’études de cas',
 		'singular_name'     => 'Catégorie d’étude de cas',
 		'menu_name'         => 'Catégories',
@@ -37,13 +43,48 @@ function rmd_register_taxonomies() {
 		'parent_item'       => 'Parent Category',
 		'parent_item_colon' => 'Parent Category:',
 	);
+}
 
-	register_taxonomy('case_study_cat', array('case_study'), array(
-		'labels'            => $labels,
+/**
+ * The behaviourally-critical case_study_cat args — kept in code so an ACF UI
+ * change can't drift the bilingual labels or the case-study-category slug.
+ */
+function rmd_case_study_cat_core_args() {
+	return array(
+		'labels'            => rmd_case_study_cat_labels(),
 		'hierarchical'      => true,
 		'public'            => true,
 		'show_in_rest'      => true,
 		'show_admin_column' => true,
 		'rewrite'           => array('slug' => 'case-study-category', 'with_front' => false),
-	));
+	);
+}
+
+/**
+ * Pin the core definition onto WHOEVER registers case_study_cat — the theme's
+ * fallback OR a taxonomy defined in ACF Pro's UI (ACF registers through
+ * register_taxonomy internally, so this filter fires either way). The
+ * object-type association (→ case_study) comes from the registrar: the ACF JSON
+ * carries object_type, and the fallback passes it directly below.
+ */
+add_filter('register_taxonomy_args', 'rmd_case_study_cat_pin_args', 20, 2);
+function rmd_case_study_cat_pin_args($args, $taxonomy) {
+	if ('case_study_cat' === $taxonomy) {
+		$args = array_merge($args, rmd_case_study_cat_core_args());
+	}
+	return $args;
+}
+
+/**
+ * PHP registration — a guarded fallback. When ACF Pro owns the taxonomy (defined
+ * in its UI / Local JSON) it registers first and this defers; when ACF is absent
+ * this registers it, so the taxonomy never disappears. No double registration.
+ * Priority 20 runs after ACF's registration; the CPT (also 20, loaded first)
+ * registers ahead of it, so the object association resolves cleanly.
+ */
+add_action('init', 'rmd_register_taxonomies', 20);
+function rmd_register_taxonomies() {
+	if (!taxonomy_exists('case_study_cat')) {
+		register_taxonomy('case_study_cat', array('case_study'), rmd_case_study_cat_core_args());
+	}
 }
