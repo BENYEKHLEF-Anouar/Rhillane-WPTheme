@@ -112,10 +112,23 @@ function rmd_edit_path_mode($path, $map) {
  * pattern get an `_rmd_edit_path` key; repeater arrays are walked recursively.
  * Anything not whitelisted passes through UNTOUCHED (so template logic on
  * background/style/columns etc. can never break).
+ *
+ * Draft overlay: when the endpoint sets $GLOBALS['rmd_edit_drafts'] (this row's
+ * unpublished « Enregistrer » drafts, path → value), the draft value replaces
+ * the saved one before marking — so a reopened preview shows the draft, while
+ * the live site keeps rendering the saved value.
  */
 function rmd_edit_mark_value($value, $path, $map) {
-	if (is_string($value)) {
+	$drafts = (isset($GLOBALS['rmd_edit_drafts']) && is_array($GLOBALS['rmd_edit_drafts'])) ? $GLOBALS['rmd_edit_drafts'] : array();
+
+	if (is_string($value) || null === $value || false === $value) {
 		$mode = rmd_edit_path_mode($path, $map);
+		if (array_key_exists($path, $drafts) && ('text' === $mode || 'html' === $mode)) {
+			$value = (string) $drafts[$path];
+		}
+		if (!is_string($value)) {
+			return $value;
+		}
 		if (('text' === $mode || 'html' === $mode) && '' !== trim($value)) {
 			return RMD_EDIT_MARK_OPEN . $path . RMD_EDIT_MARK_MID . $value . RMD_EDIT_MARK_CLOSE;
 		}
@@ -123,6 +136,17 @@ function rmd_edit_mark_value($value, $path, $map) {
 	}
 	if (is_array($value)) {
 		if ('image' === rmd_edit_path_mode($path, $map) && isset($value['ID'])) {
+			// A drafted image replaces the saved one (minimal ACF-like array).
+			if (isset($drafts[$path])) {
+				$draft_id = absint($drafts[$path]);
+				if ($draft_id) {
+					$value = array(
+						'ID'  => $draft_id,
+						'url' => (string) wp_get_attachment_url($draft_id),
+						'alt' => (string) get_post_meta($draft_id, '_wp_attachment_image_alt', true),
+					);
+				}
+			}
 			$value['_rmd_edit_path'] = $path;
 			return $value;
 		}
@@ -191,34 +215,57 @@ function rmd_visual_edit_assets($hook) {
 		true
 	);
 
+	// Existing (unpublished) drafts of this post — the JS prefills the ACF
+	// fields with them on load, so the normal Update button publishes them.
+	$edit_post_id = get_the_ID();
+	if (!$edit_post_id && isset($_GET['post'])) {
+		$edit_post_id = absint($_GET['post']);
+	}
+	$drafts = $edit_post_id ? get_post_meta($edit_post_id, '_rmd_section_drafts', true) : array();
+
+	// Admin-language strings — FR admin → French, otherwise English (the same
+	// rmd_is_fr() convention as the CPT labels; no .mo files needed).
+	$fr = function_exists('rmd_is_fr') ? rmd_is_fr() : true;
+
 	wp_localize_script('rmd-section-edit', 'rmdSectionEdit', array(
 		'ajaxUrl' => admin_url('admin-ajax.php'),
 		'nonce'   => wp_create_nonce('rmd_section_save'),
+		'drafts'  => is_array($drafts) ? $drafts : array(),
 		'i18n' => array(
-			'editNote'    => __('Aperçu modifiable : cliquez sur un texte ou une image pour le modifier directement.', 'vault-child'),
-			'editedHint'  => __('Modifications non enregistrées — cliquez sur « Enregistrer » (cette section) ou « Mettre à jour » (toute la page).', 'vault-child'),
-			'imageTitle'  => __('Choisir une image', 'vault-child'),
-			'imageButton' => __('Utiliser cette image', 'vault-child'),
-			'save'        => __('Enregistrer', 'vault-child'),
-			'saving'      => __('Enregistrement…', 'vault-child'),
-			'saved'       => __('Enregistré ✓', 'vault-child'),
-			'saveError'   => __('Échec de l’enregistrement — réessayez ou utilisez « Mettre à jour ».', 'vault-child'),
+			'editNote'    => $fr ? 'Aperçu modifiable : cliquez sur un texte ou une image pour le modifier directement.'
+								 : 'Editable preview: click any text or image to change it in place.',
+			'editedHint'  => $fr ? 'Modifications non enregistrées — « Enregistrer » garde un brouillon, « Mettre à jour » publie sur le site.'
+								 : 'Unsaved changes — "Save" keeps a draft, "Update" publishes to the live site.',
+			'imageTitle'  => $fr ? 'Choisir une image' : 'Choose an image',
+			'imageButton' => $fr ? 'Utiliser cette image' : 'Use this image',
+			'save'        => $fr ? 'Enregistrer' : 'Save',
+			'saving'      => $fr ? 'Enregistrement…' : 'Saving…',
+			'saved'       => $fr ? 'Brouillon enregistré ✓' : 'Draft saved ✓',
+			'draftSaved'  => $fr ? 'Brouillon enregistré — il ne sera publié sur le site qu’avec « Mettre à jour ».'
+								 : 'Draft saved — it goes live only when you click "Update".',
+			'saveError'   => $fr ? 'Échec de l’enregistrement — réessayez ou utilisez « Mettre à jour ».'
+								 : 'Save failed — try again or use "Update".',
 		),
 	));
 }
 add_action('admin_enqueue_scripts', 'rmd_visual_edit_assets', 20);
 
 /* ─────────────────────────────────────────────────────────────────────────
- * AJAX: save the edited fields of ONE section row.
+ * AJAX: save the edited fields of ONE section row — AS A DRAFT.
  *
- * Writes ACF's flattened meta keys directly (sections_<row>_<path>), which is
- * exactly where a normal « Mettre à jour » stores them. Three locks make this
- * safe: (1) nonce + edit_post capability; (2) the path must be whitelisted in
- * rmd_edit_map() for the row's REAL layout (read from the saved sections meta,
- * never from the client); (3) only fields whose ACF key reference already
- * exists are updated — so it can only ever touch fields the row already has.
- * Values are sanitized by mode (text → tags stripped, html → the same kses
- * allowlist the front end renders with, image → attachment ID).
+ * Nothing here ever touches the live `sections_*` meta: the values land in the
+ * hidden `_rmd_section_drafts` meta (keyed "<row>.<path>"), which only the
+ * admin preview and the edit screen read. The live site changes ONLY when the
+ * editor clicks the real « Mettre à jour » / Update button (the edit screen
+ * prefills the ACF fields from the drafts, so a normal save publishes them —
+ * and rmd_clear_section_drafts() then deletes the draft store).
+ *
+ * Three locks: (1) nonce + edit_post capability; (2) the path must be
+ * whitelisted in rmd_edit_map() for the row's REAL layout (read from the saved
+ * sections meta, never from the client); (3) only fields whose ACF key
+ * reference already exists can be drafted. Values are sanitized by mode
+ * (text → tags stripped, html → the same kses allowlist the front end renders
+ * with, image → attachment ID).
  * ───────────────────────────────────────────────────────────────────────── */
 function rmd_section_save() {
 	check_ajax_referer('rmd_section_save');
@@ -239,11 +286,14 @@ function rmd_section_save() {
 
 	// The row's real layout comes from the saved sections meta — never the client.
 	$layouts = get_post_meta($post_id, 'sections', true);
-	if (!is_array($layouts) || !array_key_exists($row, array_values($layouts))) {
+	$layouts = is_array($layouts) ? array_values($layouts) : array();
+	if (!isset($layouts[$row])) {
 		wp_send_json_error(array('message' => 'row-not-found'), 400);
 	}
-	$layouts = array_values($layouts);
-	$map     = rmd_edit_map((string) $layouts[$row]);
+	$map = rmd_edit_map((string) $layouts[$row]);
+
+	$drafts = get_post_meta($post_id, '_rmd_section_drafts', true);
+	$drafts = is_array($drafts) ? $drafts : array();
 
 	$saved = 0;
 	foreach ($changes as $path => $value) {
@@ -266,20 +316,35 @@ function rmd_section_save() {
 			$value = wp_strip_all_tags((string) $value);
 		}
 
-		$meta_key = 'sections_' . $row . '_' . str_replace('.', '_', $path);
 		// Lock 3: the field must already exist on this row (its ACF key reference
-		// is saved). Prevents writing orphan meta for rows/fields that don't exist.
+		// is saved) — a draft can never point at a field the row doesn't have.
+		$meta_key = 'sections_' . $row . '_' . str_replace('.', '_', $path);
 		if ('' === (string) get_post_meta($post_id, '_' . $meta_key, true)) {
 			continue;
 		}
-		update_post_meta($post_id, $meta_key, $value);
+
+		$drafts[$row . '.' . $path] = $value;
 		$saved++;
 	}
 
 	if ($saved) {
-		// The public page holds the old values in cache — purge this post.
-		do_action('litespeed_purge_post', $post_id);
+		update_post_meta($post_id, '_rmd_section_drafts', $drafts);
 	}
 	wp_send_json_success(array('saved' => $saved));
 }
 add_action('wp_ajax_rmd_section_save', 'rmd_section_save');
+
+/**
+ * A real save (the Update button) publishes the drafts: the edit screen
+ * prefilled the ACF fields from them, so WordPress just saved those values as
+ * the live content — the draft store is now redundant. Delete it.
+ * (Known edge, accepted: a save that bypasses the edit screen JS — quick edit,
+ * WP-CLI — clears drafts without publishing them.)
+ */
+function rmd_clear_section_drafts($post_id) {
+	if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+		return;
+	}
+	delete_post_meta($post_id, '_rmd_section_drafts');
+}
+add_action('save_post_case_study', 'rmd_clear_section_drafts');

@@ -417,10 +417,23 @@ function rmd_render_section_preview() {
 	if ($row_index >= 0) {
 		if ($edit_mode) {
 			$GLOBALS['rmd_edit_map'] = rmd_edit_map($layout);
+			// Overlay this row's unpublished drafts ("<row>.<path>" → value) so a
+			// reopened preview shows what « Enregistrer » stored, not the live values.
+			$all_drafts = get_post_meta($post_id, '_rmd_section_drafts', true);
+			$row_drafts = array();
+			if (is_array($all_drafts)) {
+				$prefix = $row_index . '.';
+				foreach ($all_drafts as $key => $val) {
+					if (0 === strpos((string) $key, $prefix)) {
+						$row_drafts[substr($key, strlen($prefix))] = $val;
+					}
+				}
+			}
+			$GLOBALS['rmd_edit_drafts'] = $row_drafts;
 		}
 		$section_html = rmd_render_saved_section_row($post_id, $row_index, $layout);
 		if ($edit_mode) {
-			unset($GLOBALS['rmd_edit_map']);
+			unset($GLOBALS['rmd_edit_map'], $GLOBALS['rmd_edit_drafts']);
 			$section_html = rmd_edit_annotate($section_html, $layout);
 		}
 	} else {
