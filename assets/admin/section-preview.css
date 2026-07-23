@@ -325,23 +325,24 @@ body.rmd-sp-modal-open .acf-fc-popup {
 .rmd-sp-note {
 	margin: 4px 0 0;
 }
-/* Info/warning hint — identical to the duplicate-section notice below
-   (.rmd-dup-note): a native WordPress admin notice, white with a thin gray
-   border and a 4px amber left rule (no leading icon — the amber bar IS the
-   warning cue), so every amber message in the editor reads as one element. */
+/* Info/warning hint — the duplicate-section notice look (.rmd-dup-note: native
+   WP admin notice, thin border + 4px amber left rule, no leading icon), but
+   with a soft amber fill so it stays visible against the modal's WHITE body
+   (the dup note sits on WP's gray admin background; a plain white notice would
+   vanish here). Same warm border to match the tint. */
 .rmd-sp-hint {
 	display: none;
 	margin: 8px 0 0;
 	padding: 8px 12px;
 	border-radius: 2px;
-	background: #fff;
-	border: 1px solid #c3c4c7;
+	background: #fbf4de;
+	border: 1px solid #ecd9a2;
 	border-left: 4px solid #dba617;
 	box-shadow: 0 1px 1px rgba(0, 0, 0, .04);
-	color: #1d2327;
+	color: #5b4708;
 	font-size: 13px;
 	line-height: 1.5;
-	font-weight: 400;
+	font-weight: 500;
 }
 
 .rmd-sp-foot {
