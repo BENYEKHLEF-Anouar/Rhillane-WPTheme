@@ -356,62 +356,63 @@ body.rmd-sp-modal-open .acf-fc-popup {
 	}
 }
 
-/* Duplicate-section notice (injected in inc/admin-ux.php). A slim, calm,
-   actionable strip — NOT a big alarm block. Sits just below the row header
-   (always visible, collapsed or not; that spot is proven safe for ACF rows). */
+/* Duplicate-section notice (injected in inc/admin-ux.php). Styled to match a
+   native WordPress admin notice (.notice.notice-warning): white, thin gray
+   border, 4px amber left rule, 13px admin font, a blue text-link action and a
+   dashicons dismiss — so it reads as part of the editor, not a custom widget.
+   Sits just below the row header (always visible, collapsed or not; that spot
+   is proven safe for ACF rows). Colors are WP admin's own tokens. */
 .rmd-dup-note {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 12px;
 	margin: 6px 12px;
-	padding: 7px 10px 7px 12px;
-	border-radius: 7px;
-	background: #FEF9EE;
-	border: 1px solid #F3E2B8;
-	border-left: 3px solid #E6B450;
-	color: #7A5A16;
-	font-size: 12px;
-	font-weight: 500;
-	line-height: 1.45;
-}
-.rmd-dup-note > .dashicons {
-	flex: 0 0 auto;
-	font-size: 15px; width: 15px; height: 15px; line-height: 1;
-	color: #C9971F;
+	padding: 8px 12px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-left: 4px solid #dba617;
+	border-radius: 2px;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, .04);
+	color: #1d2327;
+	font-size: 13px;
+	line-height: 1.5;
 }
 .rmd-dup-note__text { flex: 1 1 auto; min-width: 0; }
 .rmd-dup-note__locate {
 	flex: 0 0 auto;
-	display: inline-flex; align-items: center; gap: 5px;
-	border: 1px solid #E6B450; background: #fff;
-	color: #7A5A16; border-radius: 999px;
-	font-size: 11.5px; font-weight: 600;
-	padding: 3px 11px; cursor: pointer;
-	transition: background .15s ease, color .15s ease, border-color .15s ease;
+	margin: 0; padding: 0; border: 0; background: none;
+	color: #2271b1; cursor: pointer;
+	font: inherit;
+	text-decoration: underline; text-underline-offset: 2px;
 }
-.rmd-dup-note__locate:hover,
-.rmd-dup-note__locate:focus-visible {
-	background: #E6B450; color: #3d2e08; outline: none;
+.rmd-dup-note__locate:hover { color: #135e96; }
+.rmd-dup-note__locate:focus {
+	color: #135e96;
+	outline: 2px solid #2271b1; outline-offset: 1px; border-radius: 2px;
 }
 .rmd-dup-note__x {
 	flex: 0 0 auto;
-	border: 0; background: none; color: #B08A2E; cursor: pointer;
-	font-size: 15px; line-height: 1; padding: 0 2px;
+	display: inline-flex; align-items: center; justify-content: center;
+	width: 24px; height: 24px; margin: 0; padding: 0;
+	border: 0; background: none; color: #787c82; cursor: pointer;
 }
-.rmd-dup-note__x:hover { color: #7A5A16; }
+.rmd-dup-note__x:hover,
+.rmd-dup-note__x:focus { color: #135e96; }
+.rmd-dup-note__x:focus { outline: 2px solid #2271b1; outline-offset: 1px; border-radius: 2px; }
+.rmd-dup-note__x .dashicons { font-size: 18px; width: 18px; height: 18px; line-height: 1; }
 
-/* Flash the twin row when "Locate" is clicked — box-shadow only, so it draws
-   attention without shifting any layout. */
+/* Flash the twin row when "Locate" is clicked — a WP-blue ring, box-shadow only
+   so it draws attention without shifting any layout. */
 .rmd-dup-flash {
 	animation: rmdDupFlash 1.8s ease-out;
-	border-radius: 8px;
+	border-radius: 4px;
 	position: relative;
 	z-index: 1;
 }
 @keyframes rmdDupFlash {
-	0%, 35% { box-shadow: 0 0 0 2px #E6B450, 0 0 0 7px rgba(230, 180, 80, .28); }
-	100%    { box-shadow: 0 0 0 2px rgba(230, 180, 80, 0), 0 0 0 7px rgba(230, 180, 80, 0); }
+	0%, 35% { box-shadow: 0 0 0 2px #2271b1, 0 0 0 6px rgba(34, 113, 177, .22); }
+	100%    { box-shadow: 0 0 0 2px rgba(34, 113, 177, 0), 0 0 0 6px rgba(34, 113, 177, 0); }
 }
 @media (prefers-reduced-motion: reduce) {
-	.rmd-dup-flash { animation: none; box-shadow: 0 0 0 2px #E6B450; }
+	.rmd-dup-flash { animation: none; box-shadow: 0 0 0 2px #2271b1; }
 }
