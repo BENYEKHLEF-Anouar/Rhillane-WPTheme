@@ -42,6 +42,7 @@ jobs:
             **/.github/**
             **/node_modules/**
             **/new-design-ayoub/**
+            RMD-rebuild/**
             src/**
             test.txt
             README.md
@@ -74,6 +75,7 @@ jobs:
             **/.github/**
             **/node_modules/**
             **/new-design-ayoub/**
+            RMD-rebuild/**
             src/**
             test.txt
             README.md
@@ -106,6 +108,7 @@ jobs:
             **/.github/**
             **/node_modules/**
             **/new-design-ayoub/**
+            RMD-rebuild/**
             src/**
             test.txt
             README.md
