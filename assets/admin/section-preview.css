@@ -325,14 +325,12 @@ body.rmd-sp-modal-open .acf-fc-popup {
 .rmd-sp-note {
 	margin: 4px 0 0;
 }
-/* Info/warning hint — same look as the duplicate-section notice below
+/* Info/warning hint — identical to the duplicate-section notice below
    (.rmd-dup-note): a native WordPress admin notice, white with a thin gray
-   border and a 4px amber left rule, so every amber message in the editor reads
-   as one consistent element. */
+   border and a 4px amber left rule (no leading icon — the amber bar IS the
+   warning cue), so every amber message in the editor reads as one element. */
 .rmd-sp-hint {
 	display: none;
-	align-items: flex-start;
-	gap: 10px;
 	margin: 8px 0 0;
 	padding: 8px 12px;
 	border-radius: 2px;
@@ -344,14 +342,6 @@ body.rmd-sp-modal-open .acf-fc-popup {
 	font-size: 13px;
 	line-height: 1.5;
 	font-weight: 400;
-}
-.rmd-sp-hint .dashicons {
-	flex: 0 0 auto;
-	color: #dba617;
-	font-size: 18px;
-	width: 18px;
-	height: 18px;
-	line-height: 1.5;
 }
 
 .rmd-sp-foot {

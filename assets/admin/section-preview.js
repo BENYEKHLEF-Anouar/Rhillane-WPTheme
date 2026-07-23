@@ -178,7 +178,7 @@
 			'  <div class="rmd-sp-body">' +
 			'    <p class="rmd-sp-desc"></p>' +
 			'    <p class="rmd-sp-note"></p>' +
-			'    <p class="rmd-sp-hint"><span class="dashicons dashicons-warning" aria-hidden="true"></span> <span class="rmd-sp-hint-text"></span></p>' +
+			'    <p class="rmd-sp-hint"><span class="rmd-sp-hint-text"></span></p>' +
 			'  </div>' +
 			'  <footer class="rmd-sp-foot">' +
 			'    <button type="button" class="button" data-close>' + esc(i18n.close || 'Fermer') + '</button>' +
