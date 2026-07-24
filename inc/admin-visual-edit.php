@@ -197,10 +197,9 @@ function rmd_edit_annotate($html, $layout) {
  * Enqueue the inline editor — after the preview UI, same screens.
  * ───────────────────────────────────────────────────────────────────────── */
 function rmd_visual_edit_assets($hook) {
-	if ('post.php' !== $hook && 'post-new.php' !== $hook) {
-		return;
-	}
-	if (!defined('RMD_ACF_ACTIVE') || !RMD_ACF_ACTIVE) {
+	// Same scope as the preview UI it extends — case_study edit screens only, so
+	// wp_enqueue_media() + the inline editor never load on unrelated edit screens.
+	if (!function_exists('rmd_is_section_edit_screen') || !rmd_is_section_edit_screen()) {
 		return;
 	}
 
