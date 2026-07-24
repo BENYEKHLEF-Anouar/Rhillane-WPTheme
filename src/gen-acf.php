@@ -10,6 +10,10 @@ if (PHP_SAPI !== 'cli') {
 	exit;
 }
 
+// The advanced link-attribute fields (§10.1) are defined ONCE, in the theme, and
+// shared with the header CTA — never re-typed here (they'd drift on the next edit).
+require_once dirname(__DIR__) . '/inc/link-fields.php';
+
 function f_base($layout, $name, $label, $type, $extra = array()) {
 	return array_merge(array(
 		'key'               => "field_rmd_cs_{$layout}_{$name}",
@@ -260,6 +264,9 @@ $layouts['layout_rmd_cs_cta'] = layout_def('cta', 'CTA final', array_merge(
 		f_textarea('cta', 'subheading', 'Sous-titre', 2),
 		f_text('cta', 'button_label', 'Texte du bouton', array('default_value' => 'Discuter de mon projet')),
 		f_text('cta', 'button_url', 'Lien du bouton', array('default_value' => 'mailto:contact@rhillane.com', 'instructions' => 'URL ou mailto: — champ texte volontairement (le type url refuse mailto).')),
+		// rel/nofollow, target, download, aria, id, classes, data-* — hidden behind
+		// the "⚙ Options avancées" popup in the editor (assets/admin/link-options.js).
+		rmd_link_advanced_field('field_rmd_cs_cta_btn_adv', 'button_advanced', 'Options avancées du bouton'),
 		f_text('cta', 'contact_line', 'Ligne contact', array('placeholder' => 'contact@rhillane.com · +212 663-091166')),
 	),
 	settings_trio('cta', 'light')

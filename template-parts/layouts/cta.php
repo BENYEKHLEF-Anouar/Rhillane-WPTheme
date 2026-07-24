@@ -17,6 +17,9 @@ $heading_after = rmd_get_sub_field('heading_after');
 $subheading    = rmd_get_sub_field('subheading');
 $button_url    = rmd_get_sub_field('button_url');
 $contact_line  = rmd_get_sub_field('contact_line');
+// rel/nofollow, target, download, aria, id, classes, data-* (§10.1). Absent on
+// every row saved before the field existed → empty, i.e. exactly today's output.
+$button_adv    = rmd_get_sub_field('button_advanced');
 
 if (!$contact_line) {
 	$email        = rmd_get_field('rmd_contact_email', 'option') ?: 'contact@rhillane.com';
@@ -43,7 +46,7 @@ rmd_section_open('text-center');
 	// Routed through the single link renderer (§10.3) so escaping / rel / target
 	// stay consistent across every section. Output matches the previous inline <a>.
 	echo rmd_render_link(
-		array('link_type' => 'url', 'url' => $button_url),
+		rmd_link_with_advanced(array('link_type' => 'url', 'url' => $button_url), $button_adv),
 		esc_html($button_label),
 		'btn-cta inline-flex items-center gap-2.5 rounded-lg px-8 py-4 text-base font-medium text-white shadow-card hover:opacity-95'
 	);

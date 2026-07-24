@@ -89,6 +89,9 @@ function rmd_register_chrome_fields() {
 			array('key' => 'field_rmd_header_logo', 'label' => 'Logo (en-tête)', 'name' => 'rmd_header_logo', 'type' => 'image', 'return_format' => 'array', 'preview_size' => 'medium', 'instructions' => 'Optionnel — remplace le logo du thème. Vide = logo par défaut (fond blanc).'),
 			array('key' => 'field_rmd_header_cta_label', 'label' => 'Bouton — texte', 'name' => 'rmd_header_cta_label', 'type' => 'text', 'placeholder' => 'Audit web gratuit'),
 			array('key' => 'field_rmd_header_cta_url', 'label' => 'Bouton — lien', 'name' => 'rmd_header_cta_url', 'type' => 'text', 'placeholder' => '#contact', 'instructions' => 'URL, ancre (#contact) ou mailto:.'),
+			// Same advanced attribute set as the CTA section (§10.1) — one definition,
+			// same "⚙ Options avancées" popup, identical output through rmd_render_link().
+			rmd_link_advanced_field('field_rmd_header_cta_adv', 'rmd_header_cta_advanced', 'Bouton — options avancées'),
 			array('key' => 'field_rmd_header_sticky', 'label' => 'En-tête fixe (sticky)', 'name' => 'rmd_header_sticky', 'type' => 'true_false', 'ui' => 1, 'default_value' => 1, 'message' => 'Reste en haut et rétrécit au défilement.'),
 			array('key' => 'field_rmd_chrome_tab_footer', 'label' => 'Pied de page', 'name' => '', 'type' => 'tab'),
 			array('key' => 'field_rmd_footer_logo', 'label' => 'Logo (pied de page)', 'name' => 'rmd_footer_logo', 'type' => 'image', 'return_format' => 'array', 'preview_size' => 'medium', 'instructions' => 'Optionnel — remplace le logo du thème. Vide = logo par défaut (fond sombre).'),

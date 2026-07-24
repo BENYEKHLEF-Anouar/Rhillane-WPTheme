@@ -19,6 +19,7 @@ $rmd_modules = array(
 	'inc/cpt.php',        // custom post types (W0: case_study)
 	'inc/taxonomies.php', // taxonomies (case_study_cat)
 	'inc/helpers.php',    // rmd_render_sections(), rmd_image()
+	'inc/link-fields.php', // shared advanced link-attribute fields (§10.1) — also read by src/gen-acf.php
 	'inc/links.php',      // rmd_render_link() + link-options group (§10)
 	'inc/images.php',     // rmd_render_image() + image-options group (§12)
 	'inc/chrome.php',     // rmd_render_header()/rmd_render_footer() + Site Settings fields
@@ -29,6 +30,7 @@ $rmd_modules = array(
 	'inc/seo.php',        // hreflang only — Rank Math owns the rest
 	'inc/admin-ux.php',   // live section preview + field hints (ported AMD)
 	'inc/admin-visual-edit.php', // inline text/image editing inside the preview
+	'inc/admin-link-options.php', // "⚙ Options avancées" popup for CTA link attributes
 	// 'inc/gallery-viewer.php', // §9 gallery viewer — OFF: its page-wide observer
 	//   is the prime suspect for breaking ACF row collapse/expand. Re-enable only
 	//   after confirming it doesn't interfere (needs a real WP to test).

@@ -2396,6 +2396,201 @@
                             "placeholder": ""
                         },
                         {
+                            "key": "field_rmd_cs_cta_btn_adv",
+                            "label": "Options avancées du bouton",
+                            "name": "button_advanced",
+                            "type": "group",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "layout": "block",
+                            "sub_fields": [
+                                {
+                                    "key": "field_rmd_cs_cta_btn_adv_target",
+                                    "label": "Nouvel onglet",
+                                    "name": "target",
+                                    "type": "true_false",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "ui": 1,
+                                    "default_value": 0,
+                                    "message": "Ouvrir dans un nouvel onglet (ajoute noopener/noreferrer)."
+                                },
+                                {
+                                    "key": "field_rmd_cs_cta_btn_adv_rel",
+                                    "label": "Attributs rel",
+                                    "name": "rel",
+                                    "type": "checkbox",
+                                    "instructions": "Pour les liens SORTANTS : nofollow (non fiable), sponsored (payant/affilié), ugc. Un bouton vers vos propres pages ne doit PAS être en nofollow.",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "choices": {
+                                        "nofollow": "nofollow",
+                                        "sponsored": "sponsored",
+                                        "ugc": "ugc",
+                                        "noopener": "noopener",
+                                        "noreferrer": "noreferrer"
+                                    },
+                                    "default_value": [],
+                                    "return_format": "value",
+                                    "allow_custom": 0,
+                                    "save_custom": 0,
+                                    "layout": "horizontal",
+                                    "toggle": 0
+                                },
+                                {
+                                    "key": "field_rmd_cs_cta_btn_adv_download",
+                                    "label": "Téléchargement",
+                                    "name": "download",
+                                    "type": "true_false",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "ui": 1,
+                                    "default_value": 0,
+                                    "message": "Ajoute l’attribut download (liens fichiers)."
+                                },
+                                {
+                                    "key": "field_rmd_cs_cta_btn_adv_aria_label",
+                                    "label": "aria-label",
+                                    "name": "aria_label",
+                                    "type": "text",
+                                    "instructions": "Nom accessible quand le texte du bouton n’est pas explicite.",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_cta_btn_adv_title_attr",
+                                    "label": "title (info-bulle)",
+                                    "name": "title_attr",
+                                    "type": "text",
+                                    "instructions": "",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_cta_btn_adv_element_id",
+                                    "label": "id",
+                                    "name": "element_id",
+                                    "type": "text",
+                                    "instructions": "Identifiant HTML (lettres, chiffres, tirets) — ancres et analytics.",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_cta_btn_adv_css_classes",
+                                    "label": "Classes CSS",
+                                    "name": "css_classes",
+                                    "type": "text",
+                                    "instructions": "Classes ajoutées au bouton, séparées par des espaces.",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "default_value": "",
+                                    "placeholder": ""
+                                },
+                                {
+                                    "key": "field_rmd_cs_cta_btn_adv_data_attrs",
+                                    "label": "Attributs data-*",
+                                    "name": "data_attrs",
+                                    "type": "repeater",
+                                    "instructions": "Clé « gtm-id » → data-gtm-id=\"…\". Pour le tracking analytics.",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "layout": "table",
+                                    "min": 0,
+                                    "max": 0,
+                                    "collapsed": "field_rmd_cs_cta_btn_adv_data_attrs_key",
+                                    "button_label": "Ajouter un attribut",
+                                    "sub_fields": [
+                                        {
+                                            "key": "field_rmd_cs_cta_btn_adv_data_attrs_key",
+                                            "label": "Clé",
+                                            "name": "key",
+                                            "type": "text",
+                                            "instructions": "",
+                                            "required": 0,
+                                            "conditional_logic": 0,
+                                            "wrapper": {
+                                                "width": "",
+                                                "class": "",
+                                                "id": ""
+                                            },
+                                            "default_value": "",
+                                            "placeholder": "gtm-id"
+                                        },
+                                        {
+                                            "key": "field_rmd_cs_cta_btn_adv_data_attrs_value",
+                                            "label": "Valeur",
+                                            "name": "value",
+                                            "type": "text",
+                                            "instructions": "",
+                                            "required": 0,
+                                            "conditional_logic": 0,
+                                            "wrapper": {
+                                                "width": "",
+                                                "class": "",
+                                                "id": ""
+                                            },
+                                            "default_value": "",
+                                            "placeholder": ""
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
                             "key": "field_rmd_cs_cta_contact_line",
                             "label": "Ligne contact",
                             "name": "contact_line",
@@ -2499,5 +2694,5 @@
     "active": true,
     "description": "Sections des études de cas — généré par src/gen-acf.php — modifier le générateur, pas ce fichier. Clés field_rmd_cs_*.",
     "show_in_rest": 0,
-    "modified": 1784634892
+    "modified": 1784894092
 }

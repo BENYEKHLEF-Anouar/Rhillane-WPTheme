@@ -201,6 +201,18 @@ function rmd_admin_en_strings() {
 			'Logo (pied de page)'      => 'Logo (footer)',
 			'Mentions / copyright'     => 'Notices / copyright',
 			'Pied de page'             => 'Footer',
+			// Advanced link attributes — shared set (inc/link-fields.php, §10.1)
+			'Options avancées du bouton' => 'Advanced button options',
+			'Bouton — options avancées'  => 'Button — advanced options',
+			'Nouvel onglet'            => 'New tab',
+			'Attributs rel'            => 'rel attributes',
+			'Téléchargement'           => 'Download',
+			'title (info-bulle)'       => 'title (tooltip)',
+			'Classes CSS'              => 'CSS classes',
+			'Attributs data-*'         => 'data-* attributes',
+			'Clé'                      => 'Key',
+			'Texte du lien'            => 'Link text',
+			'Type de lien'             => 'Link type',
 		),
 		'instructions' => array(
 			'Coller le code SVG inline (icône trait).' => 'Paste the inline SVG code (stroke icon).',
@@ -216,9 +228,19 @@ function rmd_admin_en_strings() {
 			'Optionnel — remplace le logo du thème. Vide = logo par défaut (fond sombre).' => 'Optional — replaces the theme logo. Empty = the default logo (dark background).',
 			'URL, ancre (#contact) ou mailto:.' => 'URL, anchor (#contact) or mailto:.',
 			'HTML léger autorisé (<b>, <br>). Vide = © année + nom du site.' => 'Light HTML allowed (<b>, <br>). Empty = © year + site name.',
+			// Advanced link attributes (inc/link-fields.php, §10.1)
+			'Pour les liens SORTANTS : nofollow (non fiable), sponsored (payant/affilié), ugc. Un bouton vers vos propres pages ne doit PAS être en nofollow.' => 'For OUTBOUND links: nofollow (untrusted), sponsored (paid/affiliate), ugc. A button pointing at your own pages should NOT be nofollow.',
+			'Nom accessible quand le texte du bouton n’est pas explicite.' => 'Accessible name for when the button text isn’t descriptive.',
+			'Nom accessible quand le texte du lien n’est pas explicite.' => 'Accessible name for when the link text isn’t descriptive.',
+			'Identifiant HTML (lettres, chiffres, tirets) — ancres et analytics.' => 'HTML id (letters, digits, hyphens) — anchors and analytics.',
+			'Classes ajoutées au bouton, séparées par des espaces.' => 'Extra classes on the button, space-separated.',
+			'Clé « gtm-id » → data-gtm-id="…". Pour le tracking analytics.' => 'Key "gtm-id" → data-gtm-id="…". For analytics tracking.',
+			'URL complète ou mailto: — champ texte volontairement (le type « url » refuse mailto).' => 'Full URL or mailto: — deliberately a text field (the "url" type rejects mailto).',
 		),
 		'messages' => array(
 			'Reste en haut et rétrécit au défilement.' => 'Stays at the top and shrinks on scroll.',
+			'Ouvrir dans un nouvel onglet (ajoute noopener/noreferrer).' => 'Open in a new tab (adds noopener/noreferrer).',
+			'Ajoute l’attribut download (liens fichiers).' => 'Adds the download attribute (file links).',
 		),
 		// Placeholders authored in acf-json / chrome.php (example content included:
 		// the user wants ZERO French in an English workspace).
@@ -258,6 +280,7 @@ function rmd_admin_en_strings() {
 			'Ajouter une cellule'  => 'Add a cell',
 			'Ajouter un point'     => 'Add a point',
 			'Ajouter une pill'     => 'Add a pill',
+			'Ajouter un attribut'  => 'Add an attribute',
 		),
 	);
 }

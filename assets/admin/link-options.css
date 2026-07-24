@@ -1,0 +1,206 @@
+/**
+ * "⚙ Options avancées" — the advanced link-attributes popup (spec §10.1).
+ * Editor-only, hand-written CSS (never Tailwind, no build step). Visual language
+ * matches assets/admin/section-preview.css.
+ */
+
+/* The group's inner field list, parked until the popup borrows it. !important
+   because ACF drives `display` here too (conditional logic / .acf-hidden). The
+   .acf-field wrapper around it is never touched — that's what keeps ACF tabs and
+   flexible-content row handling working. */
+.rmd-lo-stash {
+	display: none !important;
+}
+
+/* ── Trigger row ──────────────────────────────────────────────────────────── */
+/* Sits inside the group's own .acf-input, where its fields used to be. */
+.rmd-lo-trigger-wrap {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+.rmd-lo-trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	padding: 7px 13px;
+	border: 1px solid #d5d8e4;
+	border-radius: 8px;
+	background: #f6f7fb;
+	color: #041135;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.3;
+	cursor: pointer;
+	transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.rmd-lo-trigger:hover {
+	background: #fff;
+	border-color: #3943FF;
+	color: #3943FF;
+}
+.rmd-lo-trigger:focus-visible {
+	outline: 2px solid #3943FF;
+	outline-offset: 2px;
+}
+.rmd-lo-trigger .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	line-height: 1;
+}
+/* Count of options actually set — the only cue that a collapsed popup holds
+   something, so it has to read at a glance. */
+.rmd-lo-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 5px;
+	border-radius: 999px;
+	background: #E4004D;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1;
+}
+.rmd-lo-badge[hidden] {
+	display: none;
+}
+.rmd-lo-summary {
+	font-size: 12px;
+	color: #596980;
+}
+.rmd-lo-summary:empty {
+	display: none;
+}
+
+/* ── The popup ────────────────────────────────────────────────────────────── */
+/* Lives INSIDE <form id="post"> (the moved inputs must still be submitted), but
+   is position:fixed, so it never affects the form's layout. */
+.rmd-lo-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 1000000;
+	display: none;
+}
+.rmd-lo-modal.is-open {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+/* The stand-in that holds the group's place while the popup borrows its fields.
+   [hidden] alone would do it; the rule survives a plugin resetting that. */
+.rmd-lo-slot {
+	display: none;
+}
+/* Don't scroll the editor behind the dialog, and keep ACF's own flexible-content
+   popup (which renders above everything) out of the way — same trick as
+   assets/admin/section-preview.css. */
+body.rmd-lo-open {
+	overflow: hidden;
+}
+body.rmd-lo-open .acf-fc-popup {
+	visibility: hidden !important;
+}
+.rmd-lo-backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(4, 17, 53, .72);
+}
+.rmd-lo-dialog {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: min(620px, 100vw - 40px);
+	max-height: calc(100vh - 60px);
+	background: #fff;
+	border-radius: 14px;
+	box-shadow: 0 30px 80px -20px rgba(4, 17, 53, .5);
+	overflow: hidden;
+}
+.rmd-lo-head {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 14px 18px;
+	border-bottom: 1px solid #e9eaf2;
+}
+.rmd-lo-title {
+	margin: 0;
+	font-size: 15px;
+	font-weight: 600;
+	color: #041135;
+}
+.rmd-lo-close {
+	margin-left: auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border: 0;
+	border-radius: 8px;
+	background: #f1f2f7;
+	color: #596980;
+	cursor: pointer;
+	transition: background .15s ease, color .15s ease;
+}
+.rmd-lo-close:hover {
+	background: #fde7ee;
+	color: #E4004D;
+}
+.rmd-lo-close:focus-visible {
+	outline: 2px solid #3943FF;
+	outline-offset: 2px;
+}
+
+.rmd-lo-body {
+	flex: 1 1 auto;
+	overflow-y: auto;
+	padding: 4px 18px 14px;
+	background: #fff;
+}
+/* The borrowed list keeps ACF's field styling; only its outer frame goes, since
+   the dialog already provides one. */
+.rmd-lo-body > .acf-fields {
+	border: 0;
+	background: transparent;
+}
+.rmd-lo-body .acf-field {
+	padding: 14px 0;
+}
+.rmd-lo-body .acf-field:first-child {
+	border-top: 0;
+}
+.rmd-lo-body .acf-label label {
+	font-weight: 600;
+	color: #041135;
+}
+.rmd-lo-body .acf-checkbox-list {
+	margin: 0;
+}
+.rmd-lo-body .acf-checkbox-list.acf-hl li {
+	margin-right: 14px;
+}
+
+.rmd-lo-foot {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 12px 18px;
+	border-top: 1px solid #e9eaf2;
+	background: #f9fafb;
+}
+.rmd-lo-note {
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.5;
+	color: #596980;
+}
+.rmd-lo-done {
+	margin-left: auto;
+	flex: 0 0 auto;
+}

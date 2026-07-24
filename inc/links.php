@@ -72,8 +72,10 @@ function rmd_render_link($opts, $inner_html = '', $base_class = '') {
 		'download'   => !empty($opts['download']) ? '' : null, // boolean attribute
 	);
 
+	// An empty ACF repeater formats to false, not array() — (array) false is
+	// array(false), so the row must be type-checked before it is indexed.
 	foreach ((array) ($opts['data_attrs'] ?? array()) as $row) {
-		if (!empty($row['key'])) {
+		if (is_array($row) && !empty($row['key'])) {
 			$attrs['data-' . sanitize_html_class($row['key'])] = esc_attr((string) ($row['value'] ?? ''));
 		}
 	}
@@ -107,45 +109,29 @@ function rmd_register_link_options_group() {
 	acf_add_local_field_group(array(
 		'key'    => 'group_rmd_link_options',
 		'title'  => 'Options de lien (RMD)',
-		'fields' => array(
-			array('key' => 'field_rmd_link_label', 'label' => 'Texte du lien', 'name' => 'label', 'type' => 'text'),
+		// Destination fields here; every ATTRIBUTE field comes from the shared set in
+		// inc/link-fields.php, so this clone group, the CTA section and the header
+		// CTA can never expose different options.
+		'fields' => array_merge(
 			array(
-				'key' => 'field_rmd_link_type', 'label' => 'Type de lien', 'name' => 'link_type', 'type' => 'select',
-				'choices' => array('url' => 'URL', 'page' => 'Page du site', 'none' => 'Aucun lien'),
-				'default_value' => 'url', 'return_format' => 'value',
-			),
-			array(
-				'key' => 'field_rmd_link_page', 'label' => 'Page', 'name' => 'page', 'type' => 'page_link',
-				'post_type' => array(), 'allow_null' => 1, 'allow_archives' => 0, 'multiple' => 0,
-				'conditional_logic' => array(array(array('field' => 'field_rmd_link_type', 'operator' => '==', 'value' => 'page'))),
-			),
-			array(
-				'key' => 'field_rmd_link_url', 'label' => 'URL', 'name' => 'url', 'type' => 'text',
-				'instructions' => 'URL complète ou mailto: — champ texte volontairement (le type « url » refuse mailto).',
-				'conditional_logic' => array(array(array('field' => 'field_rmd_link_type', 'operator' => '==', 'value' => 'url'))),
-			),
-			array(
-				'key' => 'field_rmd_link_target', 'label' => 'Nouvel onglet', 'name' => 'target', 'type' => 'true_false',
-				'ui' => 1, 'default_value' => 0, 'message' => 'Ouvrir dans un nouvel onglet (ajoute noopener/noreferrer).',
-			),
-			array(
-				'key' => 'field_rmd_link_rel', 'label' => 'Attributs rel', 'name' => 'rel', 'type' => 'checkbox',
-				'choices' => array('nofollow' => 'nofollow', 'sponsored' => 'sponsored', 'ugc' => 'ugc', 'noopener' => 'noopener', 'noreferrer' => 'noreferrer'),
-				'return_format' => 'value',
-			),
-			array('key' => 'field_rmd_link_download', 'label' => 'Téléchargement', 'name' => 'download', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0, 'message' => 'Ajoute l’attribut download (liens fichiers).'),
-			array('key' => 'field_rmd_link_aria', 'label' => 'aria-label', 'name' => 'aria_label', 'type' => 'text', 'instructions' => 'Nom accessible quand le texte du lien n’est pas explicite.'),
-			array('key' => 'field_rmd_link_title', 'label' => 'title (info-bulle)', 'name' => 'title_attr', 'type' => 'text'),
-			array('key' => 'field_rmd_link_id', 'label' => 'id', 'name' => 'element_id', 'type' => 'text', 'instructions' => 'Identifiant (token sûr) pour ancres / analytics.'),
-			array('key' => 'field_rmd_link_classes', 'label' => 'Classes CSS', 'name' => 'css_classes', 'type' => 'text'),
-			array(
-				'key' => 'field_rmd_link_data', 'label' => 'Attributs data-*', 'name' => 'data_attrs', 'type' => 'repeater',
-				'layout' => 'table', 'button_label' => 'Ajouter un attribut',
-				'sub_fields' => array(
-					array('key' => 'field_rmd_link_data_key', 'label' => 'Clé', 'name' => 'key', 'type' => 'text'),
-					array('key' => 'field_rmd_link_data_value', 'label' => 'Valeur', 'name' => 'value', 'type' => 'text'),
+				array('key' => 'field_rmd_link_label', 'label' => 'Texte du lien', 'name' => 'label', 'type' => 'text'),
+				array(
+					'key' => 'field_rmd_link_type', 'label' => 'Type de lien', 'name' => 'link_type', 'type' => 'select',
+					'choices' => array('url' => 'URL', 'page' => 'Page du site', 'none' => 'Aucun lien'),
+					'default_value' => 'url', 'return_format' => 'value',
+				),
+				array(
+					'key' => 'field_rmd_link_page', 'label' => 'Page', 'name' => 'page', 'type' => 'page_link',
+					'post_type' => array(), 'allow_null' => 1, 'allow_archives' => 0, 'multiple' => 0,
+					'conditional_logic' => array(array(array('field' => 'field_rmd_link_type', 'operator' => '==', 'value' => 'page'))),
+				),
+				array(
+					'key' => 'field_rmd_link_url', 'label' => 'URL', 'name' => 'url', 'type' => 'text',
+					'instructions' => 'URL complète ou mailto: — champ texte volontairement (le type « url » refuse mailto).',
+					'conditional_logic' => array(array(array('field' => 'field_rmd_link_type', 'operator' => '==', 'value' => 'url'))),
 				),
 			),
+			rmd_link_advanced_subfields('field_rmd_link')
 		),
 		// Never matches a real edit screen — this group is a clone source only.
 		'location' => array(array(array('param' => 'post_type', 'operator' => '==', 'value' => 'rmd_clone_source_only'))),

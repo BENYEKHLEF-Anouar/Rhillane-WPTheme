@@ -515,11 +515,25 @@ Key rules baked in: **every attribute is escaped**; `rel` is composed from the e
 
 ### 10.5 Acceptance criteria
 
-- [ ] A single reusable link-options group is cloned into every CTA/link element.
-- [ ] Editors can set target, **nofollow**/sponsored/ugc/noopener/noreferrer, download, title, aria-label, id, custom classes, and arbitrary `data-*`.
-- [ ] One PHP renderer outputs the anchor with all attributes escaped; `_blank` auto-adds `noopener noreferrer`.
+- [x] A single reusable link-options group is cloned into every CTA/link element.
+      *Built as one shared PHP definition (`inc/link-fields.php`) rather than an ACF Clone
+      field: `rmd_link_advanced_field()` returns an ACF **group**, whose value is a clean
+      assoc array that drops straight into the renderer. `src/gen-acf.php` reads the same
+      file, so the generated case-study JSON can never drift from the header's fields.*
+- [x] Editors can set target, **nofollow**/sponsored/ugc/noopener/noreferrer, download, title, aria-label, id, custom classes, and arbitrary `data-*`.
+      *Folded behind a "⚙ Options avancées" popup — `inc/admin-link-options.php` +
+      `assets/admin/link-options.{js,css}`. The group's inner field list is MOVED into a
+      dialog that lives inside `<form id="post">`, so ACF's save/validation/repeater
+      handling is untouched; if the JS never loads, the fields simply render inline.*
+- [x] One PHP renderer outputs the anchor with all attributes escaped; `_blank` auto-adds `noopener noreferrer`.
+      *`rmd_render_link()` — used by the `cta` section and both header CTAs.*
 - [ ] CTA style options (variant, custom colors, icon, size, full-width) work alongside link options.
-- [ ] A link with no destination renders nothing (no dead `#`).
+      *Not built: sections carry their own styling today (`btn-cta`, `rmd-cta`).*
+- [x] A link with no destination renders nothing (no dead `#`).
+
+**Live in:** `cta` section (`button_advanced`) and the Site Settings header CTA
+(`rmd_header_cta_advanced`). Any future section gets the same set with one call to
+`rmd_link_advanced_field()` plus `rmd_link_with_advanced()` in its template.
 
 ---
 

@@ -15,6 +15,13 @@ $cta_url   = rmd_get_field('rmd_header_cta_url', 'option') ?: '#contact';
 $sticky    = rmd_get_field('rmd_header_sticky', 'option');
 $sticky    = (null === $sticky) ? true : (bool) $sticky; // default on
 
+// Advanced link attributes (§10.1) — rel/nofollow, new tab, aria, id, data-*.
+// The CTA renders twice (desktop + mobile panel): the mobile copy drops element_id
+// so an editor-set id can never end up duplicated in the document.
+$cta_opts        = rmd_link_with_advanced(array('link_type' => 'url', 'url' => $cta_url), rmd_get_field('rmd_header_cta_advanced', 'option'));
+$cta_opts_mobile = $cta_opts;
+unset($cta_opts_mobile['element_id']);
+
 $has_menu = has_nav_menu('rmd_header');
 // The default nav is in-page jump links (#resultats…) that only exist on a
 // single case study. On the archive there's nothing to jump to, so show the
@@ -76,7 +83,7 @@ $fallback_nav = array(
 			<?php rmd_locale_switcher(); ?>
 
 			<?php if ($cta_label && $cta_url) : ?>
-				<a href="<?php echo esc_url($cta_url); ?>" class="rmd-cta"><?php echo esc_html($cta_label); ?></a>
+				<?php echo rmd_render_link($cta_opts, esc_html($cta_label), 'rmd-cta'); ?>
 			<?php endif; ?>
 
 			<button id="mobile-menu-btn" type="button" class="rmd-burger" aria-label="<?php echo esc_attr(rmd_ft('Ouvrir le menu', 'Open menu')); ?>" aria-controls="mobile-menu-panel" aria-expanded="false">
@@ -118,7 +125,7 @@ $fallback_nav = array(
 		</nav>
 		<?php endif; ?>
 		<?php if ($cta_label && $cta_url) : ?>
-			<a href="<?php echo esc_url($cta_url); ?>" class="rmd-cta rmd-mobile-cta mobile-nav-link"><?php echo esc_html($cta_label); ?></a>
+			<?php echo rmd_render_link($cta_opts_mobile, esc_html($cta_label), 'rmd-cta rmd-mobile-cta mobile-nav-link'); ?>
 		<?php endif; ?>
 	</div>
 </div>
