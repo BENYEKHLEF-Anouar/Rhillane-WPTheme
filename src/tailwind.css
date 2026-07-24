@@ -1,4 +1,4 @@
-/* Tailwind SOURCE — never deployed. Compile locally and commit the output:
+﻿/* Tailwind SOURCE — never deployed. Compile locally and commit the output:
    npx @tailwindcss/cli -i src/tailwind.css -o assets/css/main.css --minify
 
    source(none) + explicit @source: the 2 MB standalone HTML references in
@@ -31,202 +31,33 @@
 	--tracking-tighter2: -0.03em;
 }
 
+
+/* ── SHARED components only ────────────────────────────────────────────────────
+   Per-CPT component CSS does NOT live here. It lives in one hand-written file
+   per post type: assets/css/cpt/<post_type>.css, auto-loaded on that CPT's
+   pages by rmd_enqueue_cpt_style() (inc/enqueue.php). Those files need no
+   Tailwind build, and adding a CPT never touches another CPT's styles.
+
+   What belongs HERE: design tokens (@theme above), Tailwind utilities, and
+   components genuinely reused across post types.
+   What belongs in assets/css/cpt/: everything scoped to one CPT.
+
+   Per-CPT files re-open `@layer components`, so keep this layer — it is what
+   keeps utility classes winning over component rules.
+   ──────────────────────────────────────────────────────────────────────────── */
 @layer components {
 
-	/* ════ Case-study scope — everything below only applies inside
-	   <main class="rmd-case"> so generic names (.card, .tag, .pill, table)
-	   can never collide with parent Vault/UiCore styles. ════ */
-	.rmd-case {
-		font-family: var(--font-sans);
-		color: #041135;
-		-webkit-font-smoothing: antialiased;
-
-		.grad-attention { background-image: linear-gradient(155deg, #3943FF 58%, #E4004D 85%, #FA9329 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
-
-		.btn-cta { position: relative; overflow: hidden; background-image: linear-gradient(90deg, #D7045A 50%, #FC8831 100%); }
-		.btn-cta::before { content: ''; position: absolute; top: 0; left: -75%; width: 50%; height: 100%; background: linear-gradient(120deg, transparent, rgba(255, 255, 255, .45), transparent); transform: skewX(-20deg); animation: rmdCtaShine 3s ease-in-out infinite; }
-
-		/* eyebrow, RMD overline pill (arrow inlined, no external asset) */
-		.eyebrow { display: inline-flex; align-items: center; gap: 14px; border-radius: 9999px; border: 1px solid #E9EAF2; background: #fff; padding: 9px 12px 9px 22px; box-shadow: -4px 0 10px 0 rgba(0, 0, 0, .02), 4px 0 10px 0 rgba(0, 0, 0, .02), 0 4px 10px 0 rgba(0, 0, 0, .02); font-size: 13px; font-weight: 500; letter-spacing: -.01em; text-transform: none; color: #3943FF; margin-bottom: 18px; }
-		.eyebrow::after { content: ''; width: 30px; height: 18px; flex: 0 0 auto; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 18' fill='none'%3E%3Cpath d='M2 9h24m0 0-6-6m6 6-6 6' stroke='%233943FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center/contain; }
-		.section-title { font-size: 38px; font-weight: 500; letter-spacing: -.02em; line-height: 1.12; }
-		.section-title .thin { font-weight: 300; color: #596980; }
-		.section-sub { font-size: 16px; color: #596980; margin-top: 12px; max-width: 640px; }
-
-		/* tag, RMD soft chip */
-		.tag { display: inline-flex; align-items: center; gap: 7px; background: #F3F4FF; color: #3943FF; font-size: 12px; font-weight: 600; letter-spacing: .04em; padding: 6px 16px; border-radius: 9999px; }
-		.tag svg { width: 13px; height: 13px; flex: 0 0 auto; }
-
-		/* hero badge */
-		.hero-badge { background: #041135; color: #fff; border-radius: 18px; padding: 26px 30px; box-shadow: 0 24px 60px rgba(4, 17, 53, .18); }
-		.hero-badge .big { font-size: 46px; font-weight: 600; line-height: 1; }
-		.hero-badge .big .unit { font-size: 20px; color: #16B364; font-weight: 500; }
-		.hero-badge .lbl { font-size: 13px; color: rgba(255, 255, 255, .6); margin-top: 6px; letter-spacing: .04em; }
-		.hero-badge hr { border: none; border-top: 1px solid rgba(255, 255, 255, .12); margin: 18px 0; }
-
-		/* KPI strip — column count driven by --kpi-cols (set inline per row count) */
-		.kpi-strip { background: #041135; color: #fff; }
-		.kpi-grid { display: grid; grid-template-columns: repeat(var(--kpi-cols, 5), 1fr); }
-		.kpi { padding: 14px 22px; border-right: 1px solid rgba(255, 255, 255, .1); }
-		.kpi:last-child { border-right: none; }
-		.kpi .v { font-size: 34px; font-weight: 600; line-height: 1.05; }
-		.kpi .v .up { color: #16B364; font-size: 18px; }
-		.kpi .l { font-size: 12.5px; color: rgba(255, 255, 255, .62); margin-top: 4px; letter-spacing: .03em; }
-
-		/* card */
-		.card { background: #fff; border: 1px solid #E9EAF2; border-radius: 14px; box-shadow: 0 8px 26px rgba(4, 17, 53, .07); }
-		.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-		.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-
-		/* meaning (number cards) — column count via --mg-cols */
-		.meaning-grid { display: grid; grid-template-columns: repeat(var(--mg-cols, 3), 1fr); gap: 20px; margin-top: 34px; }
-		.meaning { background: #fff; border: 1px solid #E9EAF2; border-radius: 16px; padding: 26px; box-shadow: 0 8px 26px rgba(4, 17, 53, .05); transition: box-shadow .3s ease, transform .3s ease; }
-		.meaning .mico { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; background: rgba(228, 0, 77, .10); }
-		.meaning .mico svg { width: 22px; height: 22px; }
-		.meaning .mrow { display: flex; align-items: center; gap: 14px; }
-		.meaning .mrow .mico { margin-bottom: 0; flex: 0 0 auto; }
-		.meaning .mn { font-size: 36px; font-weight: 700; color: #16B364; line-height: 1; letter-spacing: -.02em; }
-		.meaning .mt { font-size: 12px; font-weight: 600; color: #596980; margin: 12px 0 9px; text-transform: uppercase; letter-spacing: .06em; }
-		.meaning .md { font-size: 14.5px; color: rgba(4, 17, 53, .72); line-height: 1.55; }
-		.meaning .md b { color: #041135; font-weight: 600; }
-
-		/* statduo (dark stat card) */
-		.statduo { display: flex; background: #041135; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(4, 17, 53, .12); }
-		.statduo .cell { flex: 1; padding: 30px 32px; }
-		.statduo .cell + .cell { border-left: 1px solid rgba(255, 255, 255, .12); }
-		.statduo .tagmini { display: inline-block; background: #16B364; color: #fff; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 5px; letter-spacing: .06em; }
-		.statduo .num { font-size: 46px; font-weight: 600; color: #fff; line-height: 1.1; margin-top: 14px; }
-		.statduo .delta { color: #16B364; font-size: 14px; font-weight: 600; margin-top: 6px; }
-		.statduo .delta::before { content: '\25B2'; font-size: 10px; margin-right: 6px; }
-
-		/* comment */
-		.comment { background: #fff; border: 1px solid #E9EAF2; border-radius: 14px; padding: 22px 24px; font-size: 14.5px; color: rgba(4, 17, 53, .72); box-shadow: -4px 0 10px 0 rgba(0, 0, 0, .02), 4px 0 10px 0 rgba(0, 0, 0, .02), 0 4px 10px 0 rgba(0, 0, 0, .02); }
-		.comment b { color: #041135; font-weight: 600; }
-		.comment p { margin: 0 0 10px; }
-		.comment p:last-child { margin: 0; }
-
-		/* approach cards + stat tiles (insight section) */
-		.kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #596980; }
-		.appr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
-		.appr { background: #fff; border: 1px solid #E9EAF2; border-radius: 16px; padding: 24px; box-shadow: 0 8px 26px rgba(4, 17, 53, .05); transition: box-shadow .3s ease, transform .3s ease; }
-		.appr .ahead { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-		.appr .ic { width: 42px; height: 42px; border-radius: 11px; background: #F3F4FF; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
-		.appr .ic svg { width: 20px; height: 20px; }
-		.appr h4 { font-size: 15.5px; font-weight: 600; color: #041135; }
-		.appr p { font-size: 13.5px; color: rgba(4, 17, 53, .68); line-height: 1.55; }
-		.istat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px; }
-		.istat { background: #fff; border: 1px solid #E9EAF2; border-radius: 12px; padding: 18px 20px; box-shadow: 0 8px 26px rgba(4, 17, 53, .05); transition: box-shadow .3s ease, transform .3s ease; }
-		.istat .v { font-size: 30px; font-weight: 700; color: #16B364; line-height: 1; letter-spacing: -.02em; }
-		.istat .l { font-size: 12.5px; color: #596980; margin-top: 8px; line-height: 1.45; }
-		.proof-strip { margin-top: 18px; background: rgba(22, 179, 100, .07); border: 1px solid rgba(22, 179, 100, .22); border-radius: 12px; padding: 14px 20px; font-size: 14px; color: rgba(4, 17, 53, .78); text-align: center; }
-		.proof-strip b { color: #041135; font-weight: 600; }
-
-		/* tables */
-		.tbl-card { padding: 8px; overflow-x: auto; }
-		table { width: 100%; border-collapse: collapse; font-size: 14px; }
-		thead th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: #596980; font-weight: 600; text-align: right; padding: 14px 16px; border-bottom: 2px solid #E9EAF2; }
-		thead th:first-child { text-align: left; }
-		tbody td { padding: 12px 16px; text-align: right; border-bottom: 1px solid #E9EAF2; color: rgba(4, 17, 53, .72); }
-		tbody td:first-child { text-align: left; font-weight: 500; color: #041135; }
-		tbody tr:last-child td { border-bottom: none; }
-		tbody tr:hover { background: #F9FAFB; }
-		.win { color: #16B364; font-weight: 700; }
-		.win-col { background: rgba(22, 179, 100, .10); }
-
-		/* SERP browser-frame card */
-		.shot-gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 28px; }
-		.shot-fr { border: 1px solid #E9EAF2; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 26px rgba(4, 17, 53, .06); background: #fff; }
-		.shot-fr .bar { display: flex; align-items: center; gap: 7px; padding: 10px 14px; border-bottom: 1px solid #E9EAF2; background: #F9FAFB; }
-		.shot-fr .d { width: 10px; height: 10px; border-radius: 50%; }
-		.shot-fr .d1 { background: #ff5f57; }
-		.shot-fr .d2 { background: #febc2e; }
-		.shot-fr .d3 { background: #28c840; }
-		.shot-fr .kwlabel { margin-left: 8px; font-size: 13px; color: #041135; font-weight: 600; }
-		.shot-fr .pos { margin-left: auto; background: #16B364; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 5px; }
-
-		/* big screenshot */
-		.shot { margin-top: 30px; border: 1px solid #E9EAF2; border-radius: 16px; overflow: hidden; box-shadow: 0 24px 60px rgba(4, 17, 53, .1); background: #fff; }
-		.shot img { display: block; width: 100%; height: auto; padding: 15px; }
-		.shot-scroll { height: 380px; overflow-y: auto; padding: 15px; }
-		.shot-scroll img { display: block; width: 100%; height: auto; padding: 0; }
-		.shot .cap { font-size: 13px; color: #596980; padding: 12px 18px; border-top: 1px solid #E9EAF2; background: #F9FAFB; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-		.shot .cap b { color: #041135; font-weight: 600; }
-		.shot .cap .src-pill { margin-left: auto; font-size: 11px; font-weight: 600; letter-spacing: .04em; color: #16B364; background: rgba(22, 179, 100, .10); padding: 3px 10px; border-radius: 5px; }
-
-		/* zoomable frames get the zoom cursor (JS lightbox target) */
-		[data-rmd-zoom] img { cursor: zoom-in; }
-
-		/* method cards */
-		.real-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-		.real { background: #fff; border: 1px solid #E9EAF2; border-radius: 16px; padding: 26px 28px; box-shadow: 0 8px 26px rgba(4, 17, 53, .06); transition: box-shadow .3s ease, transform .3s ease; }
-		.real .num { width: 36px; height: 36px; border-radius: 9px; background: #16B364; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
-		.real h4 { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
-		.real ul { margin: 0; padding-left: 18px; color: rgba(4, 17, 53, .72); font-size: 14px; list-style: disc; }
-		.real li { margin-bottom: 6px; }
-
-		/* dark band recap */
-		.band { background: #041135; color: #fff; border-radius: 24px; padding: 54px 56px; position: relative; overflow: hidden; }
-		.band .blob2 { position: absolute; top: -80px; right: -80px; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, #E4004D 0, transparent 70%); opacity: .25; filter: blur(10px); }
-		.band h2 { font-size: 34px; font-weight: 500; }
-		.pillrow { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 26px; position: relative; z-index: 1; }
-		.pill { background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .14); border-radius: 50px; padding: 10px 20px; font-size: 14px; }
-		.pill b { color: #16B364; }
-
-		/* gradient-border hover on cards */
-		.card, .comment, .shot-fr, .shot, .meaning, .appr, .istat, .real { transition: box-shadow .3s ease, transform .3s ease; }
-		.card:hover, .comment:hover, .shot-fr:hover, .shot:hover, .meaning:hover, .appr:hover, .istat:hover, .real:hover {
-			border-color: transparent;
-			background-image: linear-gradient(#fff, #fff), linear-gradient(155deg, #3943FF 58%, #E4004D 85%, #FA9329 100%);
-			background-origin: border-box;
-			background-clip: padding-box, border-box;
-			box-shadow: 0 20px 40px -20px rgba(4, 17, 53, .18);
-			transform: translateY(-3px);
-		}
-
-		/* DR chart card */
-		.chartcard { padding: 26px 28px; }
-		.chartcard .cl { font-size: 12px; color: #596980; letter-spacing: .04em; display: flex; justify-content: space-between; margin-top: 10px; }
-
-		@media (max-width: 900px) {
-			.grid-2, .grid-3, .real-grid, .shot-gallery, .meaning-grid, .appr-grid { grid-template-columns: 1fr; }
-			.istat-grid { grid-template-columns: 1fr 1fr; }
-			.statduo { flex-direction: column; }
-			.statduo .cell + .cell { border-left: none; border-top: 1px solid rgba(255, 255, 255, .12); }
-			.kpi-grid { grid-template-columns: repeat(2, 1fr); }
-			.kpi { border-bottom: 1px solid rgba(255, 255, 255, .1); }
-			.section-title { font-size: 30px; }
-			.band { padding: 36px 26px; }
-		}
-		@media (max-width: 560px) {
-			.kpi-grid { grid-template-columns: 1fr; }
-		}
-	}
-
-	/* ════ Outside the scope: lightbox is appended to <body> by JS ════ */
+	/* Lightbox — appended to <body> by assets/js/main.js, so it can never be
+	   scoped to a CPT wrapper. Shared: any post type can opt in with
+	   [data-rmd-zoom]. */
 	.rmd-lightbox { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(4, 17, 53, .9); align-items: center; justify-content: center; padding: 28px; cursor: zoom-out; }
 	.rmd-lightbox.open { display: flex; }
 	.rmd-lightbox img { max-width: 95vw; max-height: 92vh; border-radius: 10px; background: #fff; }
 	html.rmd-noscroll { overflow: hidden; }
 
-	/* archive grid — minimal card list until it gets its own design pass */
+	/* Archive shell — the page frame and grid every CPT archive reuses. The CARD
+	   inside it is per-CPT (.rmd-card--<cpt>), so it lives in assets/css/cpt/. */
 	.rmd-archive { max-width: var(--container-content); margin: 0 auto; padding: 64px 24px; font-family: var(--font-sans); }
 	.rmd-archive__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 32px; }
 	@media (max-width: 900px) { .rmd-archive__grid { grid-template-columns: 1fr; } }
-	.rmd-card--case-study { border: 1px solid #E9EAF2; border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 8px 26px rgba(4, 17, 53, .05); }
-	.rmd-card--case-study .rmd-card__link { display: block; color: inherit; text-decoration: none; }
-	.rmd-card--case-study .rmd-card__image { width: 100%; height: auto; display: block; }
-	.rmd-card--case-study .rmd-card__title { font-size: 18px; font-weight: 600; margin: 16px 18px 6px; color: #041135; }
-	.rmd-card--case-study .rmd-card__excerpt { font-size: 14px; color: #596980; margin: 0 18px 18px; }
-}
-
-/* keyframes must live at top level */
-@keyframes rmdCtaShine {
-	0% { left: -75%; }
-	25% { left: 125%; }
-	100% { left: 125%; }
-}
-@media (prefers-reduced-motion: reduce) {
-	.rmd-case .btn-cta::before { animation: none; }
-	.rmd-case .card:hover, .rmd-case .comment:hover, .rmd-case .shot-fr:hover, .rmd-case .shot:hover,
-	.rmd-case .meaning:hover, .rmd-case .appr:hover, .rmd-case .istat:hover, .rmd-case .real:hover { transform: none; }
 }

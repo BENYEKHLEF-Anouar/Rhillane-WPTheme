@@ -37,6 +37,9 @@ function rmd_enqueue_assets() {
 		wp_enqueue_style('rmd-media', RMD_URI . '/assets/css/rmd-media.css', array('vault-child'), rmd_asset_ver('assets/css/rmd-media.css'));
 	}
 
+	// One stylesheet per CPT — see rmd_enqueue_cpt_style().
+	rmd_enqueue_cpt_style();
+
 	// Front-end JS — vanilla, deferred.
 	if (file_exists(RMD_DIR . '/assets/js/main.js')) {
 		wp_enqueue_script('rmd-main', RMD_URI . '/assets/js/main.js', array(), rmd_asset_ver('assets/js/main.js'), array(
@@ -44,6 +47,94 @@ function rmd_enqueue_assets() {
 			'strategy'  => 'defer',
 		));
 	}
+}
+
+/**
+ * The post type whose stylesheet this request needs, or ''.
+ *
+ * Taxonomy archives resolve to the post type their taxonomy is attached to. That
+ * branch pays nothing today — there is no taxonomy-case_study_cat.php, so a term
+ * page falls back to parent Vault's archive and none of our (rmd_-prefixed,
+ * collision-free) selectors match. It's there so adding that template later needs
+ * no enqueue change.
+ */
+function rmd_current_cpt_style_slug() {
+	if (is_singular()) {
+		return (string) get_post_type();
+	}
+	if (is_post_type_archive()) {
+		$queried = get_queried_object();
+		return ($queried && isset($queried->name)) ? (string) $queried->name : '';
+	}
+	if (is_tax()) {
+		$term = get_queried_object();
+		if ($term && isset($term->taxonomy)) {
+			$tax = get_taxonomy($term->taxonomy);
+			if ($tax && !empty($tax->object_type)) {
+				// Indexed, not reset(): no by-reference call on a live WP_Taxonomy
+				// property, and no dependence on its internal array pointer.
+				$types = array_values((array) $tax->object_type);
+				return isset($types[0]) ? (string) $types[0] : '';
+			}
+		}
+	}
+	return '';
+}
+
+/**
+ * Load assets/css/cpt/<post_type>.css when we're on that post type's pages.
+ *
+ * THE CONVENTION: one file per CPT, named exactly as the post type is registered
+ * (snake_case, no transform — the same 1:1 rule as section layout keys). Drop
+ * assets/css/cpt/service.css in and it loads on `service` singles + archive.
+ * No code to add here, no Tailwind rebuild, and no chance of touching another
+ * CPT's styles.
+ *
+ * Depends on 'rmd-main': the per-CPT files re-open Tailwind's `components`
+ * layer, which only sits in the right place if main.css was parsed first.
+ * basename() guards the path even though the slug comes from WP, not the URL.
+ */
+function rmd_enqueue_cpt_style() {
+	$slug     = rmd_current_cpt_style_slug();
+	$relative = rmd_cpt_style_rel($slug);
+	if ('' === $relative) {
+		return;
+	}
+
+	// Depend on rmd-main so main.css is parsed FIRST: it declares the cascade-layer
+	// order, and if `components` were created by this file instead, Tailwind's own
+	// `base` preflight would end up outranking these component rules.
+	// But WP silently refuses to print a style whose dependency isn't registered —
+	// so on a checkout where main.css was never built, an unconditional dep would
+	// make this sheet vanish without a trace. Ask, don't assume.
+	$deps = wp_style_is('rmd-main', 'registered') ? array('rmd-main') : array();
+
+	wp_enqueue_style('rmd-cpt-' . $slug, RMD_URI . '/' . $relative, $deps, rmd_asset_ver($relative));
+}
+
+/**
+ * Theme-relative path of a post type's stylesheet, or '' when it has none (a CPT
+ * with no design yet, or a core type that keeps using the shared sheet).
+ * basename() guards the path even though the slug comes from WP, not the URL.
+ */
+function rmd_cpt_style_rel($post_type) {
+	$post_type = (string) $post_type;
+	if ('' === $post_type || 'post' === $post_type || 'page' === $post_type) {
+		return '';
+	}
+	$relative = 'assets/css/cpt/' . basename($post_type) . '.css';
+	return file_exists(RMD_DIR . '/' . $relative) ? $relative : '';
+}
+
+/**
+ * Same stylesheet as a ready-to-print URL. For contexts that build their own
+ * <head> instead of running wp_enqueue_scripts — the admin section preview
+ * (inc/admin-ux.php) above all, which would otherwise render unstyled the moment
+ * main.css stops carrying this CPT's rules.
+ */
+function rmd_cpt_style_url($post_type) {
+	$relative = rmd_cpt_style_rel($post_type);
+	return '' === $relative ? '' : RMD_URI . '/' . $relative . '?ver=' . rmd_asset_ver($relative);
 }
 
 /**

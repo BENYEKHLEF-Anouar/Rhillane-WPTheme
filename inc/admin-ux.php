@@ -986,6 +986,13 @@ function rmd_render_section_preview() {
 	$css_ver  = file_exists($main_css) ? filemtime($main_css) : RMD_VERSION;
 	$js_ver   = file_exists($main_js) ? filemtime($main_js) : RMD_VERSION;
 
+	// This <head> is hand-built, so it does NOT get wp_enqueue_scripts' per-CPT
+	// stylesheet (inc/enqueue.php). Link it explicitly, after main.css so it
+	// rejoins Tailwind's `components` layer — without this the preview renders
+	// unstyled as soon as the CPT's rules leave main.css.
+	$preview_post_type = ($post_id && get_post_type($post_id)) ? get_post_type($post_id) : 'case_study';
+	$cpt_css_url       = function_exists('rmd_cpt_style_url') ? rmd_cpt_style_url($preview_post_type) : '';
+
 	nocache_headers();
 	header('Content-Type: text/html; charset=utf-8');
 	header('X-Frame-Options: SAMEORIGIN');
@@ -1002,6 +1009,9 @@ function rmd_render_section_preview() {
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
 	<?php if (file_exists($main_css)) : ?>
 	<link rel="stylesheet" href="<?php echo esc_url(RMD_URI . '/assets/css/main.css?ver=' . $css_ver); ?>">
+	<?php endif; ?>
+	<?php if ($cpt_css_url) : ?>
+	<link rel="stylesheet" href="<?php echo esc_url($cpt_css_url); ?>">
 	<?php endif; ?>
 	<style>
 		html, body { margin: 0; padding: 0; background: #fff; }

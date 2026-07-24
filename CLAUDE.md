@@ -48,6 +48,14 @@ Full runbook: `REBUILD-PLAN.md` (waves W0→W4). AMD architecture reference: `FL
 
 - CSS: Tailwind source in `src/tailwind.css`, compiled **locally** and committed to
   `assets/css/main.css` — no server build. `npx @tailwindcss/cli -i src/tailwind.css -o assets/css/main.css --minify`
+- **One stylesheet per CPT**: `assets/css/cpt/<post_type>.css`, post type spelled exactly as
+  registered (snake_case, no transform — same 1:1 rule as layout keys). `rmd_enqueue_cpt_style()`
+  (`inc/enqueue.php`) auto-loads it on that CPT's singles/archive/taxonomy pages — drop the file
+  in, no code to add, no Tailwind rebuild, and no way to disturb another CPT. These files are
+  **hand-written** (plain CSS + `var(--token)`) and must re-open `@layer components` so Tailwind
+  utilities keep winning; they load after `main.css`, which declares the layer order. Only
+  genuinely cross-CPT components belong in `src/tailwind.css`. A context that builds its own
+  `<head>` (the admin section preview) must link it via `rmd_cpt_style_url()`.
 - **Hand-written CSS** (NOT Tailwind, no rebuild needed): `assets/css/rmd-media.css` (image
   loading effects, §12); `assets/admin/*.css` (section preview, link options, gallery viewer)
   are editor-only.

@@ -1,0 +1,345 @@
+/**
+ * case_study — CPT stylesheet. Loaded by inc/enqueue.php ONLY on single
+ * case studies and their archive (rmd_enqueue_cpt_style).
+ *
+ * ── The convention ──────────────────────────────────────────────────────────
+ * One file per CPT: assets/css/cpt/<post_type>.css, post type spelled exactly
+ * as registered (snake_case, no transform — same 1:1 rule as layout keys).
+ * Drop the file in, and it loads on that CPT's pages. No enqueue code, no
+ * Tailwind rebuild, no touching any other CPT's styles.
+ *
+ * ── Why hand-written and not Tailwind source ────────────────────────────────
+ * These are plain CSS component rules — no @apply, no Tailwind functions, only
+ * var(--token) references that main.css publishes in @layer theme. So this file
+ * needs NO build step: edit and deploy. Design tokens and utility classes still
+ * come from the shared main.css; only the CPT's own components live here.
+ *
+ * ── @layer components is load-bearing ───────────────────────────────────────
+ * main.css establishes the layer order (properties, theme, base, components,
+ * utilities) and puts its component rules in `components`. Rejoining that layer
+ * keeps Tailwind UTILITIES winning over these rules, exactly as before — an
+ * unlayered file would silently beat every utility class in the templates.
+ * This file must therefore load AFTER main.css. enqueue.php declares that
+ * dependency; don't drop it.
+ *
+ * Everything is scoped to `.rmd-case` (the <main> class on case-study pages) so
+ * generic names — .card, .tag, .pill, table — can never collide with parent
+ * Vault/UiCore styles.
+ */
+
+@layer components {
+
+	.rmd-case {
+		font-family: var(--font-sans);
+		color: #041135;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	.rmd-case .grad-attention { background-image: linear-gradient(155deg, #3943FF 58%, #E4004D 85%, #FA9329 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+	.rmd-case .btn-cta { position: relative; overflow: hidden; background-image: linear-gradient(90deg, #D7045A 50%, #FC8831 100%); }
+	.rmd-case .btn-cta::before { content: ''; position: absolute; top: 0; left: -75%; width: 50%; height: 100%; background: linear-gradient(120deg, transparent, rgba(255, 255, 255, .45), transparent); transform: skewX(-20deg); animation: rmdCtaShine 3s ease-in-out infinite; }
+
+	/* eyebrow, RMD overline pill (arrow inlined, no external asset) */
+	.rmd-case .eyebrow { display: inline-flex; align-items: center; gap: 14px; border-radius: 9999px; border: 1px solid #E9EAF2; background: #fff; padding: 9px 12px 9px 22px; box-shadow: -4px 0 10px 0 rgba(0, 0, 0, .02), 4px 0 10px 0 rgba(0, 0, 0, .02), 0 4px 10px 0 rgba(0, 0, 0, .02); font-size: 13px; font-weight: 500; letter-spacing: -.01em; text-transform: none; color: #3943FF; margin-bottom: 18px; }
+	.rmd-case .eyebrow::after { content: ''; width: 30px; height: 18px; flex: 0 0 auto; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 18' fill='none'%3E%3Cpath d='M2 9h24m0 0-6-6m6 6-6 6' stroke='%233943FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center/contain; }
+	.rmd-case .section-title { font-size: 38px; font-weight: 500; letter-spacing: -.02em; line-height: 1.12; }
+	.rmd-case .section-title .thin { font-weight: 300; color: #596980; }
+	.rmd-case .section-sub { font-size: 16px; color: #596980; margin-top: 12px; max-width: 640px; }
+
+	/* tag, RMD soft chip */
+	.rmd-case .tag { display: inline-flex; align-items: center; gap: 7px; background: #F3F4FF; color: #3943FF; font-size: 12px; font-weight: 600; letter-spacing: .04em; padding: 6px 16px; border-radius: 9999px; }
+	.rmd-case .tag svg { width: 13px; height: 13px; flex: 0 0 auto; }
+
+	/* hero badge */
+	.rmd-case .hero-badge { background: #041135; color: #fff; border-radius: 18px; padding: 26px 30px; box-shadow: 0 24px 60px rgba(4, 17, 53, .18); }
+	.rmd-case .hero-badge .big { font-size: 46px; font-weight: 600; line-height: 1; }
+	.rmd-case .hero-badge .big .unit { font-size: 20px; color: #16B364; font-weight: 500; }
+	.rmd-case .hero-badge .lbl { font-size: 13px; color: rgba(255, 255, 255, .6); margin-top: 6px; letter-spacing: .04em; }
+	.rmd-case .hero-badge hr { border: none; border-top: 1px solid rgba(255, 255, 255, .12); margin: 18px 0; }
+
+	/* KPI strip — column count driven by --kpi-cols (set inline per row count) */
+	.rmd-case .kpi-strip { background: #041135; color: #fff; }
+	.rmd-case .kpi-grid { display: grid; grid-template-columns: repeat(var(--kpi-cols, 5), 1fr); }
+	.rmd-case .kpi { padding: 14px 22px; border-right: 1px solid rgba(255, 255, 255, .1); }
+	.rmd-case .kpi:last-child { border-right: none; }
+	.rmd-case .kpi .v { font-size: 34px; font-weight: 600; line-height: 1.05; }
+	.rmd-case .kpi .v .up { color: #16B364; font-size: 18px; }
+	.rmd-case .kpi .l { font-size: 12.5px; color: rgba(255, 255, 255, .62); margin-top: 4px; letter-spacing: .03em; }
+
+	/* card */
+	.rmd-case .card { background: #fff; border: 1px solid #E9EAF2; border-radius: 14px; box-shadow: 0 8px 26px rgba(4, 17, 53, .07); }
+	.rmd-case .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+	.rmd-case .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+	/* meaning (number cards) — column count via --mg-cols */
+	.rmd-case .meaning-grid { display: grid; grid-template-columns: repeat(var(--mg-cols, 3), 1fr); gap: 20px; margin-top: 34px; }
+	.rmd-case .meaning { background: #fff; border: 1px solid #E9EAF2; border-radius: 16px; padding: 26px; box-shadow: 0 8px 26px rgba(4, 17, 53, .05); transition: box-shadow .3s ease, transform .3s ease; }
+	.rmd-case .meaning .mico { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; background: rgba(228, 0, 77, .10); }
+	.rmd-case .meaning .mico svg { width: 22px; height: 22px; }
+	.rmd-case .meaning .mrow { display: flex; align-items: center; gap: 14px; }
+	.rmd-case .meaning .mrow .mico { margin-bottom: 0; flex: 0 0 auto; }
+	.rmd-case .meaning .mn { font-size: 36px; font-weight: 700; color: #16B364; line-height: 1; letter-spacing: -.02em; }
+	.rmd-case .meaning .mt { font-size: 12px; font-weight: 600; color: #596980; margin: 12px 0 9px; text-transform: uppercase; letter-spacing: .06em; }
+	.rmd-case .meaning .md { font-size: 14.5px; color: rgba(4, 17, 53, .72); line-height: 1.55; }
+	.rmd-case .meaning .md b { color: #041135; font-weight: 600; }
+
+	/* statduo (dark stat card) */
+	.rmd-case .statduo { display: flex; background: #041135; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(4, 17, 53, .12); }
+	.rmd-case .statduo .cell { flex: 1; padding: 30px 32px; }
+	.rmd-case .statduo .cell + .cell { border-left: 1px solid rgba(255, 255, 255, .12); }
+	.rmd-case .statduo .tagmini { display: inline-block; background: #16B364; color: #fff; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 5px; letter-spacing: .06em; }
+	.rmd-case .statduo .num { font-size: 46px; font-weight: 600; color: #fff; line-height: 1.1; margin-top: 14px; }
+	.rmd-case .statduo .delta { color: #16B364; font-size: 14px; font-weight: 600; margin-top: 6px; }
+	.rmd-case .statduo .delta::before { content: '\25B2'; font-size: 10px; margin-right: 6px; }
+
+	/* comment */
+	.rmd-case .comment { background: #fff; border: 1px solid #E9EAF2; border-radius: 14px; padding: 22px 24px; font-size: 14.5px; color: rgba(4, 17, 53, .72); box-shadow: -4px 0 10px 0 rgba(0, 0, 0, .02), 4px 0 10px 0 rgba(0, 0, 0, .02), 0 4px 10px 0 rgba(0, 0, 0, .02); }
+	.rmd-case .comment b { color: #041135; font-weight: 600; }
+	.rmd-case .comment p { margin: 0 0 10px; }
+	.rmd-case .comment p:last-child { margin: 0; }
+
+	/* approach cards + stat tiles (insight section) */
+	.rmd-case .kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #596980; }
+	.rmd-case .appr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+	.rmd-case .appr { background: #fff; border: 1px solid #E9EAF2; border-radius: 16px; padding: 24px; box-shadow: 0 8px 26px rgba(4, 17, 53, .05); transition: box-shadow .3s ease, transform .3s ease; }
+	.rmd-case .appr .ahead { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+	.rmd-case .appr .ic { width: 42px; height: 42px; border-radius: 11px; background: #F3F4FF; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+	.rmd-case .appr .ic svg { width: 20px; height: 20px; }
+	.rmd-case .appr h4 { font-size: 15.5px; font-weight: 600; color: #041135; }
+	.rmd-case .appr p { font-size: 13.5px; color: rgba(4, 17, 53, .68); line-height: 1.55; }
+	.rmd-case .istat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px; }
+	.rmd-case .istat { background: #fff; border: 1px solid #E9EAF2; border-radius: 12px; padding: 18px 20px; box-shadow: 0 8px 26px rgba(4, 17, 53, .05); transition: box-shadow .3s ease, transform .3s ease; }
+	.rmd-case .istat .v { font-size: 30px; font-weight: 700; color: #16B364; line-height: 1; letter-spacing: -.02em; }
+	.rmd-case .istat .l { font-size: 12.5px; color: #596980; margin-top: 8px; line-height: 1.45; }
+	.rmd-case .proof-strip { margin-top: 18px; background: rgba(22, 179, 100, .07); border: 1px solid rgba(22, 179, 100, .22); border-radius: 12px; padding: 14px 20px; font-size: 14px; color: rgba(4, 17, 53, .78); text-align: center; }
+	.rmd-case .proof-strip b { color: #041135; font-weight: 600; }
+
+	/* tables */
+	.rmd-case .tbl-card { padding: 8px; overflow-x: auto; }
+	.rmd-case table { width: 100%; border-collapse: collapse; font-size: 14px; }
+	.rmd-case thead th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: #596980; font-weight: 600; text-align: right; padding: 14px 16px; border-bottom: 2px solid #E9EAF2; }
+	.rmd-case thead th:first-child { text-align: left; }
+	.rmd-case tbody td { padding: 12px 16px; text-align: right; border-bottom: 1px solid #E9EAF2; color: rgba(4, 17, 53, .72); }
+	.rmd-case tbody td:first-child { text-align: left; font-weight: 500; color: #041135; }
+	.rmd-case tbody tr:last-child td { border-bottom: none; }
+	.rmd-case tbody tr:hover { background: #F9FAFB; }
+	.rmd-case .win { color: #16B364; font-weight: 700; }
+	.rmd-case .win-col { background: rgba(22, 179, 100, .10); }
+
+	/* SERP browser-frame card */
+	.rmd-case .shot-gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 28px; }
+	.rmd-case .shot-fr { border: 1px solid #E9EAF2; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 26px rgba(4, 17, 53, .06); background: #fff; }
+	.rmd-case .shot-fr .bar { display: flex; align-items: center; gap: 7px; padding: 10px 14px; border-bottom: 1px solid #E9EAF2; background: #F9FAFB; }
+	.rmd-case .shot-fr .d { width: 10px; height: 10px; border-radius: 50%; }
+	.rmd-case .shot-fr .d1 { background: #ff5f57; }
+	.rmd-case .shot-fr .d2 { background: #febc2e; }
+	.rmd-case .shot-fr .d3 { background: #28c840; }
+	.rmd-case .shot-fr .kwlabel { margin-left: 8px; font-size: 13px; color: #041135; font-weight: 600; }
+	.rmd-case .shot-fr .pos { margin-left: auto; background: #16B364; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 5px; }
+
+	/* big screenshot */
+	.rmd-case .shot { margin-top: 30px; border: 1px solid #E9EAF2; border-radius: 16px; overflow: hidden; box-shadow: 0 24px 60px rgba(4, 17, 53, .1); background: #fff; }
+	.rmd-case .shot img { display: block; width: 100%; height: auto; padding: 15px; }
+	.rmd-case .shot-scroll { height: 380px; overflow-y: auto; padding: 15px; }
+	.rmd-case .shot-scroll img { display: block; width: 100%; height: auto; padding: 0; }
+	.rmd-case .shot .cap { font-size: 13px; color: #596980; padding: 12px 18px; border-top: 1px solid #E9EAF2; background: #F9FAFB; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+	.rmd-case .shot .cap b { color: #041135; font-weight: 600; }
+	.rmd-case .shot .cap .src-pill { margin-left: auto; font-size: 11px; font-weight: 600; letter-spacing: .04em; color: #16B364; background: rgba(22, 179, 100, .10); padding: 3px 10px; border-radius: 5px; }
+
+	/* zoomable frames get the zoom cursor (JS lightbox target) */
+	.rmd-case [data-rmd-zoom] img { cursor: zoom-in; }
+
+	/* method cards */
+	.rmd-case .real-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+	.rmd-case .real { background: #fff; border: 1px solid #E9EAF2; border-radius: 16px; padding: 26px 28px; box-shadow: 0 8px 26px rgba(4, 17, 53, .06); transition: box-shadow .3s ease, transform .3s ease; }
+	.rmd-case .real .num { width: 36px; height: 36px; border-radius: 9px; background: #16B364; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+	.rmd-case .real h4 { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+	.rmd-case .real ul { margin: 0; padding-left: 18px; color: rgba(4, 17, 53, .72); font-size: 14px; list-style: disc; }
+	.rmd-case .real li { margin-bottom: 6px; }
+
+	/* dark band recap */
+	.rmd-case .band { background: #041135; color: #fff; border-radius: 24px; padding: 54px 56px; position: relative; overflow: hidden; }
+	.rmd-case .band .blob2 { position: absolute; top: -80px; right: -80px; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, #E4004D 0, transparent 70%); opacity: .25; filter: blur(10px); }
+	.rmd-case .band h2 { font-size: 34px; font-weight: 500; }
+	.rmd-case .pillrow { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 26px; position: relative; z-index: 1; }
+	.rmd-case .pill { background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .14); border-radius: 50px; padding: 10px 20px; font-size: 14px; }
+	.rmd-case .pill b { color: #16B364; }
+
+	/* gradient-border hover on cards */
+	.rmd-case .card,
+	.rmd-case .comment,
+	.rmd-case .shot-fr,
+	.rmd-case .shot,
+	.rmd-case .meaning,
+	.rmd-case .appr,
+	.rmd-case .istat,
+	.rmd-case .real { transition: box-shadow .3s ease, transform .3s ease; }
+	.rmd-case .card:hover,
+	.rmd-case .comment:hover,
+	.rmd-case .shot-fr:hover,
+	.rmd-case .shot:hover,
+	.rmd-case .meaning:hover,
+	.rmd-case .appr:hover,
+	.rmd-case .istat:hover,
+	.rmd-case .real:hover {
+		border-color: transparent;
+		background-image: linear-gradient(#fff, #fff), linear-gradient(155deg, #3943FF 58%, #E4004D 85%, #FA9329 100%);
+		background-origin: border-box;
+		background-clip: padding-box, border-box;
+		box-shadow: 0 20px 40px -20px rgba(4, 17, 53, .18);
+		transform: translateY(-3px);
+	}
+
+	/* DR chart card */
+	.rmd-case .chartcard { padding: 26px 28px; }
+	.rmd-case .chartcard .cl { font-size: 12px; color: #596980; letter-spacing: .04em; display: flex; justify-content: space-between; margin-top: 10px; }
+
+	@media (max-width: 900px) {
+		.rmd-case .grid-2,
+		.rmd-case .grid-3,
+		.rmd-case .real-grid,
+		.rmd-case .shot-gallery,
+		.rmd-case .meaning-grid,
+		.rmd-case .appr-grid { grid-template-columns: 1fr; }
+		.rmd-case .istat-grid { grid-template-columns: 1fr 1fr; }
+		.rmd-case .statduo { flex-direction: column; }
+		.rmd-case .statduo .cell + .cell { border-left: none; border-top: 1px solid rgba(255, 255, 255, .12); }
+		.rmd-case .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+		.rmd-case .kpi { border-bottom: 1px solid rgba(255, 255, 255, .1); }
+		.rmd-case .section-title { font-size: 30px; }
+		.rmd-case .band { padding: 36px 26px; }
+	}
+	@media (max-width: 560px) {
+		.rmd-case .kpi-grid { grid-template-columns: 1fr; }
+	}
+
+	/* (The archive card markup uses .rmd-cscard__* — styled unlayered at the end of
+	   this file. A dead .rmd-card--case-study block lived here in the Tailwind
+	   source; no template ever referenced those class names, so it was dropped.) */
+}
+
+/* Keyframes and the reduced-motion override stay UNLAYERED, exactly as the
+   Tailwind source emitted them (they were outside @layer components). The
+   header CTA in assets/css/rmd-chrome.css ships its own identical copy of this
+   animation, so the two files stay independent. */
+@keyframes rmdCtaShine {
+	0% { left: -75%; }
+	25% { left: 125%; }
+	100% { left: 125%; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.rmd-case .btn-cta::before { animation: none; }
+	.rmd-case .card:hover, .rmd-case .comment:hover, .rmd-case .shot-fr:hover, .rmd-case .shot:hover,
+	.rmd-case .meaning:hover, .rmd-case .appr:hover, .rmd-case .istat:hover, .rmd-case .real:hover { transform: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   Archive (/etudes-de-cas/) — moved here from assets/css/rmd-chrome.css, which is
+   SHARED chrome: these card styles are case_study's alone, and W3 makes chrome
+   site-wide, at which point they would have leaked onto every page.
+
+   Deliberately UNLAYERED, exactly as it was in rmd-chrome.css, so it keeps
+   overriding the sparse .rmd-archive defaults main.css ships in @layer components.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+/* ── Case-study archive (/etudes-de-cas/) ───────────────────────────────────
+   Hand-written so it needs no Tailwind rebuild. Unlayered, so it overrides the
+   sparse @layer defaults in main.css. Uses the case-study tokens (ink #041135,
+   redder #E4004D, purp #3943FF, bord #E9EAF2) to match the single template. */
+.rmd-archive {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 64px 24px 88px;
+	font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+	color: #041135;
+}
+.rmd-archive__head { max-width: 720px; margin-bottom: 44px; }
+.rmd-arch-eyebrow {
+	display: inline-flex; align-items: center;
+	background: #F3F4FF; color: #3943FF;
+	font-size: 12px; font-weight: 600; letter-spacing: .04em;
+	padding: 7px 16px; border-radius: 9999px; margin-bottom: 18px;
+}
+.rmd-arch-title {
+	margin: 0; color: #041135;
+	font-size: 40px; font-weight: 500; letter-spacing: -.02em; line-height: 1.1;
+}
+@media (min-width: 768px) { .rmd-arch-title { font-size: 52px; } }
+.rmd-arch-sub {
+	margin: 16px 0 0; max-width: 560px;
+	font-size: 16px; line-height: 1.6; color: #596980;
+}
+
+.rmd-archive__grid {
+	display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+}
+@media (max-width: 900px) { .rmd-archive__grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px) { .rmd-archive__grid { grid-template-columns: 1fr; } }
+
+.rmd-cscard {
+	background: #fff; border: 1px solid #E9EAF2; border-radius: 16px; overflow: hidden;
+	box-shadow: 0 8px 26px rgba(4, 17, 53, .05);
+	transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+.rmd-cscard__link { display: flex; flex-direction: column; height: 100%; color: inherit; text-decoration: none; }
+.rmd-cscard__media { aspect-ratio: 16 / 10; background: #F9FAFB; overflow: hidden; }
+.rmd-cscard__image { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* No featured image → a tasteful branded placeholder (soft brand-tint wash +
+   muted Rhillane mark), so the card reads as intentional, never broken. */
+.rmd-cscard__media--empty {
+	background: linear-gradient(135deg, #EEF0FF 0%, #FBFCFE 55%, #F6F4FF 100%);
+}
+.rmd-cscard__placeholder {
+	display: flex; align-items: center; justify-content: center;
+	width: 100%; height: 100%;
+}
+.rmd-cscard__placeholder-logo {
+	width: 46%; max-width: 188px; height: auto; opacity: .5;
+}
+.rmd-cscard__body { display: flex; flex-direction: column; flex: 1; padding: 24px 24px 22px; }
+.rmd-cscard__chip {
+	align-self: flex-start;
+	background: #F3F4FF; color: #3943FF;
+	font-size: 11.5px; font-weight: 600; letter-spacing: .04em;
+	padding: 5px 12px; border-radius: 9999px; margin-bottom: 14px;
+}
+.rmd-cscard__title { margin: 0; color: #041135; font-size: 19px; font-weight: 600; line-height: 1.3; }
+.rmd-cscard__excerpt {
+	margin: 10px 0 0; color: #596980; font-size: 14px; line-height: 1.6;
+	display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.rmd-cscard__more {
+	display: inline-flex; align-items: center; gap: 8px;
+	margin-top: 20px; padding-top: 18px; border-top: 1px solid #F0F1F5;
+	color: #E4004D; font-size: 14px; font-weight: 600;
+}
+.rmd-cscard__more svg { transition: transform .25s ease; }
+/* Gradient-border lift on hover — identical feel to the .rmd-case cards. */
+.rmd-cscard:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 20px 40px -20px rgba(4, 17, 53, .18);
+	border-color: transparent;
+	background-image: linear-gradient(#fff, #fff), linear-gradient(155deg, #3943FF 58%, #E4004D 85%, #FA9329 100%);
+	background-origin: border-box;
+	background-clip: padding-box, border-box;
+}
+.rmd-cscard:hover .rmd-cscard__more svg { transform: translateX(4px); }
+
+.rmd-archive .navigation.pagination { margin-top: 48px; }
+.rmd-archive .nav-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.rmd-archive .page-numbers {
+	display: inline-flex; align-items: center; justify-content: center;
+	min-width: 40px; height: 40px; padding: 0 12px;
+	border: 1px solid #E9EAF2; border-radius: 10px;
+	color: #041135; font-size: 14px; font-weight: 500; text-decoration: none;
+	transition: background .15s ease, border-color .15s ease;
+}
+.rmd-archive .page-numbers:hover { background: #F3F4F6; }
+.rmd-archive .page-numbers.current { background: #041135; color: #fff; border-color: #041135; }
+
+.rmd-arch-empty { color: #596980; font-size: 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+	.rmd-cscard, .rmd-cscard__more svg { transition: none; }
+	.rmd-cscard:hover { transform: none; }
+}
