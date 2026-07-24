@@ -1,7 +1,8 @@
 <?php
 /**
  * Component: bordered comment card.
- * $args: text (inline-HTML; blank line = new paragraph), class (extra classes).
+ * $args: text (inline-HTML; blank line = new paragraph, single line break = <br>),
+ *        class (extra classes).
  */
 defined('ABSPATH') || exit;
 
@@ -14,6 +15,6 @@ $paragraphs = preg_split('/\n\s*\n/', $text);
 ?>
 <div class="comment <?php echo esc_attr($args['class'] ?? ''); ?>">
 	<?php foreach ($paragraphs as $p) : ?>
-		<p><?php echo rmd_inline_html(trim($p)); ?></p>
+		<p><?php echo rmd_inline_html(nl2br(trim($p))); ?></p>
 	<?php endforeach; ?>
 </div>
