@@ -1024,24 +1024,41 @@ add_action('wp_ajax_rmd_section_preview', 'rmd_render_section_preview');
  * the first frame (CSS in section-preview.css); acf-collapse-guard.js lifts it
  * right after ACF restores the real state, with a timer failsafe.
  */
+/**
+ * Is the current admin screen a section-editing screen? True only on the post
+ * editor for a post type that carries the `sections` field — today just
+ * case_study. This keeps ALL of our preview/inline-edit assets and DOM hooks
+ * OFF every other edit screen in this network-activated install (posts, pages,
+ * Elementor, other plugins' CPTs). Extend the list at W3 when the home page (a
+ * `page`) gains sections. Degrades safe: no screen / ACF off → false.
+ */
+function rmd_is_section_edit_screen() {
+	if (!defined('RMD_ACF_ACTIVE') || !RMD_ACF_ACTIVE) {
+		return false;
+	}
+	$screen = function_exists('get_current_screen') ? get_current_screen() : null;
+	if (!$screen || 'post' !== $screen->base) {
+		return false;
+	}
+	$types = array('case_study'); // W3: add the page/home type when it gains sections
+	return in_array($screen->post_type, $types, true);
+}
+
 add_filter('admin_body_class', 'rmd_precollapse_body_class');
 function rmd_precollapse_body_class($classes) {
 	// case_study screens ONLY: our sections have no WYSIWYG/select2 fields, so
 	// initialising them CSS-hidden is safe. Other post types' ACF fields are
 	// none of our business — never risk sizing their editors while hidden.
-	$screen = function_exists('get_current_screen') ? get_current_screen() : null;
-	if ($screen && 'post' === $screen->base && 'case_study' === $screen->post_type
-		&& defined('RMD_ACF_ACTIVE') && RMD_ACF_ACTIVE) {
+	if (rmd_is_section_edit_screen()) {
 		$classes .= ' rmd-precollapse';
 	}
 	return $classes;
 }
 
 function rmd_section_preview_assets($hook) {
-	if ('post.php' !== $hook && 'post-new.php' !== $hook) {
-		return;
-	}
-	if (!defined('RMD_ACF_ACTIVE') || !RMD_ACF_ACTIVE) {
+	// Our own edit screens only — never load on other post types / Elementor /
+	// other plugins' ACF flexible-content fields (see rmd_is_section_edit_screen).
+	if (!rmd_is_section_edit_screen()) {
 		return;
 	}
 
