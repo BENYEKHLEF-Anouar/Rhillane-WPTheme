@@ -50,7 +50,7 @@ function rmd_edit_map($layout) {
 			),
 			'stats_band' => array(
 				'eyebrow' => 'text', 'heading' => 'html', 'subheading' => 'html',
-				'items.*.tag' => 'text', 'items.*.value' => 'text',
+				'items.*.tag' => 'text', 'items.*.value' => 'html', // rendered via rmd_inline_html (stat-cell.php)
 				'items.*.value_note' => 'text', 'items.*.label' => 'text',
 			),
 			'stat_cards' => array(
@@ -78,8 +78,8 @@ function rmd_edit_map($layout) {
 			'table_split' => array(
 				'eyebrow' => 'text', 'heading' => 'html', 'subheading' => 'html',
 				'comment' => 'html', 'table_columns.*.label' => 'text',
-				'table_rows.*.cells.*.content' => 'html',
-				'side_stats.*.tag' => 'text', 'side_stats.*.value' => 'text', 'side_stats.*.label' => 'text',
+				'table_rows.*.cells.*.content' => 'text', // rendered via esc_html (data-table.php)
+				'side_stats.*.tag' => 'text', 'side_stats.*.value' => 'html', 'side_stats.*.label' => 'text', // value via rmd_inline_html (stat-cell.php)
 				'media_caption' => 'html', 'media_source' => 'text', 'media_image' => 'image',
 			),
 			'recap_band' => array(
