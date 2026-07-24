@@ -540,6 +540,21 @@
 	// sees is exactly what « Mettre à jour » will save. Runs ONCE per row: after
 	// that the form is the source of truth and syncPreviewFromForm() pushes it
 	// back into every reopened preview.
+	/** True if the row already carries real content — any typed text/URL/number
+	    or textarea value (ignoring ACF's clone templates). A blank picker-added
+	    row is empty here; a DUPLICATE of a saved row is not. Guards prefillDemo
+	    so a copy is never overwritten with placeholder values. */
+	function rowHasContent(rowEl) {
+		if (!rowEl) return false;
+		var sel = 'input[type="text"],textarea,input[type="url"],input[type="email"],input[type="number"]';
+		var inputs = rowEl.querySelectorAll(sel);
+		for (var i = 0; i < inputs.length; i++) {
+			if (inputs[i].closest('.acf-clone')) continue;
+			if ('' !== String(inputs[i].value || '').trim()) return true;
+		}
+		return false;
+	}
+
 	function prefillDemo(doc, rowEl) {
 		var holder = doc.getElementById('rmd-demo-fill');
 		if (!holder) return;
@@ -662,7 +677,10 @@
 
 		// New row: copy the placeholder into its empty fields (once), so the
 		// preview and the form agree and Update publishes what's on screen.
-		if (state.isNew && !state.rowEl.dataset.rmdPrefilled) {
+		// A DUPLICATE — or any row that already holds content — is left as-is:
+		// syncPreviewFromForm still shows its real values in the frame.
+		if (state.isNew && !state.rowEl.dataset.rmdPrefilled &&
+			!state.rowEl.dataset.rmdDuplicate && !rowHasContent(state.rowEl)) {
 			prefillDemo(doc, state.rowEl);
 			state.rowEl.dataset.rmdPrefilled = '1';
 		}
