@@ -49,7 +49,10 @@
 	var IFRAME_STYLE = [
 		/* the preview disables links (a{pointer-events:none}) — editable spans
 		   inside links (e.g. the CTA label) must stay clickable */
-		'.rmd-edit { pointer-events: auto; cursor: text; border-radius: 3px; box-shadow: none; transition: box-shadow .15s ease; }',
+		/* caret-color: gradient text (.grad-attention) paints its text transparent,
+		   which makes the default caret invisible — force the editing blue so the
+		   blinking cursor shows on EVERY surface (gradient, white, dark navy). */
+		'.rmd-edit { pointer-events: auto; cursor: text; border-radius: 3px; box-shadow: none; transition: box-shadow .15s ease; caret-color: #3943FF; }',
 		'.rmd-edit:hover { box-shadow: 0 0 0 2px rgba(57, 67, 255, .35); }',
 		'.rmd-edit.is-editing { outline: none; box-shadow: 0 0 0 2px #3943FF; background: rgba(57, 67, 255, .06); }',
 		'img[data-rmd-mode="image"] { cursor: pointer; }',
