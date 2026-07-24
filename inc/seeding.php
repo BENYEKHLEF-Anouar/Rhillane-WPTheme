@@ -2,15 +2,19 @@
 /**
  * One-time content seeding: the Mariner Underwear case study.
  *
- * v4 — language-aware. English subsites (en-us, en-ae) get the English content;
- * every other subsite gets French. The choice is per-site and filterable
- * (rmd_seed_english_paths). Screenshots are sideloaded from the public repo into
- * each site's own Media Library.
+ * v5 — language-aware. Any "/en-…/" subsite (en-us, en-ae, a future en-gb) gets
+ * the English content; every other subsite gets French. The choice is per-site and
+ * filterable (rmd_seed_english_paths). Screenshots are sideloaded from the public
+ * repo into each site's own Media Library (deduped by attachment title, so
+ * re-runs never duplicate images).
  *
  * Editing is safe: the seeder only ever writes ONCE per site (per-site gate), and
- * it refuses to overwrite a page that has been hand-edited — it only replaces the
- * *untouched French seed* when applying the English translation. After it runs,
- * every word is editable in wp-admin and the seeder never touches the post again.
+ * it refuses to overwrite a page that has been hand-edited — it only replaces
+ * machine-written content: the untouched seed of the WRONG language, or the
+ * editor demo placeholder saved as real content (v5 recovery — en-us had saved
+ * "Beating the giants to…" demo text, and v4's exact-path check marked it done
+ * without ever seeding). After it runs, every word is editable in wp-admin and
+ * the seeder never touches the post again.
  *
  * The English copy here is only the STARTING content; the live, editable version
  * lives in the post once seeded. Safe to keep deployed: exits instantly once done.
@@ -19,7 +23,7 @@ defined('ABSPATH') || exit;
 
 add_action('admin_init', 'rmd_seed_mariner_case_study');
 function rmd_seed_mariner_case_study() {
-	if ('1' === get_option('rmd_seed_mariner_v4')) {
+	if ('1' === get_option('rmd_seed_mariner_v5')) {
 		return;
 	}
 	if (!RMD_ACF_ACTIVE || !function_exists('update_field')) {
@@ -46,12 +50,30 @@ function rmd_seed_mariner_case_study() {
 		$first_heading = (string) get_post_meta($post_id, 'sections_0_heading', true);
 
 		if ($count >= 2) {
-			// Full content already present. Rewrite it in ONE case only: an English
-			// site still showing the untouched French seed (the language upgrade).
-			// A French site, or any hand-edited page, is left exactly as it is.
-			$is_untouched_fr_seed = ('Battre les marques milliardaires en' === $first_heading);
-			if (!($is_en && $is_untouched_fr_seed)) {
-				update_option('rmd_seed_mariner_v4', '1');
+			// Full content already present. Rewrite ONLY machine-written content,
+			// recognised by the hero heading — never a hand-edited page:
+			//   1. the untouched seed of the WRONG language (v4's exact-path check
+			//      could hand an English site the French default), or
+			//   2. the editor demo placeholder saved as real content ("Beating the
+			//      giants to…" / "Battre les géants en…" — never a real case study).
+			// Any other first heading means a human authored the page → leave it
+			// exactly as it is. (Known accepted risk, same as v4: a page that kept
+			// a seed heading verbatim but edited everything else would be reset.)
+			$seed_headings = array(
+				'fr' => 'Battre les marques milliardaires en',
+				'en' => 'Beating billion-dollar brands on',
+			);
+			$demo_headings = array(
+				'Battre les géants en',      // rmd_section_demo_fr() hero
+				'Beating the giants to',     // rmd_section_demo_en() hero
+			);
+			$want_lang        = $is_en ? 'en' : 'fr';
+			$is_wrong_lang    = in_array($first_heading, $seed_headings, true)
+				&& $seed_headings[$want_lang] !== $first_heading;
+			$is_saved_demo    = in_array($first_heading, $demo_headings, true);
+
+			if (!$is_wrong_lang && !$is_saved_demo) {
+				update_option('rmd_seed_mariner_v5', '1');
 				return;
 			}
 		}
@@ -101,7 +123,7 @@ function rmd_seed_mariner_case_study() {
 	$sections = $is_en ? rmd_seed_sections_en($a) : rmd_seed_sections_fr($a);
 
 	update_field('field_rmd_cs_sections', $sections, $post_id);
-	update_option('rmd_seed_mariner_v4', '1');
+	update_option('rmd_seed_mariner_v5', '1');
 
 	// A stale (French / hero-only / empty) copy of the page may be cached — purge.
 	do_action('litespeed_purge_all');
@@ -109,13 +131,16 @@ function rmd_seed_mariner_case_study() {
 
 /**
  * Is the current subsite an English-content site? Keyed by site path so it lines
- * up with the country switcher's map. Filterable to add/remove English sites.
+ * up with the country switcher's map. Any "/en/" or "/en-…/" path counts (en-us,
+ * en-ae, a future en-gb) — v4's exact-match list silently gave French content
+ * to any English site whose path wasn't spelled exactly right. The filter can
+ * still force extra paths in.
  */
 function rmd_seed_is_english_site() {
 	$en_paths = apply_filters('rmd_seed_english_paths', array('/en-us/', '/en-ae/'));
 	$details  = function_exists('get_blog_details') ? get_blog_details() : null;
 	$path     = ($details && !empty($details->path)) ? $details->path : '/';
-	return in_array($path, $en_paths, true);
+	return in_array($path, $en_paths, true) || 1 === preg_match('#^/en(?:-[a-z0-9]+)?/#i', $path);
 }
 
 /**
