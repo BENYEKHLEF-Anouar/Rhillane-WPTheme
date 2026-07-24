@@ -898,11 +898,16 @@ function rmd_render_section_preview() {
 		// content) instead of a blank "not saved" notice. rmd_edit_map is still
 		// set here, so the demo values get marked editable too.
 		if ($edit_mode && '' === $section_html) {
+			$GLOBALS['rmd_edit_drafts'] = array(); // empty row → no drafts (parity with the new-row branch)
 			$GLOBALS['rmd_demo'] = rmd_section_demo($layout);
 			ob_start();
 			get_template_part('template-parts/layouts/' . $layout, null, array('index' => $row_index));
 			$section_html = trim(ob_get_clean());
 			unset($GLOBALS['rmd_demo']);
+			// Emit the placeholder values (#rmd-demo-fill) so section-edit.js creates
+			// + fills the empty row's fields and Save publishes via a full page save —
+			// a lightweight draft can't add the new repeater rows.
+			$demo_fill = rmd_demo_fill(rmd_section_demo($layout));
 		}
 
 		if ($edit_mode) {
