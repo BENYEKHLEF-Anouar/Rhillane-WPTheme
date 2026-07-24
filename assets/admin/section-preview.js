@@ -727,6 +727,12 @@
 							if (detached.indexOf(r) !== -1) return; // a MOVE keeps its stamp
 							r.removeAttribute('data-rmd-saved');
 							r.removeAttribute('data-rmd-preview');
+							// A duplicate CARRIES the source row's real content — flag it so
+							// the editor never demo-prefills over it (that would silently
+							// overwrite its choices/repeaters). A blank picker-added row is
+							// NOT flagged and still gets its placeholder.
+							r.setAttribute('data-rmd-duplicate', '1');
+							r.removeAttribute('data-rmd-prefilled');
 							var oldEye = r.querySelector('.rmd-sp-eye--row');
 							if (oldEye) oldEye.remove();
 							decorateRow(r);
