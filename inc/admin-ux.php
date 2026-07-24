@@ -211,6 +211,7 @@ function rmd_admin_en_strings() {
 			'Classes CSS'              => 'CSS classes',
 			'Attributs data-*'         => 'data-* attributes',
 			'Clé'                      => 'Key',
+			'Comportement du lien'     => 'Link behaviour',
 			'Texte du lien'            => 'Link text',
 			'Type de lien'             => 'Link type',
 		),
@@ -235,6 +236,7 @@ function rmd_admin_en_strings() {
 			'Identifiant HTML (lettres, chiffres, tirets) — ancres et analytics.' => 'HTML id (letters, digits, hyphens) — anchors and analytics.',
 			'Classes ajoutées au bouton, séparées par des espaces.' => 'Extra classes on the button, space-separated.',
 			'Clé « gtm-id » → data-gtm-id="…". Pour le tracking analytics.' => 'Key "gtm-id" → data-gtm-id="…". For analytics tracking.',
+			'« Normal » convient à un CTA qui pointe vers vos propres pages. « Personnalisé » débloque les attributs rel et l’onglet ci-dessous.' => '"Normal" is right for a CTA pointing at your own pages. "Custom" unlocks the rel attributes and the new-tab toggle below.',
 			'URL complète ou mailto: — champ texte volontairement (le type « url » refuse mailto).' => 'Full URL or mailto: — deliberately a text field (the "url" type rejects mailto).',
 		),
 		'messages' => array(
@@ -266,6 +268,11 @@ function rmd_admin_en_strings() {
 			'Navigateur (points + libellé)'  => 'Browser (dots + label)',
 			'Pas de capture'                 => 'No screenshot',
 			'Capture à gauche'               => 'Screenshot on the left',
+			// Link behaviour presets (inc/link-fields.php, §10.1)
+			'Normal — lien interne'          => 'Normal — internal link',
+			'Lien externe — nouvel onglet'   => 'External link — new tab',
+			'Sponsorisé / affilié'           => 'Sponsored / affiliate',
+			'Personnalisé'                   => 'Custom',
 		),
 		'buttons' => array(
 			'Ajouter une section'  => 'Add a section',

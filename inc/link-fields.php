@@ -45,8 +45,26 @@ function rmd_link_field($key, $label, $name, $type, $extra = array()) {
  * @param string $key_prefix e.g. 'field_rmd_cs_cta_btn_adv' — must be unique.
  */
 function rmd_link_advanced_subfields($key_prefix) {
+	// Only shown under "Personnalisé": in every other mode the preset owns these.
+	$when_custom = array(array(array('field' => $key_prefix . '_mode', 'operator' => '==', 'value' => 'custom')));
+
 	return array(
+		rmd_link_field($key_prefix . '_mode', 'Comportement du lien', 'mode', 'select', array(
+			'instructions'  => '« Normal » convient à un CTA qui pointe vers vos propres pages. « Personnalisé » débloque les attributs rel et l’onglet ci-dessous.',
+			'choices'       => array(
+				'normal'    => 'Normal — lien interne',
+				'external'  => 'Lien externe — nouvel onglet',
+				'sponsored' => 'Sponsorisé / affilié',
+				'custom'    => 'Personnalisé',
+			),
+			'default_value' => 'normal',
+			'return_format' => 'value',
+			'multiple'      => 0,
+			'allow_null'    => 0,
+			'ui'            => 0,
+		)),
 		rmd_link_field($key_prefix . '_target', 'Nouvel onglet', 'target', 'true_false', array(
+			'conditional_logic' => $when_custom,
 			'ui'            => 1,
 			'default_value' => 0,
 			'message'       => 'Ouvrir dans un nouvel onglet (ajoute noopener/noreferrer).',
@@ -55,6 +73,7 @@ function rmd_link_advanced_subfields($key_prefix) {
 			// The nofollow footgun: editors reach for it on their own CTAs, where it
 			// only wastes internal linking. Say so where they read it.
 			'instructions'  => 'Pour les liens SORTANTS : nofollow (non fiable), sponsored (payant/affilié), ugc. Un bouton vers vos propres pages ne doit PAS être en nofollow.',
+			'conditional_logic' => $when_custom,
 			'choices'       => array(
 				'nofollow'   => 'nofollow',
 				'sponsored'  => 'sponsored',
@@ -131,13 +150,43 @@ function rmd_link_advanced_field($key, $name = 'button_advanced', $label = 'Opti
 }
 
 /**
+ * What each `mode` preset resolves to. The editor picks a behaviour instead of
+ * hand-assembling rel flags; "custom" means "use the fields as saved".
+ * ('external' relies on rmd_render_link() adding noopener/noreferrer for _blank,
+ * but spells them out so the intent survives a future change to that helper.)
+ */
+function rmd_link_mode_presets() {
+	return array(
+		'normal'    => array('target' => 0, 'rel' => array()),
+		'external'  => array('target' => 1, 'rel' => array('noopener', 'noreferrer')),
+		'sponsored' => array('target' => 1, 'rel' => array('sponsored', 'nofollow')),
+	);
+}
+
+/**
  * Merge a saved advanced-options array onto a base link-options array, ready for
  * rmd_render_link(). Base keys (link_type/url/label) always win; a missing or
  * malformed group value degrades to "no advanced options" instead of fataling.
+ *
+ * A preset OVERWRITES target/rel, because those fields are hidden while it is
+ * active — otherwise values left behind by an earlier "Personnalisé" session
+ * would keep rendering invisibly. An empty mode means the row predates the
+ * preset, so whatever it already had is honoured untouched.
  *
  * @param array      $base Link options resolved by the caller (link_type, url, label…).
  * @param array|null $adv  Whatever rmd_get_field()/rmd_get_sub_field() returned.
  */
 function rmd_link_with_advanced($base, $adv) {
-	return is_array($adv) ? ((array) $base + $adv) : (array) $base;
+	if (!is_array($adv)) {
+		return (array) $base;
+	}
+
+	$mode    = isset($adv['mode']) ? (string) $adv['mode'] : '';
+	$presets = rmd_link_mode_presets();
+	if ('' !== $mode && isset($presets[$mode])) {
+		$adv = array_merge($adv, $presets[$mode]);
+	}
+	unset($adv['mode']);
+
+	return (array) $base + $adv;
 }

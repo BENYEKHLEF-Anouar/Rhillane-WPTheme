@@ -2411,13 +2411,46 @@
                             "layout": "block",
                             "sub_fields": [
                                 {
+                                    "key": "field_rmd_cs_cta_btn_adv_mode",
+                                    "label": "Comportement du lien",
+                                    "name": "mode",
+                                    "type": "select",
+                                    "instructions": "« Normal » convient à un CTA qui pointe vers vos propres pages. « Personnalisé » débloque les attributs rel et l’onglet ci-dessous.",
+                                    "required": 0,
+                                    "conditional_logic": 0,
+                                    "wrapper": {
+                                        "width": "",
+                                        "class": "",
+                                        "id": ""
+                                    },
+                                    "choices": {
+                                        "normal": "Normal — lien interne",
+                                        "external": "Lien externe — nouvel onglet",
+                                        "sponsored": "Sponsorisé / affilié",
+                                        "custom": "Personnalisé"
+                                    },
+                                    "default_value": "normal",
+                                    "return_format": "value",
+                                    "multiple": 0,
+                                    "allow_null": 0,
+                                    "ui": 0
+                                },
+                                {
                                     "key": "field_rmd_cs_cta_btn_adv_target",
                                     "label": "Nouvel onglet",
                                     "name": "target",
                                     "type": "true_false",
                                     "instructions": "",
                                     "required": 0,
-                                    "conditional_logic": 0,
+                                    "conditional_logic": [
+                                        [
+                                            {
+                                                "field": "field_rmd_cs_cta_btn_adv_mode",
+                                                "operator": "==",
+                                                "value": "custom"
+                                            }
+                                        ]
+                                    ],
                                     "wrapper": {
                                         "width": "",
                                         "class": "",
@@ -2434,7 +2467,15 @@
                                     "type": "checkbox",
                                     "instructions": "Pour les liens SORTANTS : nofollow (non fiable), sponsored (payant/affilié), ugc. Un bouton vers vos propres pages ne doit PAS être en nofollow.",
                                     "required": 0,
-                                    "conditional_logic": 0,
+                                    "conditional_logic": [
+                                        [
+                                            {
+                                                "field": "field_rmd_cs_cta_btn_adv_mode",
+                                                "operator": "==",
+                                                "value": "custom"
+                                            }
+                                        ]
+                                    ],
                                     "wrapper": {
                                         "width": "",
                                         "class": "",
@@ -2694,5 +2735,5 @@
     "active": true,
     "description": "Sections des études de cas — généré par src/gen-acf.php — modifier le générateur, pas ce fichier. Clés field_rmd_cs_*.",
     "show_in_rest": 0,
-    "modified": 1784894092
+    "modified": 1784897692
 }

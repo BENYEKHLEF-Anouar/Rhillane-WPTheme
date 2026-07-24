@@ -20,29 +20,15 @@
 	gap: 10px;
 	flex-wrap: wrap;
 }
-.rmd-lo-trigger {
+/* Carries core's .button class — colour, border, radius, hover and focus all
+   come from WP so it ages with the admin instead of drifting from it. Only the
+   inline-flex layout (icon + label + badge on one baseline) is ours. */
+.rmd-lo-trigger.button {
 	display: inline-flex;
 	align-items: center;
-	gap: 7px;
-	padding: 7px 13px;
-	border: 1px solid #d5d8e4;
-	border-radius: 8px;
-	background: #f6f7fb;
-	color: #041135;
-	font-size: 13px;
-	font-weight: 500;
-	line-height: 1.3;
-	cursor: pointer;
-	transition: background .15s ease, border-color .15s ease, color .15s ease;
-}
-.rmd-lo-trigger:hover {
-	background: #fff;
-	border-color: #3943FF;
-	color: #3943FF;
-}
-.rmd-lo-trigger:focus-visible {
-	outline: 2px solid #3943FF;
-	outline-offset: 2px;
+	gap: 6px;
+	height: auto;
+	min-height: 30px;
 }
 .rmd-lo-trigger .dashicons {
 	font-size: 16px;
@@ -50,8 +36,9 @@
 	height: 16px;
 	line-height: 1;
 }
-/* Count of options actually set — the only cue that a collapsed popup holds
-   something, so it has to read at a glance. */
+/* Count of options changed on top of the preset — the only cue that a collapsed
+   popup holds something, so it has to read at a glance. Core's own count-bubble
+   red (#d63638), not the brand pink. */
 .rmd-lo-badge {
 	display: inline-flex;
 	align-items: center;
@@ -60,7 +47,7 @@
 	height: 18px;
 	padding: 0 5px;
 	border-radius: 999px;
-	background: #E4004D;
+	background: #d63638;
 	color: #fff;
 	font-size: 11px;
 	font-weight: 600;

@@ -113,7 +113,7 @@
 	 * the editor is still typing.
 	 */
 	function summarize(list) {
-		var out = [];
+		var out = { parts: [], mode: '' };
 		if (!list) {
 			return out;
 		}
@@ -121,13 +121,28 @@
 			if (!sub.classList || !sub.classList.contains('acf-field')) {
 				return;
 			}
+			// Hidden by conditional logic = the preset owns it. Reporting a value the
+			// editor can't see (and that won't render) would be a lie.
+			if (sub.classList.contains('acf-hidden')) {
+				return;
+			}
 			var label = sub.querySelector('.acf-label label');
 			var text  = label ? label.textContent.trim() : (sub.getAttribute('data-name') || '');
+
+			// The behaviour preset is always set, so it names the state rather than
+			// counting towards "options changed".
+			if ('mode' === sub.getAttribute('data-name')) {
+				var select = sub.querySelector('select');
+				if (select && select.selectedIndex >= 0) {
+					out.mode = select.options[select.selectedIndex].text.trim();
+				}
+				return;
+			}
 
 			if (sub.classList.contains('acf-field-repeater')) {
 				var rows = realRows(sub);
 				if (rows) {
-					out.push(text + ' × ' + rows);
+					out.parts.push(text + ' × ' + rows);
 				}
 				return;
 			}
@@ -142,7 +157,7 @@
 					}
 				});
 				if (picked.length) {
-					out.push(picked.join(', '));
+					out.parts.push(picked.join(', '));
 				}
 				return;
 			}
@@ -151,14 +166,14 @@
 			var toggle = sub.querySelector('input[type="checkbox"]');
 			if (toggle) {
 				if (toggle.checked) {
-					out.push(text);
+					out.parts.push(text);
 				}
 				return;
 			}
 
 			var input = sub.querySelector('input[type="text"], input[type="url"], textarea');
 			if (input && String(input.value || '').trim() !== '') {
-				out.push(text);
+				out.parts.push(text);
 			}
 		});
 		return out;
@@ -169,17 +184,23 @@
 			if (!trigger || !document.body.contains(trigger)) {
 				return;
 			}
-			var parts = summarize(list);
+			var info  = summarize(list);
+			var parts = info.parts;
+
+			// Badge counts only what the editor changed on top of the preset, so
+			// "Normal, nothing else" reads as clean rather than as one option set.
 			var badge = trigger.querySelector('.rmd-lo-badge');
 			if (badge) {
 				badge.textContent = String(parts.length);
-				badge.hidden = parts.length === 0;
+				badge.hidden = 0 === parts.length;
 			}
+
+			var all = info.mode ? [info.mode].concat(parts) : parts;
 			var summary = trigger.parentNode && trigger.parentNode.querySelector('.rmd-lo-summary');
 			if (summary) {
-				summary.textContent = parts.join(' · ');
+				summary.textContent = all.join(' · ');
 			}
-			trigger.title = parts.length ? parts.join(' · ') : (i18n.triggerEmpty || '');
+			trigger.title = all.length ? all.join(' · ') : (i18n.triggerEmpty || '');
 		} catch (err) { /* a wrong badge must never break the editor */ }
 	}
 
@@ -194,7 +215,9 @@
 			var trigger = input.querySelector('.rmd-lo-trigger');
 			if (!trigger) {
 				var wrap = el('div', 'rmd-lo-trigger-wrap');
-				trigger  = el('button', 'rmd-lo-trigger');
+				// Native WP button classes: this sits inline among core form controls,
+				// so it must look like one of them, not like our own widget.
+				trigger  = el('button', 'button rmd-lo-trigger');
 				trigger.type = 'button';
 
 				var gear = el('span', 'dashicons dashicons-admin-generic');
