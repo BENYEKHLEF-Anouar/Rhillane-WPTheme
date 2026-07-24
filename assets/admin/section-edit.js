@@ -14,6 +14,10 @@
  * save are rolled back (after a confirm), so an Update clicked later can never
  * publish an edit the editor didn't keep. « Enregistrer » sets the new baseline.
  *
+ * Standard editor keys: Ctrl+Z steps back one completed field edit at a time
+ * (Ctrl+Shift+Z / Ctrl+Y redoes); while the cursor is inside a text the
+ * browser's native undo owns it. Escape cancels the edit in progress.
+ *
  * NEW rows preview as an editable demo placeholder; its values (#rmd-demo-fill)
  * are copied once into the row's empty fields so the form matches the preview
  * and the normal « Mettre à jour » button publishes exactly what's on screen.
@@ -33,7 +37,9 @@
 	// fillMode: this preview should CREATE + fill the row's fields and Save via a
 	// full page save — true for a brand-new row AND a saved-but-empty row (both
 	// carry #rmd-demo-fill). isNew stays "unstamped row / no DB index".
-	var state = { rowEl: null, dbRow: -1, dirty: {}, before: {}, saveBtn: null, isNew: false, fillMode: false };
+	// undo/redo: field-level history — one entry per completed edit session (or
+	// image swap). doc: the current preview iframe document (for re-applying).
+	var state = { rowEl: null, dbRow: -1, dirty: {}, before: {}, saveBtn: null, isNew: false, fillMode: false, undo: [], redo: [], doc: null };
 
 	// Parent-page style: the preview modal steps fully aside while the media
 	// library is open (our modal is z-index 999999, above WP media's 160000).
@@ -226,13 +232,20 @@
 
 	/** Remember a field's value the FIRST time this preview touches it, so the
 	    edit can be undone. Later edits of the same path keep the original. */
-	function rememberOriginal(rowEl, path) {
-		if (!path || Object.prototype.hasOwnProperty.call(state.before, path)) return;
+	/** The field's CURRENT value as a string (checkbox → '1'/'0'), or null when
+	    the input can't be resolved. */
+	function readField(rowEl, path) {
 		var input = resolveInput(rowEl, path);
-		if (!input) return;
-		state.before[path] = ('checkbox' === input.type)
+		if (!input) return null;
+		return ('checkbox' === input.type)
 			? (input.checked ? '1' : '0')
 			: String(null == input.value ? '' : input.value);
+	}
+
+	function rememberOriginal(rowEl, path) {
+		if (!path || Object.prototype.hasOwnProperty.call(state.before, path)) return;
+		var value = readField(rowEl, path);
+		if (null !== value) state.before[path] = value;
 	}
 
 	/** Undo every edit made since the preview opened (or since the last save):
@@ -245,6 +258,8 @@
 		}
 		state.before = {};
 		state.dirty = {};
+		state.undo = [];
+		state.redo = [];
 		if (state.saveBtn) {
 			state.saveBtn.disabled = true;
 			state.saveBtn.textContent = i18n.save || 'Enregistrer';
@@ -258,6 +273,111 @@
 			state.saveBtn.textContent = i18n.save || 'Enregistrer';
 		}
 	}
+
+	// ── Field-level undo / redo (Ctrl+Z · Ctrl+Shift+Z / Ctrl+Y) ─────────────
+	// One history entry = one COMPLETED edit of one field (click in → type →
+	// click out, or one image swap). While the cursor is inside a text, the
+	// browser's native char-by-char undo owns it — this stack takes over between
+	// edit sessions, like standard inline editors.
+
+	/** Refresh the save button + hint from the current dirty state (after an
+	    undo/redo/escape changed it outside markDirty). Fill mode keeps its
+	    always-enabled button and its own hint. */
+	function refreshSaveUi() {
+		if (!state.saveBtn || state.fillMode) return;
+		var has = Object.keys(state.dirty).length > 0;
+		state.saveBtn.disabled = !has;
+		state.saveBtn.textContent = i18n.save || 'Enregistrer';
+		setHintText(has ? (i18n.editedHint || '') : '');
+	}
+
+	/** Mirror a restored value into the CURRENT preview frame (spans by path;
+	    images via wp.media url swap). Unlike syncPreviewFromForm this also
+	    applies EMPTY values — an undo back to '' must clear the span. */
+	function applyToPreview(path, mode, value) {
+		var doc = state.doc;
+		if (!doc || !doc.body) return;
+		if ('image' === mode) {
+			doc.querySelectorAll('img[data-rmd-path="' + path + '"]').forEach(function (img) {
+				var id = parseInt(value, 10) || 0;
+				if (!id) return; // never blank the rendered image
+				img.setAttribute('data-rmd-id', String(id));
+				if (window.wp && wp.media && wp.media.attachment) {
+					try {
+						var att = wp.media.attachment(id);
+						att.fetch().then(function () {
+							var sizes = att.get('sizes');
+							var size = sizes && (sizes.large || sizes.medium_large || sizes.full);
+							var url = (size && size.url) || att.get('url');
+							if (url) {
+								img.removeAttribute('srcset');
+								img.removeAttribute('sizes');
+								img.src = url;
+							}
+						});
+					} catch (err) { /* preview keeps the shown image */ }
+				}
+			});
+			return;
+		}
+		doc.querySelectorAll('.rmd-edit[data-rmd-path="' + path + '"]').forEach(function (span) {
+			if ('html' === mode) { span.innerHTML = sanitizeInline(value); }
+			else { span.textContent = value; }
+		});
+	}
+
+	/** Write one history value back to the field + frame and fix the dirty
+	    bookkeeping against the close-cancel baseline. */
+	function applyHistory(entry, value) {
+		if (!state.rowEl || !document.body.contains(state.rowEl)) return false;
+		if (!writeBack(state.rowEl, entry.path, value)) return false;
+		applyToPreview(entry.path, entry.mode, value);
+		if (Object.prototype.hasOwnProperty.call(state.before, entry.path) && state.before[entry.path] === value) {
+			delete state.dirty[entry.path]; // back to the baseline → not dirty
+		} else {
+			state.dirty[entry.path] = value;
+		}
+		refreshSaveUi();
+		return true;
+	}
+
+	function undoLast() {
+		var entry = state.undo.pop();
+		if (!entry) return false;
+		if (!applyHistory(entry, entry.before)) return false; // field gone — drop it
+		state.redo.push(entry);
+		return true;
+	}
+
+	function redoLast() {
+		var entry = state.redo.pop();
+		if (!entry) return false;
+		if (!applyHistory(entry, entry.after)) return false;
+		state.undo.push(entry);
+		return true;
+	}
+
+	/** Shared keydown handler — wired on the parent document (module load) and
+	    on each preview iframe document (per load). */
+	function onHistoryKey(e) {
+		var modal = document.querySelector('.rmd-sp-modal.is-open');
+		if (!modal || !state.rowEl) return;               // only with a row preview open
+		if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+		var k = String(e.key || '').toLowerCase();
+		var isUndo = 'z' === k && !e.shiftKey;
+		var isRedo = ('z' === k && e.shiftKey) || 'y' === k;
+		if (!isUndo && !isRedo) return;
+		var t = e.target;
+		// An ACTIVE inline edit keeps the browser's native undo — hands off.
+		if (t && t.closest && t.closest('.rmd-edit[contenteditable="true"]')) return;
+		// Never hijack undo inside a real form control (ACF inputs behind the modal).
+		if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName || '')) return;
+		if (isUndo ? undoLast() : redoLast()) {
+			e.preventDefault();
+			e.stopPropagation();
+		}
+	}
+	document.addEventListener('keydown', onHistoryKey, true);
 
 	function ensureSaveButton() {
 		if (state.saveBtn && document.body.contains(state.saveBtn)) return state.saveBtn;
@@ -339,7 +459,7 @@
 				// On success section-preview.js re-baselines the row and reloads the
 				// preview → this handler re-runs and resets the button. The edits are
 				// published now, so there is nothing left to undo.
-				if (ok) { state.dirty = {}; state.before = {}; return; }
+				if (ok) { state.dirty = {}; state.before = {}; state.undo = []; state.redo = []; return; }
 				btn.disabled = false;
 				btn.textContent = i18n.save || 'Enregistrer';
 				setHintText(i18n.saveError || '');
@@ -370,6 +490,8 @@
 					// Kept as a draft → this is the new baseline; nothing to undo.
 					state.dirty = {};
 					state.before = {};
+					state.undo = [];
+					state.redo = [];
 					btn.textContent = i18n.saved || 'OK';
 					btn.disabled = true;
 					setHintText(i18n.draftSaved || '');
@@ -425,7 +547,9 @@
 		var mode = span.getAttribute('data-rmd-mode') || 'text';
 		var path = span.getAttribute('data-rmd-path') || '';
 
-		rememberOriginal(ctx.rowEl, path); // before anything is typed — for the undo
+		rememberOriginal(ctx.rowEl, path); // before anything is typed — for the close-cancel
+		var sessionBefore = readField(ctx.rowEl, path); // this session's undo point
+		var cancelled = false;
 		span.setAttribute('contenteditable', 'true');
 		span.classList.add('is-editing');
 		span.focus();
@@ -444,7 +568,8 @@
 				e.preventDefault();
 				if (mode === 'html') { insertLineBreak(ctx.doc); sync(); } else { span.blur(); }
 			} else if (e.key === 'Escape') {
-				e.stopPropagation(); // finish the edit; don't close the modal
+				e.stopPropagation(); // don't close the modal
+				cancelled = true;    // Escape = CANCEL this edit (standard), not keep it
 				span.blur();
 			}
 		};
@@ -455,7 +580,30 @@
 			span.removeEventListener('blur', onBlur);
 			span.removeAttribute('contenteditable');
 			span.classList.remove('is-editing');
+
+			// Escape: restore the field AND the span to what this session started
+			// from — as if the edit never happened. No history entry.
+			if (cancelled && null !== sessionBefore) {
+				writeBack(ctx.rowEl, path, sessionBefore);
+				if ('html' === mode) { span.innerHTML = sanitizeInline(sessionBefore); }
+				else { span.textContent = sessionBefore; }
+				mirror(ctx.doc, span);
+				if (Object.prototype.hasOwnProperty.call(state.before, path) && state.before[path] === sessionBefore) {
+					delete state.dirty[path]; // back to the baseline → nothing pending
+				} else {
+					state.dirty[path] = sessionBefore;
+				}
+				refreshSaveUi();
+				return;
+			}
+
 			sync();
+			// A completed session that really changed the value = one undo step.
+			var after = readField(ctx.rowEl, path);
+			if (null !== sessionBefore && null !== after && after !== sessionBefore) {
+				state.undo.push({ path: path, mode: mode, before: sessionBefore, after: after });
+				state.redo = [];
+			}
 		};
 		span.addEventListener('keydown', onKey);
 		span.addEventListener('input', onInput);
@@ -497,9 +645,16 @@
 			var att = picker.state().get('selection').first();
 			if (!att) return;
 			var a = att.toJSON();
-			rememberOriginal(ctx.rowEl, img.getAttribute('data-rmd-path'));
-			if (!writeBack(ctx.rowEl, img.getAttribute('data-rmd-path'), String(a.id))) return;
-			markDirty(img.getAttribute('data-rmd-path'), String(a.id));
+			var imgPath = img.getAttribute('data-rmd-path');
+			rememberOriginal(ctx.rowEl, imgPath);
+			var beforeId = readField(ctx.rowEl, imgPath); // for the undo step
+			if (!writeBack(ctx.rowEl, imgPath, String(a.id))) return;
+			markDirty(imgPath, String(a.id));
+			// One image swap = one undo step (Ctrl+Z restores the previous image).
+			if (null !== beforeId && String(a.id) !== beforeId) {
+				state.undo.push({ path: imgPath, mode: 'image', before: beforeId, after: String(a.id) });
+				state.redo = [];
+			}
 
 			// Live-swap the preview image (saved render still holds the old one).
 			var size = a.sizes && (a.sizes.large || a.sizes.medium_large || a.sizes.full);
@@ -670,9 +825,12 @@
 		var sameRow = !!(state.rowEl && d.rowEl === state.rowEl);
 		state.rowEl = d.rowEl || null;
 		state.dbRow = typeof d.rowIndex === 'number' ? d.rowIndex : -1;
+		state.doc = null; // set below once this load's document is validated
 		if (!sameRow) {
 			state.dirty = {};
 			state.before = {};
+			state.undo = [];
+			state.redo = [];
 		}
 		state.isNew = !!d.isNewRow;
 		state.fillMode = state.isNew; // refined from #rmd-demo-fill once the doc loads
@@ -689,6 +847,7 @@
 		var doc;
 		try { doc = d.frame.contentDocument; } catch (err) { doc = null; }
 		if (!doc || !doc.body) return;
+		state.doc = doc; // current frame — undo/redo re-applies values into it
 		if (doc.getElementById('rmd-edit-style')) return; // this load is already wired
 		if (!doc.querySelector('.rmd-edit, img[data-rmd-mode="image"]')) return;
 
@@ -733,6 +892,8 @@
 		showEditNote();
 
 		var ctx = { doc: doc, rowEl: state.rowEl };
+		// Undo/redo also from inside the frame (same handler as the parent doc).
+		doc.addEventListener('keydown', onHistoryKey, true);
 		// Capture phase: beat the theme's own lightbox/zoom handlers in main.js.
 		doc.addEventListener('click', function (ev) {
 			var span = ev.target.closest ? ev.target.closest('.rmd-edit') : null;
