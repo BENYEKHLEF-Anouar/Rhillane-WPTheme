@@ -1082,6 +1082,7 @@ function rmd_section_preview_assets($hook) {
 			'rowPreview'   => 'Aperçu de cette section avec son contenu enregistré.',
 			'dirtyHint'    => 'Modifications non enregistrées : l’aperçu montre la dernière version enregistrée. Cliquez sur « Mettre à jour ».',
 			'newRowHint'   => 'Cette section n’a jamais été enregistrée. Cliquez sur « Mettre à jour » puis rouvrez l’aperçu.',
+			'structureDirtyHint' => 'L’ordre des sections a changé. Cliquez sur « Mettre à jour », puis rouvrez l’aperçu.',
 			'addSection'   => 'Ajouter une section',
 		) : array(
 			'previewTitle' => 'Section preview',
@@ -1094,6 +1095,7 @@ function rmd_section_preview_assets($hook) {
 			'rowPreview'   => 'Preview of this section with its saved content.',
 			'dirtyHint'    => 'Unsaved changes: the preview shows the last saved version. Click "Update".',
 			'newRowHint'   => 'This section has never been saved. Click "Update", then reopen the preview.',
+			'structureDirtyHint' => 'The section order changed. Click "Update", then reopen the preview.',
 			'addSection'   => 'Add a section',
 		),
 	));

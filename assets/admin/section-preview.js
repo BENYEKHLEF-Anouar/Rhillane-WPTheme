@@ -311,6 +311,7 @@
 			isRow: isRow,
 			isNewRow: !!opts.isNewRow,
 			editable: !!opts.editable,
+			structureDirty: !!opts.structureDirty,
 			hint: opts.hint || ''
 		};
 		lastFocused = document.activeElement;
@@ -335,6 +336,14 @@
 		document.body.classList.add('rmd-sp-modal-open');
 
 		modal.querySelector('.rmd-sp-close').focus();
+
+		// Unsaved delete/reorder: the on-screen position no longer maps to a DB
+		// slot, so any saved render could be a DIFFERENT section. Show the
+		// "save first" message instead of loading the frame — never wrong content.
+		if (isRow && current.structureDirty) {
+			setStatus(i18n.structureDirtyHint || i18n.newRowHint || '', false);
+			return;
+		}
 
 		// A SAVED row preview needs a valid DB index; if we couldn't locate it,
 		// say so plainly rather than loading a misleading demo. (A NEW row has no
@@ -604,20 +613,22 @@
 				var hint = '';
 				var editable = true;
 				var dbRow = -1;
+				var structureDirty = false;
 				if (isNew) {
 					hint = i18n.newRowHint || '';
 				} else if (isStructureDirty(field)) {
-					// Reordered/deleted without saving → the mapping is unknowable:
-					// show this row's saved content read-only, ask for a save.
-					dbRow = savedIndexOf(row);
+					// Reordered/deleted without saving → on-screen position no longer
+					// maps to a DB slot, so ANY saved render could be a DIFFERENT
+					// section. Show nothing; just ask for a save. (dbRow stays -1 —
+					// no savedIndexOf on the mutated DOM.)
+					structureDirty = true;
 					editable = false;
-					hint = i18n.dirtyHint || '';
 				} else {
 					dbRow = savedIndexOf(row);
 					if (postIsDirty()) hint = i18n.dirtyHint || '';
 				}
 
-				openModal({ layout: name, rowIndex: dbRow, rowEl: row, isRow: true, isNewRow: isNew, editable: editable, hint: hint });
+				openModal({ layout: name, rowIndex: dbRow, rowEl: row, isRow: true, isNewRow: isNew, editable: editable, hint: hint, structureDirty: structureDirty });
 			});
 
 			controls.insertBefore(btn, controls.firstChild);
