@@ -30,7 +30,10 @@
 	// the draft save only), the values changed since load/save (dirty) and what
 	// those fields held BEFORE the first edit (before) — closing the preview
 	// without saving restores them.
-	var state = { rowEl: null, dbRow: -1, dirty: {}, before: {}, saveBtn: null, isNew: false };
+	// fillMode: this preview should CREATE + fill the row's fields and Save via a
+	// full page save — true for a brand-new row AND a saved-but-empty row (both
+	// carry #rmd-demo-fill). isNew stays "unstamped row / no DB index".
+	var state = { rowEl: null, dbRow: -1, dirty: {}, before: {}, saveBtn: null, isNew: false, fillMode: false };
 
 	// Parent-page style: the preview modal steps fully aside while the media
 	// library is open (our modal is z-index 999999, above WP media's 160000).
@@ -199,7 +202,7 @@
 	function showEditedHint() {
 		// A new section publishes via Update (its fields aren't in the DB yet, so
 		// the per-section draft save can't target them); a saved row can draft.
-		setHintText(state.isNew ? (i18n.newSectionHint || '') : (i18n.editedHint || ''));
+		setHintText(state.fillMode ? (i18n.newSectionHint || '') : (i18n.editedHint || ''));
 	}
 
 	function setHintText(text) {
@@ -315,11 +318,11 @@
 		var postId = currentPostId();
 		if (!postId) return;
 
-		// A NEW section isn't in the database yet and vanishes on reload unless
-		// the page is saved — so "Save" here saves the page (the only way to keep
-		// a new section; same as clicking Update). Once saved it becomes a normal
+		// Fill mode = a new section OR a saved-but-empty one. Its new repeater rows
+		// aren't in the database and a lightweight draft can't add them, so "Save"
+		// here saves the page (same as Update). Once saved it becomes a normal
 		// section: the per-section draft save below takes over on the next open.
-		if (state.isNew) {
+		if (state.fillMode) {
 			btn.disabled = true;
 			btn.textContent = i18n.saving || '…';
 			setHintText(i18n.savingSection || i18n.saving || '');
@@ -426,8 +429,10 @@
 
 		var sync = function () {
 			var value = mode === 'html' ? span.innerHTML : span.textContent;
-			writeBack(ctx.rowEl, path, value);
-			markDirty(path, value);
+			// Only record the edit if it actually landed in a field — never mark a
+			// path dirty when there was nowhere to write it (keeps the dirty state
+			// and the close-discard honest).
+			if (writeBack(ctx.rowEl, path, value)) markDirty(path, value);
 			mirror(ctx.doc, span);
 			showEditedHint();
 		};
@@ -552,6 +557,14 @@
 			if (inputs[i].closest('.acf-clone')) continue;
 			if ('' !== String(inputs[i].value || '').trim()) return true;
 		}
+		// A set image counts as content too (its value is an attachment ID in the
+		// field's hidden input) — so an "empty" row that only holds an image is
+		// never demo-prefilled over.
+		var imgs = rowEl.querySelectorAll('.acf-field[data-type="image"] input[type="hidden"]');
+		for (var j = 0; j < imgs.length; j++) {
+			if (imgs[j].closest('.acf-clone')) continue;
+			if (parseInt(imgs[j].value, 10) > 0) return true;
+		}
 		return false;
 	}
 
@@ -659,6 +672,7 @@
 			state.before = {};
 		}
 		state.isNew = !!d.isNewRow;
+		state.fillMode = state.isNew; // refined from #rmd-demo-fill once the doc loads
 		var hasEdits = Object.keys(state.dirty).length > 0;
 		var saveBtn = ensureSaveButton();
 		if (saveBtn) {
@@ -675,11 +689,16 @@
 		if (doc.getElementById('rmd-edit-style')) return; // this load is already wired
 		if (!doc.querySelector('.rmd-edit, img[data-rmd-mode="image"]')) return;
 
-		// New row: copy the placeholder into its empty fields (once), so the
+		// #rmd-demo-fill is emitted for a NEW row and for a saved-but-EMPTY row —
+		// both need their fields created + filled and Saved via a full page save
+		// (a draft can't add repeater rows). Opt those into fill mode.
+		if (doc.getElementById('rmd-demo-fill')) state.fillMode = true;
+
+		// Fill mode: copy the placeholder into the row's empty fields (once), so the
 		// preview and the form agree and Update publishes what's on screen.
 		// A DUPLICATE — or any row that already holds content — is left as-is:
 		// syncPreviewFromForm still shows its real values in the frame.
-		if (state.isNew && !state.rowEl.dataset.rmdPrefilled &&
+		if (state.fillMode && !state.rowEl.dataset.rmdPrefilled &&
 			!state.rowEl.dataset.rmdDuplicate && !rowHasContent(state.rowEl)) {
 			prefillDemo(doc, state.rowEl);
 			state.rowEl.dataset.rmdPrefilled = '1';
@@ -692,7 +711,7 @@
 		//  • saved row → shown, enabled on the first edit (markDirty).
 		//  • no DB index & not new (shouldn't happen) → hidden.
 		if (saveBtn) {
-			if (state.isNew) {
+			if (state.fillMode) {
 				saveBtn.style.display = '';
 				saveBtn.disabled = false;
 				saveBtn.textContent = i18n.save || 'Enregistrer';
